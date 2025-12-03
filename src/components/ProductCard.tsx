@@ -28,39 +28,39 @@ export default function ProductCard({
           fill
           className="object-cover"
         />
-        <button className="absolute top-3 right-3 bg-white rounded-full p-2 hover:bg-gray-100 transition-colors">
-          <Heart size={18} className="text-gray-600" />
+        <button className="absolute top-2 right-2 md:top-3 md:right-3 bg-white rounded-full p-1.5 md:p-2 hover:bg-gray-100 transition-colors">
+          <Heart size={16} className="text-gray-600 md:w-[18px] md:h-[18px]" />
         </button>
       </div>
 
       {/* Content */}
-      <div className="p-4">
-        <h3 className="font-semibold text-dark mb-1">{title}</h3>
-        <p className="text-sm text-gray-600 mb-3">{description}</p>
+      <div className="p-3 md:p-4">
+        <h3 className="font-semibold text-sm md:text-base text-dark mb-1">{title}</h3>
+        <p className="text-xs md:text-sm text-gray-600 mb-2 md:mb-3">{description}</p>
         
         {/* Price */}
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-lg font-bold text-dark">₹{discountedPrice}</span>
-          <span className="text-sm text-gray-400 line-through">₹{originalPrice}</span>
-          <span className="text-sm text-green-600 font-semibold">{discount}% Off</span>
+        <div className="flex items-center gap-1 md:gap-2 mb-2 md:mb-3 flex-wrap">
+          <span className="text-base md:text-lg font-bold text-dark">₹{discountedPrice}</span>
+          <span className="text-xs md:text-sm text-gray-400 line-through">₹{originalPrice}</span>
+          <span className="text-xs md:text-sm text-green-600 font-semibold">{discount}% Off</span>
         </div>
 
         {/* Actions */}
         <div className="flex items-center gap-2">
           <div className="flex items-center border border-gray-300 rounded">
-            <button className="p-2 hover:bg-gray-100 transition-colors">
-              <Minus size={14} />
+            <button className="p-1.5 md:p-2 hover:bg-gray-100 transition-colors">
+              <Minus size={12} className="md:w-3.5 md:h-3.5" />
             </button>
-            <span className="px-3 text-sm">1</span>
-            <button className="p-2 hover:bg-gray-100 transition-colors">
-              <Plus size={14} />
+            <span className="px-2 md:px-3 text-xs md:text-sm">1</span>
+            <button className="p-1.5 md:p-2 hover:bg-gray-100 transition-colors">
+              <Plus size={12} className="md:w-3.5 md:h-3.5" />
             </button>
           </div>
-          <button className="flex-1 bg-accent text-white py-2 px-4 rounded text-sm font-medium hover:bg-opacity-90 transition-colors">
+          <button className="flex-1 bg-accent text-white py-1.5 md:py-2 px-3 md:px-4 rounded text-xs md:text-sm font-medium hover:bg-opacity-90 transition-colors">
             ADD
           </button>
-          <button className="p-2 border border-gray-300 rounded hover:bg-gray-100 transition-colors">
-            <Heart size={18} />
+          <button className="p-1.5 md:p-2 border border-gray-300 rounded hover:bg-gray-100 transition-colors">
+            <Heart size={16} className="md:w-[18px] md:h-[18px]" />
           </button>
         </div>
       </div>
