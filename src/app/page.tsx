@@ -1,3 +1,4 @@
+'use client'
 import Image from 'next/image'
 import ProductCard from '@/components/ProductCard'
 import { Truck, Headphones, ShieldCheck } from 'lucide-react'
@@ -66,6 +67,7 @@ export default function Home() {
             {[1, 2, 3, 4].map((item) => (
               <ProductCard
                 key={item}
+                productId={item}
                 image="/images/CardImage.jpg"
                 title="Mithril Candles"
                 description="Malt Packs Bay Wax Candle by Miorish"
@@ -103,6 +105,7 @@ export default function Home() {
             {[1, 2, 3, 4].map((item) => (
               <ProductCard
                 key={item}
+                productId={item}
                 image="/images/CardImage.jpg"
                 title="Mithril Candles"
                 description="Malt Packs Bay Wax Candle by Miorish"
@@ -153,6 +156,7 @@ export default function Home() {
             {[1, 2, 3, 4].map((item) => (
               <ProductCard
                 key={item}
+                productId={item}
                 image="/images/CardImage.jpg"
                 title="Mithril Candles"
                 description="Malt Packs Bay Wax Candle by Miorish"

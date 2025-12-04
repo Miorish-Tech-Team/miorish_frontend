@@ -48,7 +48,7 @@ export default function CategoriesPage() {
 
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Sidebar */}
-          <aside className="w-full lg:w-64 flex-shrink-0">
+          <aside className="w-full lg:w-64 shrink-0">
             {/* Categories */}
             <div className="bg-white rounded-lg p-4 mb-4">
               <h3 className="text-lg font-semibold text-dark mb-4">Categories</h3>
@@ -168,6 +168,7 @@ export default function CategoriesPage() {
               {products.map((product) => (
                 <ProductCard
                   key={product.id}
+                  productId={product.id}
                   image={product.image}
                   title={product.title}
                   description={product.description}
@@ -221,6 +222,7 @@ export default function CategoriesPage() {
                 {products.slice(0, 4).map((product) => (
                   <ProductCard
                     key={product.id}
+                    productId={product.id}
                     image={product.image}
                     title={product.title}
                     description={product.description}
