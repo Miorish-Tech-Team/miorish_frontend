@@ -3,11 +3,12 @@
 import Image from 'next/image'
 import { Search, User, Heart, ShoppingCart, BellIcon, Menu, X, ChevronDown } from 'lucide-react'
 import { useState } from 'react'
+import Link from 'next/link'
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [searchCategory, setSearchCategory] = useState('All')
-  
+
   return (
     <nav className="bg-primary text-white">
       {/* Top Bar */}
@@ -16,10 +17,10 @@ export default function Navbar() {
         <div className="flex items-center justify-between lg:justify-center gap-4 lg:gap-16">
           {/* Logo */}
           <div className="flex items-center">
-            <Image 
-              src="/images/MiorishLogo.png" 
-              alt="Miorish Logo" 
-              width={80} 
+            <Image
+              src="/images/MiorishLogo.png"
+              alt="Miorish Logo"
+              width={80}
               height={80}
               className="object-contain md:w-[100px] md:h-[100px] lg:w-[120px] lg:h-[120px]"
             />
@@ -51,10 +52,12 @@ export default function Navbar() {
               <BellIcon size={20} className="md:w-5 md:h-5 lg:w-6 lg:h-6" />
               <span className='text-[10px] lg:text-xs'>Notification</span>
             </button>
-            <button className="hidden sm:flex flex-col items-center justify-center gap-1 hover:text-accent transition-colors cursor-pointer">
-              <User size={20} className="md:w-5 md:h-5 lg:w-6 lg:h-6" />
-              <span className='text-[10px] lg:text-xs'>Profile</span>
-            </button>
+            <Link href="/account">
+              <button className="hidden sm:flex flex-col items-center justify-center gap-1 hover:text-accent transition-colors cursor-pointer">
+                <User size={20} className="md:w-5 md:h-5 lg:w-6 lg:h-6" />
+                <span className='text-[10px] lg:text-xs'>Profile</span>
+              </button>
+            </Link>
             <button className="hidden sm:flex flex-col items-center justify-center gap-1 hover:text-accent transition-colors cursor-pointer">
               <Heart size={20} className="md:w-5 md:h-5 lg:w-6 lg:h-6" />
               <span className='text-[10px] lg:text-xs'>Wishlist</span>
@@ -64,7 +67,7 @@ export default function Navbar() {
               <span className='text-[10px] lg:text-xs'>Cart</span>
             </button>
             {/* Mobile Menu Button */}
-            <button 
+            <button
               className="lg:hidden p-2 hover:text-accent transition-colors"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
@@ -88,7 +91,7 @@ export default function Navbar() {
         </div>
       </div>
 
-      
+
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (

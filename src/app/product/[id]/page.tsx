@@ -52,9 +52,9 @@ export default function ProductPage() {
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-xs md:text-sm mb-4 md:mb-6 overflow-x-auto">
           <a href="/" className="text-accent hover:underline whitespace-nowrap">Home</a>
-          <ChevronRight size={16} className="text-gray-400 flex-shrink-0" />
+          <ChevronRight size={16} className="text-gray-400 shrink-0" />
           <a href="/categories" className="text-accent hover:underline whitespace-nowrap">Candles</a>
-          <ChevronRight size={16} className="text-gray-400 flex-shrink-0" />
+          <ChevronRight size={16} className="text-gray-400 shrink-0" />
           <span className="text-dark whitespace-nowrap">Premium</span>
         </div>
 
