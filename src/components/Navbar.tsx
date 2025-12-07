@@ -52,20 +52,28 @@ export default function Navbar() {
               <BellIcon size={20} className="md:w-5 md:h-5 lg:w-6 lg:h-6" />
               <span className='text-[10px] lg:text-xs'>Notification</span>
             </button>
-            <Link href="/account">
+            {/* <Link href="/account">
               <button className="hidden sm:flex flex-col items-center justify-center gap-1 hover:text-accent transition-colors cursor-pointer">
                 <User size={20} className="md:w-5 md:h-5 lg:w-6 lg:h-6" />
                 <span className='text-[10px] lg:text-xs'>Profile</span>
+              </button>
+            </Link> */}
+            <Link href="/auth/login">
+              <button className="hidden sm:flex flex-col items-center justify-center gap-1 hover:text-accent transition-colors cursor-pointer">
+                <User size={20} className="md:w-5 md:h-5 lg:w-6 lg:h-6" />
+                <span className='text-[10px] lg:text-xs'>Login</span>
               </button>
             </Link>
             <button className="hidden sm:flex flex-col items-center justify-center gap-1 hover:text-accent transition-colors cursor-pointer">
               <Heart size={20} className="md:w-5 md:h-5 lg:w-6 lg:h-6" />
               <span className='text-[10px] lg:text-xs'>Wishlist</span>
             </button>
-            <button className="flex flex-col items-center justify-center gap-1 hover:text-accent transition-colors cursor-pointer">
-              <ShoppingCart size={20} className="md:w-5 md:h-5 lg:w-6 lg:h-6" />
-              <span className='text-[10px] lg:text-xs'>Cart</span>
-            </button>
+            <Link href="/cart">
+              <button className="flex flex-col items-center justify-center gap-1 hover:text-accent transition-colors cursor-pointer">
+                <ShoppingCart size={20} className="md:w-5 md:h-5 lg:w-6 lg:h-6" />
+                <span className='text-[10px] lg:text-xs'>Cart</span>
+              </button>
+            </Link>
             {/* Mobile Menu Button */}
             <button
               className="lg:hidden p-2 hover:text-accent transition-colors"
