@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { User, Key, Package, Heart, MapPin, Settings, LogOut } from 'lucide-react'
 import { authAPI } from '@/services/authService'
 import { useAuth } from '@/contexts/AuthContext'
+import Image from 'next/image'
 
 interface AccountSidebarProps {
   activePage: 'profile' | 'password' | 'orders' | 'wishlist' | 'address' | 'settings'
@@ -27,10 +28,17 @@ export default function AccountSidebar({ activePage }: AccountSidebarProps) {
       <div className="rounded-lg border border-accent overflow-hidden">
         {/* User Info */}
         <div className="p-6 text-center border-b border-gray-200">
-          <div className="w-24 h-24 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
-            <div className="w-20 h-20 bg-blue-200 rounded-full flex items-center justify-center">
+          <div className="w-24 h-24 mx-auto mb-4 bg-accent/20 rounded-full flex items-center justify-center">
+            <Image
+              src={user?.profilePhoto || '/default-profile.png'}
+              alt="Profile Photo"
+              width={80}
+              height={80}
+              className="rounded-full"
+            />
+            {/* <div className="w-20 h-20 bg-blue-200 rounded-full flex items-center justify-center">
               <User size={40} className="text-blue-600" />
-            </div>
+            </div> */}
           </div>
           <h3 className="text-lg font-semibold text-dark mb-1">{user?.fullName || 'John Doe'}</h3>
           <p className="text-sm text-gray-600">{user?.email || 'example@gmail.com'}</p>

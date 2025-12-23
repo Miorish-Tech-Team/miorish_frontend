@@ -234,4 +234,12 @@ export const authAPI = {
     if (typeof window === 'undefined') return false
     return !!localStorage.getItem('token')
   },
+
+  // Google Auth - Initiates Google OAuth flow
+  initiateGoogleAuth: () => {
+    if (typeof window === 'undefined') return
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7845/api'
+    // Redirect to backend Google auth endpoint which will redirect to Google OAuth
+    window.location.href = `${API_URL}/auth/google`
+  },
 }
