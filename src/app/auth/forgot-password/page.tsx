@@ -2,17 +2,52 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Mail, ArrowLeft, CheckCircle } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Mail, ArrowLeft, CheckCircle, Loader2 } from 'lucide-react'
+import { authAPI } from '@/services/authService'
 
 export default function ForgotPasswordPage() {
+  const router = useRouter()
   const [email, setEmail] = useState('')
-  const [isSubmitted, setIsSubmitted] = useState(false)
+  const [otp, setOtp] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [step, setStep] = useState<'email' | 'otp' | 'success'>('email')
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle forgot password logic here
-    console.log('Forgot password for:', email)
-    setIsSubmitted(true)
+    setError('')
+    setIsLoading(true)
+
+    try {
+      await authAPI.resetPasswordOtp({ email })
+      setStep('otp')
+    } catch (err) {
+      const error = err as { response?: { data?: { message?: string } } }
+      setError(error.response?.data?.message || 'Failed to send reset code')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleOtpVerify = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    setIsLoading(true)
+
+    try {
+      await authAPI.verifyResetOtp({ verificationCode: otp })
+      setStep('success')
+      // Redirect to reset password page
+      setTimeout(() => {
+        router.push(`/auth/reset-password?email=${encodeURIComponent(email)}`)
+      }, 1500)
+    } catch (err) {
+      const error = err as { response?: { data?: { message?: string } } }
+      setError(error.response?.data?.message || 'Invalid or expired code')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -29,7 +64,14 @@ export default function ForgotPasswordPage() {
             Back to Login
           </Link>
 
-          {!isSubmitted ? (
+          {/* Error Message */}
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+          )}
+
+          {step === 'email' ? (
             <>
               {/* Header */}
               <div className="text-center mb-6 md:mb-8">
@@ -65,9 +107,57 @@ export default function ForgotPasswordPage() {
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  className="w-full bg-accent text-white py-2.5 md:py-3 rounded-lg font-medium text-sm md:text-base hover:bg-opacity-90 transition-colors shadow-md hover:shadow-lg"
+                  disabled={isLoading}
+                  className="w-full bg-accent text-white py-2.5 md:py-3 rounded-lg font-medium text-sm md:text-base hover:bg-opacity-90 transition-colors shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  Send Reset Link
+                  {isLoading && <Loader2 size={20} className="animate-spin" />}
+                  Send Reset Code
+                </button>
+              </form>
+            </>
+          ) : step === 'otp' ? (
+            <>
+              {/* Header */}
+              <div className="text-center mb-6 md:mb-8">
+                <h1 className="text-2xl md:text-3xl font-bold text-dark mb-2">Enter Verification Code</h1>
+                <p className="text-sm md:text-base text-gray-600">
+                  We've sent a 6-digit code to {email}
+                </p>
+              </div>
+
+              {/* OTP Form */}
+              <form onSubmit={handleOtpVerify} className="space-y-4 md:space-y-5">
+                <div>
+                  <label htmlFor="otp" className="block text-sm font-medium text-dark mb-2">
+                    Verification Code
+                  </label>
+                  <input
+                    type="text"
+                    id="otp"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent text-dark text-center text-lg tracking-widest"
+                    placeholder="000000"
+                    maxLength={6}
+                    required
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full bg-accent text-white py-2.5 md:py-3 rounded-lg font-medium text-sm md:text-base hover:bg-opacity-90 transition-colors shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {isLoading && <Loader2 size={20} className="animate-spin" />}
+                  Verify Code
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setStep('email')}
+                  className="w-full text-accent text-sm hover:underline"
+                >
+                  Use different email
                 </button>
               </form>
             </>
@@ -80,28 +170,16 @@ export default function ForgotPasswordPage() {
                     <CheckCircle size={32} className="text-green-600" />
                   </div>
                 </div>
-                <h1 className="text-2xl md:text-3xl font-bold text-dark mb-2">Check Your Email</h1>
+                <h1 className="text-2xl md:text-3xl font-bold text-dark mb-2">Code Verified!</h1>
                 <p className="text-sm md:text-base text-gray-600 mb-6">
-                  We've sent a password reset link to
+                  Redirecting to reset password page...
                 </p>
-                <p className="text-sm md:text-base font-medium text-dark mb-6">
-                  {email}
-                </p>
-                <p className="text-xs md:text-sm text-gray-500 mb-6">
-                  Didn't receive the email? Check your spam folder or
-                </p>
-                <button
-                  onClick={() => setIsSubmitted(false)}
-                  className="text-accent hover:underline font-medium text-sm md:text-base"
-                >
-                  Try another email address
-                </button>
               </div>
             </>
           )}
 
           {/* Sign In Link */}
-          {!isSubmitted && (
+          {step === 'email' && (
             <p className="mt-6 text-center text-sm text-gray-600">
               Remember your password?{' '}
               <Link href="/auth/login" className="text-accent font-medium hover:underline">

@@ -102,7 +102,7 @@ export default function CartPage() {
               </div>
             </div>
             <h2 className="text-2xl md:text-3xl font-bold text-dark mb-3">Your Cart is Empty</h2>
-            <p className="text-gray-600 mb-6">Looks like you haven't added anything to your cart yet</p>
+            <p className="text-gray-600 mb-6">Looks like you haven&apos;t added anything to your cart yet</p>
             <Link
               href="/"
               className="inline-flex items-center gap-2 bg-accent text-white px-6 py-3 rounded-lg font-medium hover:bg-opacity-90 transition-colors"
@@ -264,7 +264,7 @@ export default function CartPage() {
                 {appliedPromo && (
                   <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
                     <Tag size={12} />
-                    Code "{appliedPromo}" applied!
+                    Code &quot;{appliedPromo}&quot; applied!
                   </p>
                 )}
               </div>
@@ -317,9 +317,11 @@ export default function CartPage() {
               )}
 
               {/* Checkout Button */}
-              <button className="w-full bg-accent text-white py-3 rounded-lg font-semibold text-base hover:bg-opacity-90 transition-colors shadow-md hover:shadow-lg mb-3">
-                Proceed to Checkout
-              </button>
+              <Link href="/checkout">
+                <button className="w-full bg-accent text-white py-3 rounded-lg font-semibold text-base hover:bg-opacity-90 transition-colors shadow-md hover:shadow-lg mb-3">
+                  Proceed to Checkout
+                </button>
+              </Link>
 
               {/* Security Badge */}
               <div className="flex items-center justify-center gap-2 text-xs text-gray-500">

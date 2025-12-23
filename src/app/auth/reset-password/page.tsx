@@ -1,27 +1,65 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Eye, EyeOff, Lock, CheckCircle } from 'lucide-react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Eye, EyeOff, Lock, CheckCircle, Loader2 } from 'lucide-react'
+import { authAPI } from '@/services/authService'
 
 export default function ResetPasswordPage() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const email = searchParams.get('email')
+  
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
   const [isReset, setIsReset] = useState(false)
   const [formData, setFormData] = useState({
     password: '',
     confirmPassword: ''
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (!email) {
+      router.push('/auth/forgot-password')
+    }
+  }, [email, router])
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle reset password logic here
+    setError('')
+    
     if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match!')
+      setError('Passwords do not match!')
       return
     }
-    console.log('Reset password:', formData)
-    setIsReset(true)
+
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters long')
+      return
+    }
+
+    if (!email) {
+      setError('Email not found. Please try again.')
+      return
+    }
+
+    setIsLoading(true)
+
+    try {
+      await authAPI.resetPasswordFromOtp({
+        email,
+        newPassword: formData.password
+      })
+      setIsReset(true)
+    } catch (err) {
+      const error = err as { response?: { data?: { message?: string } } }
+      setError(error.response?.data?.message || 'Failed to reset password')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -47,6 +85,13 @@ export default function ResetPasswordPage() {
                 </p>
               </div>
 
+              {/* Error Message */}
+              {error && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm text-red-600">{error}</p>
+                </div>
+              )}
+
               {/* Form */}
               <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5">
                 {/* New Password Input */}
@@ -67,18 +112,20 @@ export default function ResetPasswordPage() {
                       className="w-full pl-10 pr-12 py-2.5 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent text-dark text-sm md:text-base"
                       placeholder="Enter new password"
                       required
-                      minLength={8}
+                      minLength={6}
+                      disabled={isLoading}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-accent transition-colors"
+                      disabled={isLoading}
                     >
                       {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                   </div>
                   <p className="mt-1 text-xs text-gray-500">
-                    Must be at least 8 characters
+                    Must be at least 6 characters
                   </p>
                 </div>
 
@@ -100,46 +147,27 @@ export default function ResetPasswordPage() {
                       className="w-full pl-10 pr-12 py-2.5 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent text-dark text-sm md:text-base"
                       placeholder="Confirm new password"
                       required
-                      minLength={8}
+                      minLength={6}
+                      disabled={isLoading}
                     />
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                       className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-accent transition-colors"
+                      disabled={isLoading}
                     >
                       {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                   </div>
                 </div>
 
-                {/* Password Requirements */}
-                <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-                  <p className="text-xs font-medium text-dark">Password must contain:</p>
-                  <ul className="space-y-1 text-xs text-gray-600">
-                    <li className="flex items-center gap-2">
-                      <span className="w-1 h-1 bg-accent rounded-full"></span>
-                      At least 8 characters
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <span className="w-1 h-1 bg-accent rounded-full"></span>
-                      One uppercase letter
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <span className="w-1 h-1 bg-accent rounded-full"></span>
-                      One lowercase letter
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <span className="w-1 h-1 bg-accent rounded-full"></span>
-                      One number
-                    </li>
-                  </ul>
-                </div>
-
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  className="w-full bg-accent text-white py-2.5 md:py-3 rounded-lg font-medium text-sm md:text-base hover:bg-opacity-90 transition-colors shadow-md hover:shadow-lg"
+                  disabled={isLoading}
+                  className="w-full bg-accent text-white py-2.5 md:py-3 rounded-lg font-medium text-sm md:text-base hover:bg-opacity-90 transition-colors shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
+                  {isLoading && <Loader2 size={20} className="animate-spin" />}
                   Reset Password
                 </button>
               </form>

@@ -2,12 +2,26 @@
 
 import Link from 'next/link'
 import { User, Key, Package, Heart, MapPin, Settings, LogOut } from 'lucide-react'
+import { authAPI } from '@/services/authService'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface AccountSidebarProps {
   activePage: 'profile' | 'password' | 'orders' | 'wishlist' | 'address' | 'settings'
 }
 
 export default function AccountSidebar({ activePage }: AccountSidebarProps) {
+  const {user} = useAuth();
+
+  const handleLogout = async() => {
+    try {
+      const response = await authAPI.logout();
+      console.log('Logout response:', response);
+      window.location.href = '/';
+    } catch (err) {
+      const error = err as { response?: { data?: { message?: string } } }
+      console.error('Logout error:', error.response?.data?.message || 'Logout failed.')
+    }
+  }
   return (
     <aside className="lg:col-span-1">
       <div className="rounded-lg border border-accent overflow-hidden">
@@ -18,14 +32,14 @@ export default function AccountSidebar({ activePage }: AccountSidebarProps) {
               <User size={40} className="text-blue-600" />
             </div>
           </div>
-          <h3 className="text-lg font-semibold text-dark mb-1">John Doe</h3>
-          <p className="text-sm text-gray-600">example@gmail.com</p>
+          <h3 className="text-lg font-semibold text-dark mb-1">{user?.fullName || 'John Doe'}</h3>
+          <p className="text-sm text-gray-600">{user?.email || 'example@gmail.com'}</p>
         </div>
 
         {/* Menu Items */}
         <nav className="p-0">
           <Link 
-            href="/account" 
+            href="/account/profile" 
             className={`flex items-center border-t border-accent gap-3 px-6 py-3 ${
               activePage === 'profile' 
                 ? 'bg-accent text-white hover:bg-opacity-90' 
@@ -79,6 +93,7 @@ export default function AccountSidebar({ activePage }: AccountSidebarProps) {
             <MapPin size={18} />
             <span className={`text-sm ${activePage === 'address' ? 'font-medium' : ''}`}>Mange Address</span>
           </Link>
+
           <Link 
             href="/account/settings" 
             className={`flex items-center border-t border-accent gap-3 px-6 py-3 ${
@@ -90,7 +105,9 @@ export default function AccountSidebar({ activePage }: AccountSidebarProps) {
             <Settings size={18} />
             <span className={`text-sm ${activePage === 'settings' ? 'font-medium' : ''}`}>Settings</span>
           </Link>
-          <button 
+
+          <button
+            onClick={handleLogout}
             className="w-full flex items-center gap-3 px-6 py-3 text-accent hover:bg-secondary transition-colors border-t border-accent"
           >
             <LogOut size={18} />

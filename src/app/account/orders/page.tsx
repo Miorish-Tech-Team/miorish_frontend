@@ -67,7 +67,7 @@ export default function OrdersPage() {
     }
   }
 
-  const getStatusText = (order: any) => {
+  const getStatusText = (order: {status: string, deliveryDate: string}) => {
     switch (order.status) {
       case 'delivered':
         return `Delivered on ${order.deliveryDate}`
@@ -146,10 +146,11 @@ export default function OrdersPage() {
                       <tr key={order.id} className="border-b border-gray-200 hover:bg-gray-50">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-4">
-                            <div className="relative w-16 h-16 bg-secondary rounded-lg overflow-hidden flex-shrink-0">
+                            <div className="relative w-16 h-16 bg-secondary rounded-lg overflow-hidden shrink-0">
                               <Image 
                                 src={order.image} 
                                 alt={order.title}
+                                loading='eager'
                                 fill
                                 className="object-cover"
                               />
@@ -169,7 +170,7 @@ export default function OrdersPage() {
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-start gap-2">
-                            <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
+                            <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${
                               order.status === 'delivered' ? 'bg-green-600' : 
                               order.status === 'cancelled' ? 'bg-red-600' : 
                               'bg-blue-600'

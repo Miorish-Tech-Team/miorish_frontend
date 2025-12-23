@@ -4,10 +4,13 @@ import Image from 'next/image'
 import { Search, User, Heart, ShoppingCart, BellIcon, Menu, X, ChevronDown } from 'lucide-react'
 import { useState } from 'react'
 import Link from 'next/link'
+import { useAuth } from '@/contexts/AuthContext'
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [searchCategory, setSearchCategory] = useState('All')
+  const [searchCategory] = useState('All')
+  // const user = typeof window !== 'undefined' && localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user') as string) : null
+  const {user} = useAuth();
 
   return (
     <nav className="bg-primary text-white">
@@ -17,13 +20,16 @@ export default function Navbar() {
         <div className="flex items-center justify-between lg:justify-center gap-4 lg:gap-16">
           {/* Logo */}
           <div className="flex items-center">
-            <Image
-              src="/images/MiorishLogo.png"
-              alt="Miorish Logo"
-              width={80}
-              height={80}
-              className="object-contain md:w-[100px] md:h-[100px] lg:w-[120px] lg:h-[120px]"
-            />
+            <Link href="/">
+              <Image
+                src="/images/MiorishLogo.png"
+                alt="Miorish Logo"
+                width={80}
+                loading='eager'
+                height={80}
+                className="object-contain md:w-[100px] md:h-[100px] lg:w-[120px] lg:h-[120px]"
+              />
+            </Link>
           </div>
 
           {/* Search Bar - Hidden on mobile */}
@@ -52,18 +58,19 @@ export default function Navbar() {
               <BellIcon size={20} className="md:w-5 md:h-5 lg:w-6 lg:h-6" />
               <span className='text-[10px] lg:text-xs'>Notification</span>
             </button>
-            {/* <Link href="/account">
-              <button className="hidden sm:flex flex-col items-center justify-center gap-1 hover:text-accent transition-colors cursor-pointer">
-                <User size={20} className="md:w-5 md:h-5 lg:w-6 lg:h-6" />
-                <span className='text-[10px] lg:text-xs'>Profile</span>
-              </button>
-            </Link> */}
-            <Link href="/auth/login">
-              <button className="hidden sm:flex flex-col items-center justify-center gap-1 hover:text-accent transition-colors cursor-pointer">
-                <User size={20} className="md:w-5 md:h-5 lg:w-6 lg:h-6" />
-                <span className='text-[10px] lg:text-xs'>Login</span>
-              </button>
-            </Link>
+            {user ? (
+              <Link href="/account/profile">
+                <button className="hidden sm:flex flex-col items-center justify-center gap-1 hover:text-accent transition-colors cursor-pointer">
+                  <User size={20} className="md:w-5 md:h-5 lg:w-6 lg:h-6" />
+                  <span className='text-[10px] lg:text-xs'>Profile</span>
+                </button>
+              </Link>) : (
+              <Link href="/auth/login">
+                <button className="hidden sm:flex flex-col items-center justify-center gap-1 hover:text-accent transition-colors cursor-pointer">
+                  <User size={20} className="md:w-5 md:h-5 lg:w-6 lg:h-6" />
+                  <span className='text-[10px] lg:text-xs'>Login</span>
+                </button>
+              </Link>)}
             <button className="hidden sm:flex flex-col items-center justify-center gap-1 hover:text-accent transition-colors cursor-pointer">
               <Heart size={20} className="md:w-5 md:h-5 lg:w-6 lg:h-6" />
               <span className='text-[10px] lg:text-xs'>Wishlist</span>
