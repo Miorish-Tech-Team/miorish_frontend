@@ -1,21 +1,27 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ChevronRight, Heart, Share2, Minus, Plus, Loader2, Star, ShoppingCart } from 'lucide-react'
 import ProductCard from '@/components/ProductCard'
-import { getProductById, getSimilarProducts, getProductReviews, type Product, Review, ReviewsResponse } from '@/services/productService'
+import { getProductById, getSimilarProducts, getProductReviews, type Product, Review } from '@/services/productService'
+import { useCart } from '@/contexts/CartContext'
+import { toast } from 'react-hot-toast'
+import CandleLoader from '@/components/CandleLoader'
 
 export default function ProductPage() {
   const params = useParams()
+  const router = useRouter()
   const productId = params.id as string
+  const { addToCart: addToCartContext } = useCart()
 
   const [product, setProduct] = useState<Product | null>(null)
   const [similarProducts, setSimilarProducts] = useState<Product[]>([])
   const [reviews, setReviews] = useState<Review[]>([])
   const [loading, setLoading] = useState(true)
+  const [addingToCart, setAddingToCart] = useState(false)
   const [quantity, setQuantity] = useState(1)
   const [selectedImage, setSelectedImage] = useState(0)
   const [activeTab, setActiveTab] = useState('description')
@@ -45,22 +51,45 @@ export default function ProductPage() {
     }
   }, [productId])
 
-  const handleAddToCart = () => {
-    console.log('Adding to cart:', { productId, quantity })
-    // Implement add to cart logic
+  const handleAddToCart = async () => {
+    if (!product) return
+    
+    try {
+      setAddingToCart(true)
+      await addToCartContext(Number(productId), quantity)
+    } catch (error: unknown) {
+      // Error already handled in context with toast
+      console.error('Add to cart error:', error)
+    } finally {
+      setAddingToCart(false)
+    }
+  }
+
+  const handleBuyNow = () => {
+    if (!product) return
+    
+    // Store buy now data in session storage for checkout
+    sessionStorage.setItem('buyNowData', JSON.stringify({
+      productId: Number(productId),
+      quantity,
+      product: {
+        id: product.id,
+        productName: product.productName,
+        coverImageUrl: product.coverImageUrl,
+        productPrice: product.productPrice,
+        productDiscountPrice: product.productDiscountPrice
+      }
+    }))
+    
+    router.push('/checkout?type=buynow')
   }
 
   const handleAddToWishlist = () => {
-    console.log('Adding to wishlist:', productId)
-    // Implement wishlist logic
+    toast('Wishlist feature coming soon!', { icon: 'ℹ️' })
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-secondary flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-accent" />
-      </div>
-    )
+    return <CandleLoader />
   }
 
   if (!product) {
@@ -233,14 +262,27 @@ export default function ProductPage() {
 
               <button 
                 onClick={handleAddToCart}
-                disabled={product.inventoryStatus === 'OutOfStock'}
+                disabled={product.inventoryStatus === 'OutOfStock' || addingToCart}
                 className="flex-1 bg-accent text-white py-2.5 md:py-3 px-4 md:px-6 rounded text-sm md:text-base font-medium hover:bg-opacity-90 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                <ShoppingCart size={18} />
-                Add to Cart
+                {addingToCart ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Adding...
+                  </>
+                ) : (
+                  <>
+                    <ShoppingCart size={18} />
+                    Add to Cart
+                  </>
+                )}
               </button>
 
-              <button className="sm:flex-none bg-accent text-white py-2.5 md:py-3 px-4 md:px-6 rounded text-sm md:text-base font-medium hover:bg-opacity-90 transition-colors">
+              <button 
+                onClick={handleBuyNow}
+                disabled={product.inventoryStatus === 'OutOfStock'}
+                className="sm:flex-none bg-accent text-white py-2.5 md:py-3 px-4 md:px-6 rounded text-sm md:text-base font-medium hover:bg-opacity-90 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+              >
                 Buy Now
               </button>
             </div>

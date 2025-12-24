@@ -5,12 +5,13 @@ import { Search, User, Heart, ShoppingCart, BellIcon, Menu, X, ChevronDown } fro
 import { useState } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
+import { useCart } from '@/contexts/CartContext'
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [searchCategory] = useState('All')
-  // const user = typeof window !== 'undefined' && localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user') as string) : null
-  const {user} = useAuth();
+  const { user } = useAuth()
+  const { cartItemCount } = useCart()
 
   return (
     <nav className="bg-primary text-white">
@@ -71,13 +72,20 @@ export default function Navbar() {
                   <span className='text-[10px] lg:text-xs'>Login</span>
                 </button>
               </Link>)}
-            <button className="hidden sm:flex flex-col items-center justify-center gap-1 hover:text-accent transition-colors cursor-pointer">
-              <Heart size={20} className="md:w-5 md:h-5 lg:w-6 lg:h-6" />
-              <span className='text-[10px] lg:text-xs'>Wishlist</span>
-            </button>
+            <Link href="/account/wishlist">
+              <button className="hidden sm:flex flex-col items-center justify-center gap-1 hover:text-accent transition-colors cursor-pointer">
+                <Heart size={20} className="md:w-5 md:h-5 lg:w-6 lg:h-6" />
+                <span className='text-[10px] lg:text-xs'>Wishlist</span>
+              </button>
+            </Link>
             <Link href="/cart">
-              <button className="flex flex-col items-center justify-center gap-1 hover:text-accent transition-colors cursor-pointer">
+              <button className="flex flex-col items-center justify-center gap-1 hover:text-accent transition-colors cursor-pointer relative">
                 <ShoppingCart size={20} className="md:w-5 md:h-5 lg:w-6 lg:h-6" />
+                {cartItemCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-accent text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                    {cartItemCount > 9 ? '9+' : cartItemCount}
+                  </span>
+                )}
                 <span className='text-[10px] lg:text-xs'>Cart</span>
               </button>
             </Link>

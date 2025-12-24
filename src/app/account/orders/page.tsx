@@ -1,84 +1,85 @@
 'use client'
 
-import { useState } from 'react'
-import Image from 'next/image'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import AccountSidebar from '@/components/AccountSidebar'
+import { OrderCardSkeleton } from '@/components/skeleton'
+import { getUserOrders, type Order } from '@/services/orderService'
+import { toast } from 'react-hot-toast'
 
 export default function OrdersPage() {
+  const [orders, setOrders] = useState<Order[]>([])
+  const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [filterStatus, setFilterStatus] = useState('All orders')
 
-  const orders = [
-    {
-      id: 1,
-      image: '/images/CardImage.jpg',
-      title: 'Mithril Candles',
-      description: 'Malt Peda Soy Wax Candle By Miorish',
-      price: 234.78,
-      quantity: 2,
-      status: 'delivered',
-      deliveryDate: '15th oct',
-      hasReview: true
-    },
-    {
-      id: 2,
-      image: '/images/CardImage.jpg',
-      title: 'Mithril Candles',
-      description: 'Malt Peda Soy Wax Candle By Miorish',
-      price: 234.78,
-      quantity: 2,
-      status: 'cancelled',
-      deliveryDate: '10th oct'
-    },
-    {
-      id: 3,
-      image: '/images/CardImage.jpg',
-      title: 'Mithril Candles',
-      description: 'Malt Peda Soy Wax Candle By Miorish',
-      price: 234.78,
-      quantity: 2,
-      status: 'arriving',
-      deliveryDate: 'today 11pm'
-    },
-    {
-      id: 4,
-      image: '/images/CardImage.jpg',
-      title: 'Mithril Candles',
-      description: 'Malt Peda Soy Wax Candle By Miorish',
-      price: 234.78,
-      quantity: 2,
-      status: 'delivered',
-      deliveryDate: '15th oct',
-      hasReview: true
+  useEffect(() => {
+    fetchOrders()
+  }, [])
+
+  const fetchOrders = async () => {
+    try {
+      setLoading(true)
+      const response = await getUserOrders()
+      setOrders(response.orders)
+    } catch (error) {
+      console.error('Error fetching orders:', error)
+      toast.error('Failed to load orders')
+    } finally {
+      setLoading(false)
     }
-  ]
+  }
 
   const getStatusColor = (status: string) => {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case 'delivered':
         return 'text-green-600'
       case 'cancelled':
         return 'text-red-600'
-      case 'arriving':
+      case 'processing':
+      case 'pending':
         return 'text-blue-600'
+      case 'shipped':
+        return 'text-yellow-600'
       default:
         return 'text-gray-600'
     }
   }
 
-  const getStatusText = (order: {status: string, deliveryDate: string}) => {
-    switch (order.status) {
+  const getStatusText = (order: Order) => {
+    const status = order.orderStatus.toLowerCase()
+    const date = new Date(order.updatedAt).toLocaleDateString('en-US', {
+      day: 'numeric',
+      month: 'short'
+    })
+    
+    switch (status) {
       case 'delivered':
-        return `Delivered on ${order.deliveryDate}`
+        return `Delivered on ${date}`
       case 'cancelled':
-        return `Canceled on ${order.deliveryDate}`
-      case 'arriving':
-        return `Arriving by ${order.deliveryDate}`
+        return `Canceled on ${date}`
+      case 'shipped':
+        return `Shipped on ${date}`
+      case 'processing':
+      case 'pending':
+        return `Processing since ${date}`
       default:
-        return ''
+        return `Status: ${order.orderStatus}`
     }
   }
+
+  // Filter orders based on search and status
+  const filteredOrders = orders.filter(order => {
+    const matchesSearch = order.uniqueOrderId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      order.orderItems?.some(item => 
+        item.productName.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    
+    const matchesStatus = filterStatus === 'All orders' || 
+      order.orderStatus.toLowerCase() === filterStatus.toLowerCase()
+    
+    return matchesSearch && matchesStatus
+  })
 
   return (
     <div className="min-h-screen bg-secondary">
@@ -111,7 +112,8 @@ export default function OrdersPage() {
                     <option>All orders</option>
                     <option>Delivered</option>
                     <option>Cancelled</option>
-                    <option>Arriving</option>
+                    <option>Processing</option>
+                    <option>Shipped</option>
                   </select>
                 </div>
 
@@ -119,79 +121,110 @@ export default function OrdersPage() {
                 <div className="relative">
                   <input
                     type="text"
-                    placeholder="Search your order here"
+                    placeholder="Search by order ID or product name"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full px-4 py-2 pr-24 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
+                    className="w-full px-4 py-2 pr-4 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
                   />
-                  <button className="absolute right-0 top-0 bottom-0 px-6 bg-accent text-white rounded-r text-sm font-medium hover:bg-opacity-90 transition-colors">
-                    Search Order
-                  </button>
                 </div>
               </div>
 
-              {/* Orders Table */}
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-100">
-                    <tr>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-dark">Product</th>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-dark">Price</th>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-dark">Quantity</th>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-dark">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {orders.map((order) => (
-                      <tr key={order.id} className="border-b border-gray-200 hover:bg-gray-50">
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-4">
-                            <div className="relative w-16 h-16 bg-secondary rounded-lg overflow-hidden shrink-0">
-                              <Image 
-                                src={order.image} 
-                                alt={order.title}
-                                loading='eager'
-                                fill
-                                className="object-cover"
-                              />
-                            </div>
-                            <div>
-                              <h3 className="font-semibold text-dark text-sm mb-1">
-                                {order.title} <span className="text-gray-500">- {order.description}</span>
-                              </h3>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="text-dark font-medium">Rs {order.price}</span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="text-dark">{order.quantity}</span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-start gap-2">
-                            <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${
-                              order.status === 'delivered' ? 'bg-green-600' : 
-                              order.status === 'cancelled' ? 'bg-red-600' : 
-                              'bg-blue-600'
-                            }`}></div>
-                            <div>
-                              <p className={`text-sm font-medium ${getStatusColor(order.status)}`}>
-                                {getStatusText(order)}
-                              </p>
-                              {order.hasReview && (
-                                <Link href="#" className="text-xs text-accent hover:underline">
-                                  Rate & Review →
-                                </Link>
-                              )}
-                            </div>
-                          </div>
-                        </td>
+              {/* Loading State */}
+              {loading ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-100">
+                      <tr>
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-dark">Order Details</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-dark">Total</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-dark">Items</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-dark">Status</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-dark">Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {[...Array(5)].map((_, i) => (
+                        <OrderCardSkeleton key={i} />
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : filteredOrders.length === 0 ? (
+                <div className="text-center py-20">
+                  <p className="text-gray-600 text-lg font-medium mb-2">No orders found</p>
+                  <p className="text-gray-500 text-sm mb-6">Start shopping to see your orders here</p>
+                  <Link href="/categories" className="inline-block px-6 py-2.5 bg-accent text-white rounded-lg hover:bg-opacity-90 transition-colors font-medium">
+                    Browse Products
+                  </Link>
+                </div>
+              ) : (
+                /* Orders Table */
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-100">
+                      <tr>
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-dark">Order Details</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-dark">Total</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-dark">Items</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-dark">Status</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold text-dark">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredOrders.map((order) => (
+                        <tr key={order.id} className="border-b border-gray-200 hover:bg-gray-50">
+                          <td className="px-6 py-4">
+                            <div>
+                              <p className="font-semibold text-dark text-sm mb-1">
+                                Order #{order.uniqueOrderId}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {new Date(order.createdAt).toLocaleDateString('en-US', {
+                                  day: 'numeric',
+                                  month: 'long',
+                                  year: 'numeric'
+                                })}
+                              </p>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="text-dark font-medium">₹{order.totalAmount.toFixed(2)}</span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="text-dark">{order.orderItems?.length || 0} item(s)</span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-start gap-2">
+                              <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${
+                                order.orderStatus.toLowerCase() === 'delivered' ? 'bg-green-600' : 
+                                order.orderStatus.toLowerCase() === 'cancelled' ? 'bg-red-600' :
+                                order.orderStatus.toLowerCase() === 'shipped' ? 'bg-yellow-600' :
+                                'bg-blue-600'
+                              }`}></div>
+                              <div>
+                                <p className={`text-sm font-medium ${getStatusColor(order.orderStatus)}`}>
+                                  {getStatusText(order)}
+                                </p>
+                                <p className="text-xs text-gray-500 mt-0.5">
+                                  Payment: {order.paymentStatus}
+                                </p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <Link 
+                              href={`/orders/${order.id}`}
+                              className="text-sm text-accent hover:underline font-medium"
+                            >
+                              View Details →
+                            </Link>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </main>
         </div>

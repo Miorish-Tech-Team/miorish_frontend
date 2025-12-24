@@ -4,6 +4,8 @@ import { useState, useEffect, useMemo } from 'react'
 import ProductCard from '@/components/ProductCard'
 import { ChevronRight, ChevronLeft, Search, Loader2 } from 'lucide-react'
 import Link from 'next/link'
+import CandleLoader from '@/components/CandleLoader'
+import { ProductCardSkeleton } from '@/components/skeleton'
 import { getAllProducts, searchProducts, type Product, type GetAllProductsParams } from '@/services/productService'
 import { getAllCategories, getAllSubCategories, type Category, type SubCategory } from '@/services/categoryService'
 
@@ -126,6 +128,7 @@ export default function CategoriesPage() {
     if (!loading) {
       fetchFilteredProducts()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearchQuery, selectedCategories, selectedSubCategories, selectedBrands, priceRange, sortBy, loading])
 
   // Get unique brands from all products
@@ -193,11 +196,7 @@ export default function CategoriesPage() {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-secondary flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-accent" />
-      </div>
-    )
+    return <CandleLoader />
   }
 
   return (
@@ -347,8 +346,10 @@ export default function CategoriesPage() {
 
             {/* Products Grid */}
             {searchLoading ? (
-              <div className="flex justify-center items-center py-20">
-                <Loader2 className="w-8 h-8 animate-spin text-accent" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6 mb-8">
+                {[...Array(6)].map((_, i) => (
+                  <ProductCardSkeleton key={i} />
+                ))}
               </div>
             ) : paginatedProducts.length === 0 ? (
               <div className="text-center py-20 bg-white rounded-lg shadow-sm">
@@ -405,7 +406,7 @@ export default function CategoriesPage() {
                         <button
                           key={pageNum}
                           onClick={() => setCurrentPage(pageNum)}
-                          className={`min-w-[32px] h-8 px-3 rounded-lg font-medium transition-all ${
+                          className={`min-w-8 h-8 px-3 rounded-lg font-medium transition-all ${
                             currentPage === pageNum
                               ? 'bg-accent text-white shadow-md'
                               : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 shadow-sm'
