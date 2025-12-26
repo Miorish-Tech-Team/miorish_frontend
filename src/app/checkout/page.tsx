@@ -7,12 +7,26 @@ import Image from 'next/image'
 import { ChevronRight, Loader2, MapPin, CreditCard, Check, Plus } from 'lucide-react'
 import { useCart } from '@/contexts/CartContext'
 import { getUserAddresses, type Address } from '@/services/addressService'
-import { buyNow, placeOrderFromCart } from '@/services/orderService'
+import { 
+  buyNow, 
+  placeOrderFromCart, 
+  createRazorpayOrderForBuyNow, 
+  createRazorpayOrderForCart,
+  verifyRazorpayBuyNowPayment,
+  verifyRazorpayCartPayment
+} from '@/services/orderService'
 import { toast } from 'react-hot-toast'
 import AddressFormModal from '@/components/AddressFormModal'
 import CandleLoader from '@/components/CandleLoader'
 
-type PaymentMethod = 'CreditCard' | 'DebitCard' | 'PayPal' | 'CashOnDelivery'
+type PaymentMethod = 'CashOnDelivery' | 'Razorpay'
+
+// Add interface for Razorpay
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
 
 function CheckoutForm() {
   const router = useRouter()
@@ -26,6 +40,9 @@ function CheckoutForm() {
   const [loading, setLoading] = useState(true)
   const [placing, setPlacing] = useState(false)
   const [showAddressManager, setShowAddressManager] = useState(false)
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
+  const [paymentStatus, setPaymentStatus] = useState<'success' | 'failure' | null>(null)
+  const [completedOrderId, setCompletedOrderId] = useState<number | null>(null)
 
   // Buy Now data from session storage
   const [buyNowData, setBuyNowData] = useState<{
@@ -119,28 +136,32 @@ function CheckoutForm() {
     try {
       setPlacing(true)
 
-      if (checkoutType === 'buynow' && buyNowData) {
-        // Place direct buy now order
-        const response = await buyNow({
-          productId: buyNowData.productId,
-          quantity: buyNowData.quantity,
-          addressId: selectedAddressId,
-          paymentMethod
-        })
+      // If COD, place order directly
+      if (paymentMethod === 'CashOnDelivery') {
+        if (checkoutType === 'buynow' && buyNowData) {
+          const response = await buyNow({
+            productId: buyNowData.productId,
+            quantity: buyNowData.quantity,
+            addressId: selectedAddressId,
+            paymentMethod: 'CashOnDelivery'
+          })
 
-        toast.success(`Order placed successfully! Order ID: ${response.orderId}`)
-        sessionStorage.removeItem('buyNowData')
-        router.push(`/orders/${response.order.id}`)
+          toast.success(`Order placed successfully! Order ID: ${response.orderId}`)
+          sessionStorage.removeItem('buyNowData')
+          router.push(`/orders/${response.order.id}`)
+        } else {
+          const response = await placeOrderFromCart({
+            addressId: selectedAddressId,
+            paymentMethod: 'CashOnDelivery'
+          })
+
+          toast.success(`Order placed successfully! Order ID: ${response.uniqueOrderId}`)
+          await refreshCart()
+          router.push(`/orders/${response.order.id}`)
+        }
       } else {
-        // Place order from cart
-        const response = await placeOrderFromCart({
-          addressId: selectedAddressId,
-          paymentMethod
-        })
-
-        toast.success(`Order placed successfully! Order ID: ${response.uniqueOrderId}`)
-        await refreshCart() // Refresh cart to clear items
-        router.push(`/orders/${response.order.id}`)
+        // Razorpay payment
+        await handleRazorpayPayment()
       }
     } catch (error: unknown) {
       console.error('Error placing order:', error)
@@ -149,6 +170,98 @@ function CheckoutForm() {
         : undefined
       toast.error(message || 'Failed to place order')
     } finally {
+      setPlacing(false)
+    }
+  }
+
+  const handleRazorpayPayment = async () => {
+    try {
+      let razorpayOrderData
+
+      // Create Razorpay order
+      if (checkoutType === 'buynow' && buyNowData) {
+        razorpayOrderData = await createRazorpayOrderForBuyNow({
+          productId: buyNowData.productId,
+          quantity: buyNowData.quantity,
+          addressId: selectedAddressId!
+        })
+      } else {
+        razorpayOrderData = await createRazorpayOrderForCart({
+          addressId: selectedAddressId!
+        })
+      }
+
+      // Load Razorpay script if not loaded
+      if (!window.Razorpay) {
+        const script = document.createElement('script')
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js'
+        script.async = true
+        document.body.appendChild(script)
+        await new Promise((resolve) => {
+          script.onload = resolve
+        })
+      }
+
+      // Configure Razorpay options
+      const options = {
+        key: razorpayOrderData.keyId,
+        amount: razorpayOrderData.amount,
+        currency: razorpayOrderData.currency,
+        name: 'Miorish',
+        description: checkoutType === 'buynow' ? 'Product Purchase' : 'Cart Checkout',
+        order_id: razorpayOrderData.orderId,
+        theme: {
+          color: '#D4B996' // Your website's accent color
+        },
+        handler: async (response: any) => {
+          // Payment successful
+          try {
+            let verifyResponse
+            
+            if (checkoutType === 'buynow' && buyNowData) {
+              verifyResponse = await verifyRazorpayBuyNowPayment({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                productId: buyNowData.productId,
+                quantity: buyNowData.quantity,
+                addressId: selectedAddressId!
+              })
+              sessionStorage.removeItem('buyNowData')
+            } else {
+              verifyResponse = await verifyRazorpayCartPayment({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                addressId: selectedAddressId!
+              })
+              await refreshCart()
+            }
+
+            setCompletedOrderId(verifyResponse.order.id)
+            setPaymentStatus('success')
+            setShowPaymentModal(true)
+            setPlacing(false)
+          } catch (error) {
+            console.error('Payment verification error:', error)
+            setPaymentStatus('failure')
+            setShowPaymentModal(true)
+            setPlacing(false)
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            setPlacing(false)
+            toast.error('Payment cancelled')
+          }
+        }
+      }
+
+      const razorpay = new window.Razorpay(options)
+      razorpay.open()
+    } catch (error) {
+      console.error('Razorpay error:', error)
+      toast.error('Failed to initiate payment')
       setPlacing(false)
     }
   }
@@ -294,7 +407,7 @@ function CheckoutForm() {
               </h2>
 
               <div className="space-y-3">
-                {(['CashOnDelivery', 'CreditCard', 'DebitCard', 'PayPal'] as PaymentMethod[]).map((method) => (
+                {(['CashOnDelivery', 'Razorpay'] as PaymentMethod[]).map((method) => (
                   <div
                     key={method}
                     className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
@@ -317,7 +430,7 @@ function CheckoutForm() {
                         )}
                       </div>
                       <span className="font-medium text-gray-900">
-                        {method === 'CashOnDelivery' ? 'Cash on Delivery' : method.replace(/([A-Z])/g, ' $1').trim()}
+                        {method === 'CashOnDelivery' ? 'Cash on Delivery (COD)' : 'Pay Online with Razorpay'}
                       </span>
                     </div>
                   </div>
@@ -405,6 +518,76 @@ function CheckoutForm() {
           onClose={() => setShowAddressManager(false)}
           onAddressAdded={handleAddressAdded}
         />
+
+        {/* Payment Status Modal */}
+        {showPaymentModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl p-8 max-w-md w-full text-center shadow-2xl">
+              {paymentStatus === 'success' ? (
+                <>
+                  <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Check size={40} className="text-green-600" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Payment Successful!</h2>
+                  <p className="text-gray-600 mb-6">
+                    Your payment was successful and your order has been placed.
+                  </p>
+                  <div className="flex flex-col gap-3">
+                    <button
+                      onClick={() => {
+                        setShowPaymentModal(false)
+                        router.push(`/orders/${completedOrderId}`)
+                      }}
+                      className="w-full bg-accent text-white px-6 py-3 rounded-lg font-medium hover:bg-opacity-90 transition-colors"
+                    >
+                      View Order
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowPaymentModal(false)
+                        router.push('/categories')
+                      }}
+                      className="w-full border-2 border-accent text-accent px-6 py-3 rounded-lg font-medium hover:bg-accent/5 transition-colors"
+                    >
+                      Continue Shopping
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg
+                      className="w-10 h-10 text-red-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Payment Failed!</h2>
+                  <p className="text-gray-600 mb-6">
+                    Unfortunately, your payment could not be processed. Please try again.
+                  </p>
+                  <button
+                    onClick={() => {
+                      setShowPaymentModal(false)
+                      setPaymentStatus(null)
+                    }}
+                    className="bg-accent text-white px-8 py-3 rounded-lg font-medium hover:bg-opacity-90 transition-colors"
+                  >
+                    Try Again
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

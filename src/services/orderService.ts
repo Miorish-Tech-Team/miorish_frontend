@@ -44,7 +44,7 @@ export interface Order {
   totalAmount: number
   addressId: number
   paymentStatus: 'Pending' | 'Completed' | 'Failed'
-  paymentMethod: 'CreditCard' | 'DebitCard' | 'PayPal' | 'CashOnDelivery'
+  paymentMethod: 'CashOnDelivery' | 'Razorpay'
   orderDate: string
   shippingDate?: string
   deliveryDate?: string
@@ -58,12 +58,12 @@ export interface BuyNowParams {
   productId: number
   quantity: number
   addressId: number
-  paymentMethod: 'CreditCard' | 'DebitCard' | 'PayPal' | 'CashOnDelivery'
+  paymentMethod: 'CashOnDelivery' | 'Razorpay'
 }
 
 export interface PlaceOrderFromCartParams {
   addressId: number
-  paymentMethod: 'CreditCard' | 'DebitCard' | 'PayPal' | 'CashOnDelivery' | 'Stripe'
+  paymentMethod: 'CashOnDelivery' | 'Razorpay'
 }
 
 export interface BuyNowResponse {
@@ -122,5 +122,55 @@ export const getUserOrders = async (status?: 'Pending' | 'Processing' | 'Shipped
  */
 export const getOrderDetails = async (orderId: number): Promise<GetOrderDetailsResponse> => {
   const response = await axios.get(`/user/my-orders/${orderId}`)
+  return response.data
+}
+
+/**
+ * Create Razorpay order for Buy Now
+ */
+export const createRazorpayOrderForBuyNow = async (params: {
+  productId: number
+  quantity: number
+  addressId: number
+}) => {
+  const response = await axios.post('/user/buy-now/create-order', params)
+  return response.data
+}
+
+/**
+ * Verify Razorpay payment for Buy Now
+ */
+export const verifyRazorpayBuyNowPayment = async (params: {
+  razorpay_order_id: string
+  razorpay_payment_id: string
+  razorpay_signature: string
+  productId: number
+  quantity: number
+  addressId: number
+}) => {
+  const response = await axios.post('/user/buy-now/verify', params)
+  return response.data
+}
+
+/**
+ * Create Razorpay order for Cart
+ */
+export const createRazorpayOrderForCart = async (params: {
+  addressId: number
+}) => {
+  const response = await axios.post('/user/cart/create-order', params)
+  return response.data
+}
+
+/**
+ * Verify Razorpay payment for Cart
+ */
+export const verifyRazorpayCartPayment = async (params: {
+  razorpay_order_id: string
+  razorpay_payment_id: string
+  razorpay_signature: string
+  addressId: number
+}) => {
+  const response = await axios.post('/user/cart/verify', params)
   return response.data
 }
