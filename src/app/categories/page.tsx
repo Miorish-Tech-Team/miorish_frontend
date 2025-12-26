@@ -2,29 +2,11 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import ProductCard from '@/components/ProductCard'
-import { ChevronRight, ChevronLeft, Search, Loader2 } from 'lucide-react'
+import { ChevronRight, ChevronLeft, Minus, Plus } from 'lucide-react'
 import Link from 'next/link'
 import CandleLoader from '@/components/CandleLoader'
-import { ProductCardSkeleton } from '@/components/skeleton'
-import { getAllProducts, searchProducts, type Product, type GetAllProductsParams } from '@/services/productService'
+import { getAllProducts, type Product, type GetAllProductsParams } from '@/services/productService'
 import { getAllCategories, getAllSubCategories, type Category, type SubCategory } from '@/services/categoryService'
-
-// Custom debounce hook
-function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value)
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value)
-    }, delay)
-
-    return () => {
-      clearTimeout(handler)
-    }
-  }, [value, delay])
-
-  return debouncedValue
-}
 
 export default function CategoriesPage() {
   // State management
@@ -32,22 +14,19 @@ export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([])
   const [subCategories, setSubCategories] = useState<SubCategory[]>([])
   const [loading, setLoading] = useState(true)
-  const [searchLoading, setSearchLoading] = useState(false)
   
   // Filter states
   const [selectedCategories, setSelectedCategories] = useState<number[]>([])
   const [selectedSubCategories, setSelectedSubCategories] = useState<number[]>([])
   const [selectedBrands, setSelectedBrands] = useState<string[]>([])
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000])
-  const [searchQuery, setSearchQuery] = useState('')
+  const [priceRange, setPriceRange] = useState<[number, number]>([100, 500])
+  const [tempPriceRange, setTempPriceRange] = useState<[number, number]>([100, 500])
   const [sortBy, setSortBy] = useState<GetAllProductsParams['sortBy']>('latest')
+  const [expandedCategories, setExpandedCategories] = useState<number[]>([])
   
   // Pagination
   const [currentPage, setCurrentPage] = useState(1)
   const productsPerPage = 12
-
-  // Debounce search query
-  const debouncedSearchQuery = useDebounce(searchQuery, 500)
 
   // Fetch initial data
   useEffect(() => {
@@ -77,51 +56,39 @@ export default function CategoriesPage() {
   useEffect(() => {
     const fetchFilteredProducts = async () => {
       try {
-        setSearchLoading(true)
-        
-        // If there's a search query, use search endpoint
-        if (debouncedSearchQuery.trim()) {
-          const result = await searchProducts(debouncedSearchQuery)
-          setProducts(result.products)
-        } else {
-          // Otherwise use filtered getAllProducts
-          const params: GetAllProductsParams = {
-            sortBy,
-            minPrice: priceRange[0],
-            maxPrice: priceRange[1]
-          }
-
-          // Add selected categories
-          if (selectedCategories.length > 0) {
-            const categoryNames = categories
-              .filter(cat => selectedCategories.includes(cat.id))
-              .map(cat => cat.categoryName)
-            params.categories = categoryNames.join(',')
-          }
-
-          // Add selected brands
-          if (selectedBrands.length > 0) {
-            params.brands = selectedBrands.join(',')
-          }
-
-          const result = await getAllProducts(params)
-          let filteredProducts = result.products
-
-          // Client-side filter for subcategories
-          if (selectedSubCategories.length > 0) {
-            filteredProducts = filteredProducts.filter(product =>
-              selectedSubCategories.includes(product.productSubCategoryId)
-            )
-          }
-
-          setProducts(filteredProducts)
+        const params: GetAllProductsParams = {
+          sortBy,
+          minPrice: priceRange[0],
+          maxPrice: priceRange[1]
         }
-        
+
+        // Add selected categories
+        if (selectedCategories.length > 0) {
+          const categoryNames = categories
+            .filter(cat => selectedCategories.includes(cat.id))
+            .map(cat => cat.categoryName)
+          params.categories = categoryNames.join(',')
+        }
+
+        // Add selected brands
+        if (selectedBrands.length > 0) {
+          params.brands = selectedBrands.join(',')
+        }
+
+        const result = await getAllProducts(params)
+        let filteredProducts = result.products
+
+        // Client-side filter for subcategories
+        if (selectedSubCategories.length > 0) {
+          filteredProducts = filteredProducts.filter(product =>
+            selectedSubCategories.includes(product.productSubCategoryId)
+          )
+        }
+
+        setProducts(filteredProducts)
         setCurrentPage(1) // Reset to first page on filter change
       } catch (error) {
         console.error('Error fetching products:', error)
-      } finally {
-        setSearchLoading(false)
       }
     }
 
@@ -129,7 +96,7 @@ export default function CategoriesPage() {
       fetchFilteredProducts()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearchQuery, selectedCategories, selectedSubCategories, selectedBrands, priceRange, sortBy, loading])
+  }, [selectedCategories, selectedSubCategories, selectedBrands, priceRange, sortBy, loading])
 
   // Get unique brands from all products
   const availableBrands = useMemo(() => {
@@ -186,12 +153,24 @@ export default function CategoriesPage() {
     )
   }
 
+  const toggleCategoryExpand = (categoryId: number) => {
+    setExpandedCategories(prev =>
+      prev.includes(categoryId)
+        ? prev.filter(id => id !== categoryId)
+        : [...prev, categoryId]
+    )
+  }
+
+  const applyFilters = () => {
+    setPriceRange(tempPriceRange)
+  }
+
   const clearFilters = () => {
     setSelectedCategories([])
     setSelectedSubCategories([])
     setSelectedBrands([])
-    setPriceRange([0, 10000])
-    setSearchQuery('')
+    setPriceRange([100, 500])
+    setTempPriceRange([100, 500])
     setSortBy('latest')
   }
 
@@ -209,116 +188,124 @@ export default function CategoriesPage() {
           <span className="text-gray-700 font-medium">Products</span>
         </div>
 
-        {/* Search Bar */}
-        <div className="mb-6">
-          <div className="relative max-w-2xl">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-            <input
-              type="text"
-              placeholder="Search products..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent text-gray-900 placeholder:text-gray-400"
-            />
-            {searchLoading && (
-              <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 animate-spin text-accent" size={20} />
-            )}
-          </div>
-        </div>
-
-        <div className="flex flex-col lg:flex-row gap-6">
-          {/* Sidebar */}
-          <aside className="w-full lg:w-64 shrink-0 space-y-4">
-            {/* Categories */}
-            <div className="bg-white rounded-lg p-4 shadow-sm">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Categories</h3>
-              <div className="space-y-2 max-h-96 overflow-y-auto">
-                {categories.map((category) => (
-                  <div key={category.id}>
-                    <label className="flex items-center gap-2 cursor-pointer py-1 hover:bg-gray-50 px-2 -mx-2 rounded transition-colors">
-                      <input
-                        type="checkbox"
-                        checked={selectedCategories.includes(category.id)}
-                        onChange={() => toggleCategory(category.id)}
-                        className="w-4 h-4 accent-accent rounded cursor-pointer"
-                      />
-                      <span className="text-sm text-gray-700 flex-1 font-medium">
-                        {category.categoryName} <span className="text-gray-500 font-normal">({category.categoryProductCount})</span>
-                      </span>
-                    </label>
-                    {/* Subcategories */}
-                    {selectedCategories.includes(category.id) && subcategoriesByCategory[category.id] && (
-                      <div className="ml-6 mt-1 space-y-1">
-                        {subcategoriesByCategory[category.id].map((sub) => (
-                          <label key={sub.id} className="flex items-center gap-2 cursor-pointer py-1 hover:bg-gray-50 px-2 -mx-2 rounded transition-colors">
-                            <input
-                              type="checkbox"
-                              checked={selectedSubCategories.includes(sub.id)}
-                              onChange={() => toggleSubCategory(sub.id)}
-                              className="w-4 h-4 accent-accent rounded cursor-pointer"
-                            />
-                            <span className="text-xs text-gray-600">
-                              {sub.subCategoryName} <span className="text-gray-400">({sub.subCategoryProductCount})</span>
-                            </span>
-                          </label>
-                        ))}
+        <div className="flex flex-col lg:flex-row gap-6">\n          {/* Sidebar */}
+          <aside className="w-full lg:w-64 shrink-0">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+              {/* Categories */}
+              <div className="border-b border-gray-200">
+                <h3 className="text-base font-semibold text-gray-900 px-4 py-3 bg-gray-50">Categories</h3>
+                <div className="px-4 py-3 space-y-1 max-h-80 overflow-y-auto">
+                  {categories.map((category) => (
+                    <div key={category.id}>
+                      <div className="flex items-center justify-between py-1.5">
+                        <button
+                          onClick={() => toggleCategory(category.id)}
+                          className={`text-sm hover:text-accent transition-colors font-normal flex-1 text-left ${
+                            selectedCategories.includes(category.id) ? 'text-accent font-medium' : 'text-gray-700'
+                          }`}
+                        >
+                          {category.categoryName}
+                        </button>
+                        <button
+                          onClick={() => toggleCategoryExpand(category.id)}
+                          className="p-1 hover:bg-gray-100 rounded transition-colors"
+                        >
+                          {expandedCategories.includes(category.id) ? (
+                            <Minus size={16} className="text-gray-600" />
+                          ) : (
+                            <Plus size={16} className="text-gray-600" />
+                          )}
+                        </button>
                       </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Brands */}
-            {availableBrands.length > 0 && (
-              <div className="bg-white rounded-lg p-4 shadow-sm">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Brands</h3>
-                <div className="space-y-2 max-h-64 overflow-y-auto">
-                  {availableBrands.map((brand) => (
-                    <label key={brand} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 py-1 px-2 -mx-2 rounded transition-colors">
-                      <input
-                        type="checkbox"
-                        checked={selectedBrands.includes(brand)}
-                        onChange={() => toggleBrand(brand)}
-                        className="w-4 h-4 accent-accent rounded cursor-pointer"
-                      />
-                      <span className="text-sm text-gray-700 font-medium">{brand}</span>
-                    </label>
+                      {/* Subcategories */}
+                      {expandedCategories.includes(category.id) && subcategoriesByCategory[category.id] && (
+                        <div className="ml-4 mt-1 space-y-1 pb-2">
+                          {subcategoriesByCategory[category.id].map((sub) => (
+                            <button
+                              key={sub.id}
+                              onClick={() => toggleSubCategory(sub.id)}
+                              className={`block text-xs py-1 hover:text-accent transition-colors ${
+                                selectedSubCategories.includes(sub.id) ? 'text-accent font-medium' : 'text-gray-600'
+                              }`}
+                            >
+                              {sub.subCategoryName}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   ))}
                 </div>
               </div>
-            )}
 
-            {/* Price Range */}
-            <div className="bg-white rounded-lg p-4 shadow-sm">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Price Range</h3>
-              <div className="space-y-4">
-                <div className="flex gap-2">
-                  <input
-                    type="number"
-                    placeholder="Min"
-                    value={priceRange[0]}
-                    onChange={(e) => setPriceRange([parseInt(e.target.value) || 0, priceRange[1]])}
-                    className="w-full px-3 py-2 bg-white border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-accent text-gray-900 placeholder:text-gray-400"
-                  />
-                  <input
-                    type="number"
-                    placeholder="Max"
-                    value={priceRange[1]}
-                    onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value) || 10000])}
-                    className="w-full px-3 py-2 bg-white border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-accent text-gray-900 placeholder:text-gray-400"
-                  />
+              {/* Brands */}
+              {availableBrands.length > 0 && (
+                <div className="border-b border-gray-200">
+                  <h3 className="text-base font-semibold text-gray-900 px-4 py-3 bg-gray-50">Brands</h3>
+                  <div className="px-4 py-3 space-y-2 max-h-64 overflow-y-auto">
+                    {availableBrands.map((brand) => (
+                      <button
+                        key={brand}
+                        onClick={() => toggleBrand(brand)}
+                        className={`block text-sm hover:text-accent transition-colors ${
+                          selectedBrands.includes(brand) ? 'text-accent font-medium' : 'text-gray-700'
+                        }`}
+                      >
+                        {brand}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Price Range */}
+              <div className="border-b border-gray-200">
+                <h3 className="text-base font-semibold text-gray-900 px-4 py-3 bg-gray-50">Price</h3>
+                <div className="px-4 py-4 space-y-4">
+                  {/* Range Slider */}
+                  <div className="relative pt-1">
+                    <input
+                      type="range"
+                      min="0"
+                      max="10000"
+                      step="10"
+                      value={tempPriceRange[0]}
+                      onChange={(e) => setTempPriceRange([parseInt(e.target.value), tempPriceRange[1]])}
+                      className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-accent"
+                    />
+                    <input
+                      type="range"
+                      min="0"
+                      max="10000"
+                      step="10"
+                      value={tempPriceRange[1]}
+                      onChange={(e) => setTempPriceRange([tempPriceRange[0], parseInt(e.target.value)])}
+                      className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-accent mt-2"
+                    />
+                  </div>
+                  {/* Price Display */}
+                  <div className="text-center text-sm text-gray-700 font-medium">
+                    ${tempPriceRange[0]} - ${tempPriceRange[1]}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Clear Filters */}
-            <button
-              onClick={clearFilters}
-              className="w-full px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium border border-gray-200"
-            >
-              Clear All Filters
-            </button>
+              {/* Action Buttons */}
+              <div className="p-4 flex gap-3">
+                <button
+                  onClick={applyFilters}
+                  className="flex-1 px-4 py-2 bg-accent text-white rounded-lg hover:bg-opacity-90 transition-colors font-medium text-sm"
+                >
+                  Apply
+                </button>
+                <button
+                  onClick={clearFilters}
+                  className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium text-sm"
+                >
+                  Clear
+                </button>
+              </div>
+            </div>
           </aside>
 
           {/* Main Content */}
@@ -345,7 +332,7 @@ export default function CategoriesPage() {
             </div>
 
             {/* Products Grid */}
-            {searchLoading ? (
+            {/* {searchLoading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6 mb-8">
                 {[...Array(6)].map((_, i) => (
                   <ProductCardSkeleton key={i} />
@@ -362,7 +349,7 @@ export default function CategoriesPage() {
                   Clear All Filters
                 </button>
               </div>
-            ) : (
+            ) : ( */}
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6 mb-8">
                   {paginatedProducts.map((product) => (
@@ -370,8 +357,8 @@ export default function CategoriesPage() {
                       key={product.id}
                       productId={product.id}
                       image={product.coverImageUrl}
-                      title={product.category?.categoryName || ''}
-                      description={product.productName}
+                      title={product.productName || ''}
+                      description={product.productDescription}
                       originalPrice={product.productPrice}
                       discountedPrice={product.productDiscountPrice || product.productPrice}
                       discount={product.productDiscountPercentage || 0}
@@ -427,7 +414,7 @@ export default function CategoriesPage() {
                   </div>
                 )}
               </>
-            )}
+            {/* )} */}
           </main>
         </div>
       </div>
