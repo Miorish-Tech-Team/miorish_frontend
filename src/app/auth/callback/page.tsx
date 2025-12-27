@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { profileAPI } from '@/services/profileService'
+import toast from 'react-hot-toast'
 
 export default function AuthCallbackPage() {
   const router = useRouter()
@@ -14,38 +15,23 @@ export default function AuthCallbackPage() {
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        // Check if token_middleware cookie exists (set by backend after Google OAuth)
-        const getCookie = (name: string) => {
-          const value = `; ${document.cookie}`
-          const parts = value.split(`; ${name}=`)
-          if (parts.length === 2) return parts.pop()?.split(';').shift()
-          return null
-        }
-
-        const token = getCookie('token_middleware')
-        
-        if (!token) {
-          setError('No authentication token found')
-          setTimeout(() => router.push('/auth/login'), 2000)
-          return
-        }
-
-        // Store token in localStorage for consistent auth flow
-        localStorage.setItem('token', token)
-
-        // Fetch user profile using the token
+        // Token is now stored in httpOnly cookie, no need to access it manually
+        // Just fetch user profile - the cookie will be sent automatically
         const response = await profileAPI.getProfile()
         
         if (response.success && response.user) {
-          login(response.user, token)
+          login(response.user)
+          toast.success('Successfully signed in!')
           router.push('/')
         } else {
           setError('Failed to fetch user profile')
+          toast.error('Authentication failed')
           setTimeout(() => router.push('/auth/login'), 2000)
         }
       } catch (err) {
         console.error('Auth callback error:', err)
         setError('Authentication failed. Redirecting to login...')
+        toast.error('Authentication failed')
         setTimeout(() => router.push('/auth/login'), 2000)
       }
     }

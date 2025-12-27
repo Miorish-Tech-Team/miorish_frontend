@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import ProductCard from '@/components/ProductCard'
+import ProductCard from '@/components/card/ProductCard'
 import { ChevronLeft, ChevronRight, Search as SearchIcon } from 'lucide-react'
 import { searchProducts, type Product } from '@/services/productService'
 import CandleLoader from '@/components/CandleLoader'
@@ -76,7 +76,7 @@ function SearchResults() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-20 py-8">
         {/* Search Header */}
         <div className="mb-8">
           <div className="flex items-center gap-2 text-gray-600 mb-4">
@@ -98,7 +98,7 @@ function SearchResults() {
         {/* Products Grid */}
         {currentProducts.length > 0 ? (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
               {currentProducts.map((product) => (
                 <ProductCard 
                   key={product.id} 

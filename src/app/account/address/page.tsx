@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Plus, Loader2, Pencil, Trash2, Check } from 'lucide-react'
-import AccountSidebar from '@/components/AccountSidebar'
+import AccountSidebar from '@/components/layout/AccountSidebar'
 import { AddressCardSkeleton } from '@/components/skeleton'
 import { 
   getUserAddresses, 

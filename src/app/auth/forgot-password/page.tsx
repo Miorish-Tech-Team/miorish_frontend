@@ -5,26 +5,26 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Mail, ArrowLeft, CheckCircle, Loader2 } from 'lucide-react'
 import { authAPI } from '@/services/authService'
+import toast from 'react-hot-toast'
 
 export default function ForgotPasswordPage() {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [otp, setOtp] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
   const [step, setStep] = useState<'email' | 'otp' | 'success'>('email')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError('')
     setIsLoading(true)
 
     try {
       await authAPI.resetPasswordOtp({ email })
+      toast.success('Reset code sent to your email!')
       setStep('otp')
     } catch (err) {
       const error = err as { response?: { data?: { message?: string } } }
-      setError(error.response?.data?.message || 'Failed to send reset code')
+      toast.error(error.response?.data?.message || 'Failed to send reset code')
     } finally {
       setIsLoading(false)
     }
@@ -32,19 +32,19 @@ export default function ForgotPasswordPage() {
 
   const handleOtpVerify = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError('')
     setIsLoading(true)
 
     try {
       await authAPI.verifyResetOtp({ verificationCode: otp })
       setStep('success')
+      toast.success('Code verified! Redirecting...')
       // Redirect to reset password page
       setTimeout(() => {
         router.push(`/auth/reset-password?email=${encodeURIComponent(email)}`)
       }, 1500)
     } catch (err) {
       const error = err as { response?: { data?: { message?: string } } }
-      setError(error.response?.data?.message || 'Invalid or expired code')
+      toast.error(error.response?.data?.message || 'Invalid or expired code')
     } finally {
       setIsLoading(false)
     }
@@ -63,13 +63,6 @@ export default function ForgotPasswordPage() {
             <ArrowLeft size={16} />
             Back to Login
           </Link>
-
-          {/* Error Message */}
-          {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-600">{error}</p>
-            </div>
-          )}
 
           {step === 'email' ? (
             <>

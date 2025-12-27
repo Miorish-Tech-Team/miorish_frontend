@@ -9,16 +9,10 @@ const api = axios.create({
   },
 })
 
-// Request interceptor to add token if available
+// Request interceptor - token is now sent via cookies automatically
 api.interceptors.request.use(
   (config) => {
-    // Only access localStorage in browser environment
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('token')
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`
-      }
-    }
+    // No need to manually attach token - cookies are sent automatically with withCredentials: true
     return config
   },
   (error) => {
@@ -30,11 +24,23 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Only redirect to login for protected routes, not for public API calls
     if (error.response?.status === 401) {
-      // Unauthorized - clear token and redirect to login
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('token')
-        localStorage.removeItem('user')
+      const url = error.config?.url || ''
+      
+      // Don't redirect for public endpoints (general routes)
+      const isPublicEndpoint = url.includes('/general/') || 
+                              url.includes('/auth/') ||
+                              url.includes('/product/')
+      
+      // Don't redirect if already on auth pages to prevent infinite loops
+      const isOnAuthPage = typeof window !== 'undefined' && 
+                          (window.location.pathname.startsWith('/auth/') ||
+                           window.location.pathname === '/auth/login' ||
+                           window.location.pathname === '/auth/register')
+      
+      if (!isPublicEndpoint && !isOnAuthPage && typeof window !== 'undefined') {
+        // Only redirect if we're trying to access protected user endpoints
         window.location.href = '/auth/login'
       }
     }

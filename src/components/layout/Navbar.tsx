@@ -9,7 +9,8 @@ import { useCart } from '@/contexts/CartContext'
 import { getAllCategories, Category } from '@/services/categoryService'
 import { getSearchSuggestions } from '@/services/productService'
 import { useRouter } from 'next/navigation'
-
+import AnnouncementBar from './AnnouncementBar'
+import { MdOutlineShoppingBag } from "react-icons/md";
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -151,19 +152,20 @@ export default function Navbar() {
   return (
     <nav className="bg-primary text-white">
       {/* Top Bar */}
-      <div className='w-full h-4 md:h-6 bg-accent'></div>
+      <AnnouncementBar />
       <div className="container mx-auto px-4 py-2 md:py-1">
-        <div className="flex items-center justify-between lg:justify-center gap-4 lg:gap-16">
+        <div className="flex items-center justify-between lg:justify-center gap-2 md:gap-4 lg:gap-16">
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/">
               <Image
                 src="/images/MiorishLogo.png"
                 alt="Miorish Logo"
-                width={80}
+                width={100}
+                height={100}
                 loading='eager'
-                height={80}
-                className="object-contain md:w-[100px] md:h-[100px] lg:w-[120px] lg:h-[120px]"
+                className="object-contain w-20 h-20 md:w-28 md:h-28 lg:w-32 lg:h-32"
+                unoptimized
               />
             </Link>
           </div>
@@ -177,12 +179,12 @@ export default function Navbar() {
                   onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
                 >
                   <span className="max-w-[100px] truncate">{searchCategory}</span>
-                  <ChevronDown size={16} />
+                  <ChevronDown size={16} className='cursor-pointer'/>
                 </button>
                 
                 {/* Category Dropdown */}
                 {showCategoryDropdown && (
-                  <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
+                  <div className="absolute text-gray-900 top-full left-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
                     <button
                       className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors"
                       onClick={() => handleCategorySelect('All')}
@@ -204,7 +206,7 @@ export default function Navbar() {
               
               <input
                 type="text"
-                placeholder="Search"
+                placeholder="Find your signature fragrance..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch(searchQuery)}
@@ -212,7 +214,7 @@ export default function Navbar() {
               />
               
               <button 
-                className="bg-accent text-white px-6 py-2.5 text-sm hover:bg-opacity-90 transition-colors"
+                className="bg-accent text-white px-6 py-2.5 text-sm font-bold cursor-pointer  hover:bg-opacity-90 transition-colors"
                 onClick={() => handleSearch(searchQuery)}
               >
                 Search
@@ -221,7 +223,7 @@ export default function Navbar() {
             
             {/* Search Suggestions Dropdown */}
             {showSuggestions && (searchQuery.trim().length >= 2) && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
+              <div className="absolute top-full left-0  text-gray-900 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
                 {isLoadingSuggestions ? (
                   <div className="px-4 py-3 text-sm text-gray-500">Loading suggestions...</div>
                 ) : suggestions.length > 0 ? (
@@ -231,7 +233,6 @@ export default function Navbar() {
                       className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0 flex items-center gap-2"
                       onClick={() => handleSuggestionClick(suggestion)}
                     >
-                      <Search size={14} className="text-gray-400" />
                       <span>{suggestion}</span>
                     </button>
                   ))
@@ -242,34 +243,37 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Icons */}
-          <div className="flex items-center gap-2 md:gap-4 lg:gap-6">
-            <button className="hidden md:flex flex-col items-center justify-center gap-1 hover:text-accent transition-colors cursor-pointer">
-              <BellIcon size={20} className="md:w-5 md:h-5 lg:w-6 lg:h-6" />
-              <span className='text-[10px] lg:text-xs'>Notification</span>
+          {/* Icons - Desktop Only */}
+          <div className="hidden lg:flex items-center gap-4 lg:gap-6">
+            <Link href="/account/orders">
+            <button className="flex flex-col items-center justify-center gap-1 hover:text-accent transition-colors cursor-pointer">
+              <MdOutlineShoppingBag size={20} className="lg:w-6 lg:h-6" />
+              <span className='text-[10px] lg:text-xs'>My Orders</span>
             </button>
+            </Link>
+            
             {user ? (
               <Link href="/account/profile">
-                <button className="hidden sm:flex flex-col items-center justify-center gap-1 hover:text-accent transition-colors cursor-pointer">
-                  <User size={20} className="md:w-5 md:h-5 lg:w-6 lg:h-6" />
+                <button className="flex flex-col items-center justify-center gap-1 hover:text-accent transition-colors cursor-pointer">
+                  <User size={20} className="lg:w-6 lg:h-6" />
                   <span className='text-[10px] lg:text-xs'>Profile</span>
                 </button>
               </Link>) : (
               <Link href="/auth/login">
-                <button className="hidden sm:flex flex-col items-center justify-center gap-1 hover:text-accent transition-colors cursor-pointer">
-                  <User size={20} className="md:w-5 md:h-5 lg:w-6 lg:h-6" />
+                <button className="flex flex-col items-center justify-center gap-1 hover:text-accent transition-colors cursor-pointer">
+                  <User size={20} className="lg:w-6 lg:h-6" />
                   <span className='text-[10px] lg:text-xs'>Login</span>
                 </button>
               </Link>)}
             <Link href="/account/wishlist">
-              <button className="hidden sm:flex flex-col items-center justify-center gap-1 hover:text-accent transition-colors cursor-pointer">
-                <Heart size={20} className="md:w-5 md:h-5 lg:w-6 lg:h-6" />
+              <button className="flex flex-col items-center justify-center gap-1 hover:text-accent transition-colors cursor-pointer">
+                <Heart size={20} className="lg:w-6 lg:h-6" />
                 <span className='text-[10px] lg:text-xs'>Wishlist</span>
               </button>
             </Link>
-            <Link href="/cart">
+            <Link href="/account/cart">
               <button className="flex flex-col items-center justify-center gap-1 hover:text-accent transition-colors cursor-pointer relative">
-                <ShoppingCart size={20} className="md:w-5 md:h-5 lg:w-6 lg:h-6" />
+                <ShoppingCart size={20} className="lg:w-6 lg:h-6" />
                 {cartItemCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-accent text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
                     {cartItemCount > 9 ? '9+' : cartItemCount}
@@ -278,82 +282,155 @@ export default function Navbar() {
                 <span className='text-[10px] lg:text-xs'>Cart</span>
               </button>
             </Link>
-            {/* Mobile Menu Button */}
-            <button
-              className="lg:hidden p-2 hover:text-accent transition-colors"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
           </div>
-        </div>
-      </div>
-
-      {/* Mobile Search Bar */}
-      <div className="lg:hidden px-4 pb-3 relative" ref={mobileSuggestionsRef}>
-        <div className="flex w-full bg-secondary rounded-xl overflow-hidden">
-          <input
-            type="text"
-            placeholder="Search"
-            value={mobileSearchQuery}
-            onChange={(e) => setMobileSearchQuery(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleMobileSearch(mobileSearchQuery)}
-            className="w-full px-4 py-2 text-dark text-sm focus:outline-none"
-          />
-          <button 
-            className="bg-accent text-white px-4 py-2 text-sm"
-            onClick={() => handleMobileSearch(mobileSearchQuery)}
+          
+          {/* Mobile Menu Button */}
+          <button
+            className="lg:hidden p-2 hover:text-accent transition-colors"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
-            <Search size={16} />
+            <Menu size={24} />
           </button>
         </div>
-        
-        {/* Mobile Search Suggestions Dropdown */}
-        {showMobileSuggestions && (mobileSearchQuery.trim().length >= 2) && (
-          <div className="absolute top-full left-4 right-4 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
-            {mobileSuggestions.length > 0 ? (
-              mobileSuggestions.map((suggestion, index) => (
-                <button
-                  key={index}
-                  className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0 flex items-center gap-2"
-                  onClick={() => handleMobileSuggestionClick(suggestion)}
-                >
-                  <Search size={14} className="text-gray-400" />
-                  <span>{suggestion}</span>
-                </button>
-              ))
-            ) : (
-              <div className="px-4 py-3 text-sm text-gray-500">No suggestions found</div>
-            )}
-          </div>
-        )}
       </div>
 
-
-
-      {/* Mobile Menu */}
+      {/* Mobile Sidebar Menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-white text-dark border-t border-gray-200">
-          <div className="container mx-auto px-4">
-            <ul className="flex flex-col py-4 text-sm space-y-3">
-              <li className="py-2 border-b border-gray-100">
-                <a href="#" className="hover:text-accent transition-colors" onClick={() => setMobileMenuOpen(false)}>All Categories</a>
-              </li>
-              <li className="py-2 border-b border-gray-100">
-                <a href="#" className="hover:text-accent transition-colors" onClick={() => setMobileMenuOpen(false)}>Puja & Rituals</a>
-              </li>
-              <li className="py-2 border-b border-gray-100">
-                <a href="#" className="hover:text-accent transition-colors" onClick={() => setMobileMenuOpen(false)}>Gifts & Items</a>
-              </li>
-              <li className="py-2 border-b border-gray-100">
-                <a href="#" className="hover:text-accent transition-colors" onClick={() => setMobileMenuOpen(false)}>Luxury Collection</a>
-              </li>
-              <li className="py-2">
-                <a href="#" className="hover:text-accent transition-colors" onClick={() => setMobileMenuOpen(false)}>New Arrivals</a>
-              </li>
-            </ul>
+        <>
+          {/* Backdrop */}
+          <div 
+            className="lg:hidden fixed inset-0 backdrop-blur-sm bg-black/50 z-40 animate-fadeIn"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          
+          {/* Sliding Sidebar Panel */}
+          <div className="lg:hidden fixed inset-y-0 right-0 w-[90%] bg-white z-50 shadow-2xl animate-slideInRight overflow-y-auto text-dark">
+            {/* Header */}
+            <div className="sticky top-0 bg-primary text-white px-6 py-4 flex items-center justify-between z-10">
+              <h2 className="text-lg font-bold">Menu</h2>
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2 hover:bg-white/10 rounded-full transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* Search Section */}
+            <div className="px-4 py-4 border-b border-gray-200">
+              <div className="flex bg-gray-100 rounded-lg overflow-hidden">
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  value={mobileSearchQuery}
+                  onChange={(e) => setMobileSearchQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleMobileSearch(mobileSearchQuery)
+                      setMobileMenuOpen(false)
+                    }
+                  }}
+                  className="flex-1 px-4 py-3 bg-transparent text-dark text-sm placeholder:text-gray-400 focus:outline-none min-w-0"
+                />
+                <button 
+                  className="bg-[#B8994B] text-white w-12 py-3 hover:opacity-90 transition-all flex items-center justify-center shrink-0"
+                  onClick={() => {
+                    handleMobileSearch(mobileSearchQuery)
+                    setMobileMenuOpen(false)
+                  }}
+                >
+                  <Search size={18} className="text-white" />
+                </button>
+              </div>
+            </div>
+
+            {/* User Section */}
+            <div className="px-6 py-4 border-b border-gray-200 bg-secondary/30">
+              {user ? (
+                <Link href="/account/profile" onClick={() => setMobileMenuOpen(false)}>
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-accent flex items-center justify-center">
+                      <User size={24} className="text-white" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-dark">{user.fullName || 'User'}</p>
+                      <p className="text-xs text-gray-600">View Profile</p>
+                    </div>
+                  </div>
+                </Link>
+              ) : (
+                <Link href="/auth/login" onClick={() => setMobileMenuOpen(false)}>
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-accent flex items-center justify-center">
+                      <User size={24} className="text-white" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-dark">Login / Sign Up</p>
+                      <p className="text-xs text-gray-600">Access your account</p>
+                    </div>
+                  </div>
+                </Link>
+              )}
+            </div>
+
+            {/* Quick Links */}
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-xs font-semibold text-gray-500 uppercase mb-3">Quick Links</h3>
+              <div className="space-y-3">
+                <Link href="/account/orders" onClick={() => setMobileMenuOpen(false)}>
+                  <div className="flex items-center gap-3 py-2 hover:text-accent transition-colors">
+                    <MdOutlineShoppingBag size={20} />
+                    <span className="text-sm font-medium">My Orders</span>
+                  </div>
+                </Link>
+                <Link href="/account/wishlist" onClick={() => setMobileMenuOpen(false)}>
+                  <div className="flex items-center gap-3 py-2 hover:text-accent transition-colors">
+                    <Heart size={20} />
+                    <span className="text-sm font-medium">Wishlist</span>
+                  </div>
+                </Link>
+                <Link href="/account/cart" onClick={() => setMobileMenuOpen(false)}>
+                  <div className="flex items-center gap-3 py-2 hover:text-accent transition-colors relative">
+                    <ShoppingCart size={20} />
+                    <span className="text-sm font-medium">Cart</span>
+                    {cartItemCount > 0 && (
+                      <span className="ml-auto bg-accent text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
+                        {cartItemCount > 9 ? '9+' : cartItemCount}
+                      </span>
+                    )}
+                  </div>
+                </Link>
+              </div>
+            </div>
+
+            {/* Categories */}
+            <div className="px-6 py-4">
+              <h3 className="text-xs font-semibold text-gray-500 uppercase mb-3">Categories</h3>
+              <ul className="space-y-3">
+                <li>
+                  <Link 
+                    href="/categories" 
+                    className="block py-2 text-sm font-medium hover:text-accent transition-colors" 
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    All Categories
+                  </Link>
+                </li>
+                {categories.map((category) => (
+                  <li key={category.id}>
+                    <Link
+                      href={`/categories?category=${encodeURIComponent(category.categoryName)}`}
+                      className="block py-2 text-sm hover:text-accent transition-colors"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {category.categoryName}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
-        </div>
+        </>
       )}
     </nav>
   )

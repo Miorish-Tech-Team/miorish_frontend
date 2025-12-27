@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import AccountSidebar from '@/components/AccountSidebar'
+import AccountSidebar from '@/components/layout/AccountSidebar'
 import { OrderCardSkeleton } from '@/components/skeleton'
 import { getUserOrders, type Order } from '@/services/orderService'
 import { toast } from 'react-hot-toast'

@@ -76,10 +76,7 @@ export const authAPI = {
       console.log('Calling signin API with:', { ...data, password: '***' })
       const response = await api.post('/auth/signin', data)
       console.log('Signin response data:', response.data)
-      if (response.data.token && typeof window !== 'undefined') {
-        localStorage.setItem('token', response.data.token)
-        localStorage.setItem('user', JSON.stringify(response.data.user))
-      }
+      // Token is now handled by httpOnly cookies on the backend
       return response.data
     } catch (error) {
       console.error('Signin API error:', error)
@@ -93,10 +90,7 @@ export const authAPI = {
       console.log('Calling verify2FA API')
       const response = await api.patch('/auth/verify-two-factor', data)
       console.log('Verify 2FA response:', response.data)
-      if (response.data.token && typeof window !== 'undefined') {
-        localStorage.setItem('token', response.data.token)
-        localStorage.setItem('user', JSON.stringify(response.data.user))
-      }
+      // Token is now handled by httpOnly cookies on the backend
       return response.data
     } catch (error) {
       console.error('Verify 2FA error:', error)
@@ -205,34 +199,37 @@ export const authAPI = {
     try {
       console.log('Calling logout API')
       const response = await api.post('/auth/logout')
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('token')
-        localStorage.removeItem('user')
-      }
+      // Cookie is cleared by the backend
       console.log('Logout response:', response.data)
       return response.data
     } catch (error) {
       console.error('Logout error:', error)
-      // Even if API fails, clear local storage
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('token')
-        localStorage.removeItem('user')
-      }
       throw error
     }
   },
 
-  // Get current user from localStorage
-  getCurrentUser: (): User | null => {
-    if (typeof window === 'undefined') return null
-    const userStr = localStorage.getItem('user')
-    return userStr ? JSON.parse(userStr) : null
+  // Get current user from API
+  getCurrentUser: async (): Promise<User | null> => {
+    try {
+      const response = await api.get('/user')
+      return response.data.user
+    } catch (error) {
+      // Don't log 401 errors as they're expected when not logged in
+      if ((error as any)?.response?.status !== 401) {
+        console.error('Get current user error:', error)
+      }
+      return null
+    }
   },
 
-  // Check if user is authenticated
-  isAuthenticated: (): boolean => {
-    if (typeof window === 'undefined') return false
-    return !!localStorage.getItem('token')
+  // Check if user is authenticated by checking cookie
+  checkAuth: async (): Promise<boolean> => {
+    try {
+      await api.get('/user')
+      return true
+    } catch (error) {
+      return false
+    }
   },
 
   // Google Auth - Initiates Google OAuth flow

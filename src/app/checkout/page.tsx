@@ -16,7 +16,7 @@ import {
   verifyRazorpayCartPayment
 } from '@/services/orderService'
 import { toast } from 'react-hot-toast'
-import AddressFormModal from '@/components/AddressFormModal'
+import AddressFormModal from '@/components/modal/AddressFormModal'
 import CandleLoader from '@/components/CandleLoader'
 
 type PaymentMethod = 'CashOnDelivery' | 'Razorpay'

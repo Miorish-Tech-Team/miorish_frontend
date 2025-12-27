@@ -68,10 +68,7 @@ export const profileAPI = {
       
       console.log('Update profile response:', response.data)
       
-      // Update user in localStorage
-      if (response.data.user && typeof window !== 'undefined') {
-        localStorage.setItem('user', JSON.stringify(response.data.user))
-      }
+      // User data will be fetched from API, no need to store in localStorage
       
       return response.data
     } catch (error) {

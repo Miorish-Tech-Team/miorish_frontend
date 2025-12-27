@@ -46,7 +46,15 @@ export const getUserWishlist = async (): Promise<WishlistResponse> => {
 
 // Add product to wishlist
 export const addToWishlist = async (productId: number): Promise<AddToWishlistResponse> => {
-  const response = await api.post<AddToWishlistResponse>('/user/wishlist/add', { productId })
+  console.log('Adding to wishlist, productId:', productId, 'type:', typeof productId)
+  
+  if (!productId || isNaN(Number(productId))) {
+    throw new Error('Invalid product ID')
+  }
+  
+  const response = await api.post<AddToWishlistResponse>('/user/wishlist/add', { 
+    productId: Number(productId) 
+  })
   return response.data
 }
 
@@ -54,6 +62,14 @@ export const addToWishlist = async (productId: number): Promise<AddToWishlistRes
 export const removeFromWishlist = async (wishlistIds: number[]): Promise<RemoveFromWishlistResponse> => {
   const response = await api.delete<RemoveFromWishlistResponse>('/user/wishlist/remove', {
     data: { wishlistIds }
+  })
+  return response.data
+}
+
+// Remove product from wishlist by product ID
+export const removeFromWishlistByProductId = async (productId: number): Promise<RemoveFromWishlistResponse> => {
+  const response = await api.delete<RemoveFromWishlistResponse>('/user/wishlist/remove-product', {
+    data: { productId }
   })
   return response.data
 }

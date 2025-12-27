@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Trash2, Loader2, ShoppingCart } from 'lucide-react'
-import AccountSidebar from '@/components/AccountSidebar'
+import AccountSidebar from '@/components/layout/AccountSidebar'
 import { WishlistItemSkeleton } from '@/components/skeleton'
 import { getUserWishlist, removeFromWishlist, type WishlistItem } from '@/services/wishlistService'
 import { useCart } from '@/contexts/CartContext'
@@ -141,6 +141,7 @@ export default function WishlistPage() {
                                       alt={product.productName}
                                       fill
                                       className="object-cover"
+                                      unoptimized
                                     />
                                   </div>
                                   <div>

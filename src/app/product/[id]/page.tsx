@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ChevronRight, Heart, Share2, Minus, Plus, Loader2, Star, ShoppingCart } from 'lucide-react'
-import ProductCard from '@/components/ProductCard'
+import ProductCard from '@/components/card/ProductCard'
 import { getProductById, getSimilarProducts, getProductReviews, type Product, Review } from '@/services/productService'
 import { useCart } from '@/contexts/CartContext'
 import { toast } from 'react-hot-toast'
@@ -134,6 +134,7 @@ export default function ProductPage() {
                 alt={product.productName}
                 fill
                 className="object-cover"
+                unoptimized
               />
               {/* Status Badge */}
               {product.inventoryStatus === 'onSale' && (

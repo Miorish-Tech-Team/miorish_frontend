@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Lock, Loader2 } from 'lucide-react'
-import AccountSidebar from '@/components/AccountSidebar'
+import AccountSidebar from '@/components/layout/AccountSidebar'
 import { profileAPI } from '@/services/profileService'
 
 export default function ChangePasswordPage() {

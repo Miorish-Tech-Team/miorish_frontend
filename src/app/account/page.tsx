@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import AccountSidebar from '@/components/AccountSidebar'
+import AccountSidebar from '@/components/layout/AccountSidebar'
 
 export default function MyAccountPage() {
   return (

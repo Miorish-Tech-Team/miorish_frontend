@@ -1,56 +1,89 @@
-'use client'
+"use client";
 
-import { useState, useEffect, useMemo } from 'react'
-import ProductCard from '@/components/ProductCard'
-import { ChevronRight, ChevronLeft, Minus, Plus } from 'lucide-react'
-import Link from 'next/link'
-import CandleLoader from '@/components/CandleLoader'
-import { getAllProducts, type Product, type GetAllProductsParams } from '@/services/productService'
-import { getAllCategories, getAllSubCategories, type Category, type SubCategory } from '@/services/categoryService'
+import { useState, useEffect, useMemo, Suspense } from "react";
+import ProductCard from "@/components/card/ProductCard";
+import { ChevronRight, ChevronLeft, Minus, Plus } from "lucide-react";
+import Link from "next/link";
+import CandleLoader from "@/components/CandleLoader";
+import {
+  getAllProducts,
+  getProductsByCategory,
+  type Product,
+  type GetAllProductsParams,
+} from "@/services/productService";
+import {
+  getAllCategories,
+  getAllSubCategories,
+  type Category,
+  type SubCategory,
+} from "@/services/categoryService";
+import { useSearchParams } from "next/navigation";
 
-export default function CategoriesPage() {
+function CategoriesPageContent() {
+  const searchParams = useSearchParams();
+
   // State management
-  const [products, setProducts] = useState<Product[]>([])
-  const [categories, setCategories] = useState<Category[]>([])
-  const [subCategories, setSubCategories] = useState<SubCategory[]>([])
-  const [loading, setLoading] = useState(true)
-  
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
+  const [loading, setLoading] = useState(true);
+
   // Filter states
-  const [selectedCategories, setSelectedCategories] = useState<number[]>([])
-  const [selectedSubCategories, setSelectedSubCategories] = useState<number[]>([])
-  const [selectedBrands, setSelectedBrands] = useState<string[]>([])
-  const [priceRange, setPriceRange] = useState<[number, number]>([100, 500])
-  const [tempPriceRange, setTempPriceRange] = useState<[number, number]>([100, 500])
-  const [sortBy, setSortBy] = useState<GetAllProductsParams['sortBy']>('latest')
-  const [expandedCategories, setExpandedCategories] = useState<number[]>([])
-  
+  const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
+  const [selectedSubCategories, setSelectedSubCategories] = useState<number[]>(
+    []
+  );
+  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([100, 500]);
+  const [tempPriceRange, setTempPriceRange] = useState<[number, number]>([
+    100, 500,
+  ]);
+  const [sortBy, setSortBy] =
+    useState<GetAllProductsParams["sortBy"]>("latest");
+  const [expandedCategories, setExpandedCategories] = useState<number[]>([]);
+
   // Pagination
-  const [currentPage, setCurrentPage] = useState(1)
-  const productsPerPage = 12
+  const [currentPage, setCurrentPage] = useState(1);
+  const productsPerPage = 12;
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   // Fetch initial data
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        setLoading(true)
-        const [productsRes, categoriesRes, subCategoriesRes] = await Promise.all([
-          getAllProducts({ sortBy: 'latest' }),
-          getAllCategories(),
-          getAllSubCategories()
-        ])
-        
-        setProducts(productsRes.products)
-        setCategories(categoriesRes.categories)
-        setSubCategories(subCategoriesRes.subCategories)
-      } catch (error) {
-        console.error('Error fetching data:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
+        setLoading(true);
+        const [productsRes, categoriesRes, subCategoriesRes] =
+          await Promise.all([
+            getAllProducts({ sortBy: "latest" }),
+            getAllCategories(),
+            getAllSubCategories(),
+          ]);
 
-    fetchInitialData()
-  }, [])
+        setProducts(productsRes.products);
+        setCategories(categoriesRes.categories);
+        setSubCategories(subCategoriesRes.subCategories);
+
+        // Check for category parameter in URL
+        const categoryParam = searchParams.get("category");
+        if (categoryParam && categoriesRes.categories) {
+          const matchedCategory = categoriesRes.categories.find(
+            (cat) =>
+              cat.categoryName.toLowerCase() === categoryParam.toLowerCase()
+          );
+          if (matchedCategory) {
+            setSelectedCategories([matchedCategory.id]);
+            setExpandedCategories([matchedCategory.id]);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchInitialData();
+  }, [searchParams]);
 
   // Fetch products based on filters
   useEffect(() => {
@@ -59,141 +92,171 @@ export default function CategoriesPage() {
         const params: GetAllProductsParams = {
           sortBy,
           minPrice: priceRange[0],
-          maxPrice: priceRange[1]
-        }
+          maxPrice: priceRange[1],
+        };
 
         // Add selected categories
         if (selectedCategories.length > 0) {
           const categoryNames = categories
-            .filter(cat => selectedCategories.includes(cat.id))
-            .map(cat => cat.categoryName)
-          params.categories = categoryNames.join(',')
+            .filter((cat) => selectedCategories.includes(cat.id))
+            .map((cat) => cat.categoryName);
+          params.categories = categoryNames.join(",");
         }
 
         // Add selected brands
         if (selectedBrands.length > 0) {
-          params.brands = selectedBrands.join(',')
+          params.brands = selectedBrands.join(",");
         }
 
-        const result = await getAllProducts(params)
-        let filteredProducts = result.products
+        const result = await getAllProducts(params);
+        let filteredProducts = result.products;
 
         // Client-side filter for subcategories
         if (selectedSubCategories.length > 0) {
-          filteredProducts = filteredProducts.filter(product =>
+          filteredProducts = filteredProducts.filter((product) =>
             selectedSubCategories.includes(product.productSubCategoryId)
-          )
+          );
         }
 
-        setProducts(filteredProducts)
-        setCurrentPage(1) // Reset to first page on filter change
+        setProducts(filteredProducts);
+        setCurrentPage(1); // Reset to first page on filter change
       } catch (error) {
-        console.error('Error fetching products:', error)
+        console.error("Error fetching products:", error);
       }
-    }
+    };
 
     if (!loading) {
-      fetchFilteredProducts()
+      fetchFilteredProducts();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCategories, selectedSubCategories, selectedBrands, priceRange, sortBy, loading])
+  }, [
+    selectedCategories,
+    selectedSubCategories,
+    selectedBrands,
+    priceRange,
+    sortBy,
+    loading,
+  ]);
 
   // Get unique brands from all products
   const availableBrands = useMemo(() => {
-    const brands = new Set<string>()
-    products.forEach(product => {
+    const brands = new Set<string>();
+    products.forEach((product) => {
       if (product.productBrand) {
-        brands.add(product.productBrand)
+        brands.add(product.productBrand);
       }
-    })
-    return Array.from(brands).sort()
-  }, [products])
+    });
+    return Array.from(brands).sort();
+  }, [products]);
 
   // Group subcategories by category
   const subcategoriesByCategory = useMemo(() => {
-    const grouped: Record<number, SubCategory[]> = {}
-    subCategories.forEach(sub => {
+    const grouped: Record<number, SubCategory[]> = {};
+    subCategories.forEach((sub) => {
       if (!grouped[sub.categoryId]) {
-        grouped[sub.categoryId] = []
+        grouped[sub.categoryId] = [];
       }
-      grouped[sub.categoryId].push(sub)
-    })
-    return grouped
-  }, [subCategories])
+      grouped[sub.categoryId].push(sub);
+    });
+    return grouped;
+  }, [subCategories]);
 
   // Pagination
-  const totalPages = Math.ceil(products.length / productsPerPage)
+  const totalPages = Math.ceil(products.length / productsPerPage);
   const paginatedProducts = useMemo(() => {
-    const startIndex = (currentPage - 1) * productsPerPage
-    return products.slice(startIndex, startIndex + productsPerPage)
-  }, [products, currentPage, productsPerPage])
+    const startIndex = (currentPage - 1) * productsPerPage;
+    return products.slice(startIndex, startIndex + productsPerPage);
+  }, [products, currentPage, productsPerPage]);
 
   // Toggle handlers
   const toggleCategory = (categoryId: number) => {
-    setSelectedCategories(prev =>
+    setSelectedCategories((prev) =>
       prev.includes(categoryId)
-        ? prev.filter(id => id !== categoryId)
+        ? prev.filter((id) => id !== categoryId)
         : [...prev, categoryId]
-    )
-  }
+    );
+  };
 
   const toggleSubCategory = (subCategoryId: number) => {
-    setSelectedSubCategories(prev =>
+    setSelectedSubCategories((prev) =>
       prev.includes(subCategoryId)
-        ? prev.filter(id => id !== subCategoryId)
+        ? prev.filter((id) => id !== subCategoryId)
         : [...prev, subCategoryId]
-    )
-  }
+    );
+  };
 
   const toggleBrand = (brand: string) => {
-    setSelectedBrands(prev =>
-      prev.includes(brand)
-        ? prev.filter(b => b !== brand)
-        : [...prev, brand]
-    )
-  }
+    setSelectedBrands((prev) =>
+      prev.includes(brand) ? prev.filter((b) => b !== brand) : [...prev, brand]
+    );
+  };
 
   const toggleCategoryExpand = (categoryId: number) => {
-    setExpandedCategories(prev =>
+    setExpandedCategories((prev) =>
       prev.includes(categoryId)
-        ? prev.filter(id => id !== categoryId)
+        ? prev.filter((id) => id !== categoryId)
         : [...prev, categoryId]
-    )
-  }
+    );
+  };
 
   const applyFilters = () => {
-    setPriceRange(tempPriceRange)
-  }
+    setPriceRange(tempPriceRange);
+  };
 
   const clearFilters = () => {
-    setSelectedCategories([])
-    setSelectedSubCategories([])
-    setSelectedBrands([])
-    setPriceRange([100, 500])
-    setTempPriceRange([100, 500])
-    setSortBy('latest')
-  }
+    setSelectedCategories([]);
+    setSelectedSubCategories([]);
+    setSelectedBrands([]);
+    setPriceRange([100, 500]);
+    setTempPriceRange([100, 500]);
+    setSortBy("latest");
+  };
 
   if (loading) {
-    return <CandleLoader />
+    return <CandleLoader />;
   }
 
   return (
     <div className="min-h-screen bg-secondary">
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-20 py-4 md:py-6">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm mb-6">
-          <Link href="/" className="text-accent hover:underline font-medium">Home</Link>
+        <div className="flex items-center gap-2 text-sm mb-4 md:mb-6">
+          <Link href="/" className="text-accent hover:underline font-medium">
+            Home
+          </Link>
           <ChevronRight size={16} className="text-gray-400" />
           <span className="text-gray-700 font-medium">Products</span>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-6">\n          {/* Sidebar */}
-          <aside className="w-full lg:w-64 shrink-0">
+        <div className="flex flex-col lg:flex-row gap-4 md:gap-6">
+          {/* Mobile Filter Toggle Button */}
+          <button
+            onClick={() => setShowMobileFilters(!showMobileFilters)}
+            className="lg:hidden w-full px-3 py-3 bg-accent text-white rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-opacity-90 transition-colors"
+          >
+            <span className="text-sm">
+              {showMobileFilters ? "Hide Filters" : "Show Filters"}
+            </span>
+            <ChevronRight
+              size={20}
+              className={`transform transition-transform ${
+                showMobileFilters ? "rotate-90" : ""
+              }`}
+            />
+          </button>
+
+          {/* Sidebar */}
+          <aside
+            className={`w-full lg:w-64 shrink-0 ${
+              showMobileFilters ? "block" : "hidden lg:block"
+            }`}
+          >
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
               {/* Categories */}
               <div className="border-b border-gray-200">
-                <h3 className="text-base font-semibold text-gray-900 px-4 py-3 bg-gray-50">Categories</h3>
+                <h3 className="text-base font-semibold text-gray-900 px-4 py-3 bg-gray-50">
+                  Categories
+                </h3>
                 <div className="px-4 py-3 space-y-1 max-h-80 overflow-y-auto">
                   {categories.map((category) => (
                     <div key={category.id}>
@@ -201,7 +264,9 @@ export default function CategoriesPage() {
                         <button
                           onClick={() => toggleCategory(category.id)}
                           className={`text-sm hover:text-accent transition-colors font-normal flex-1 text-left ${
-                            selectedCategories.includes(category.id) ? 'text-accent font-medium' : 'text-gray-700'
+                            selectedCategories.includes(category.id)
+                              ? "text-accent font-medium"
+                              : "text-gray-700"
                           }`}
                         >
                           {category.categoryName}
@@ -218,21 +283,24 @@ export default function CategoriesPage() {
                         </button>
                       </div>
                       {/* Subcategories */}
-                      {expandedCategories.includes(category.id) && subcategoriesByCategory[category.id] && (
-                        <div className="ml-4 mt-1 space-y-1 pb-2">
-                          {subcategoriesByCategory[category.id].map((sub) => (
-                            <button
-                              key={sub.id}
-                              onClick={() => toggleSubCategory(sub.id)}
-                              className={`block text-xs py-1 hover:text-accent transition-colors ${
-                                selectedSubCategories.includes(sub.id) ? 'text-accent font-medium' : 'text-gray-600'
-                              }`}
-                            >
-                              {sub.subCategoryName}
-                            </button>
-                          ))}
-                        </div>
-                      )}
+                      {expandedCategories.includes(category.id) &&
+                        subcategoriesByCategory[category.id] && (
+                          <div className="ml-4 mt-1 space-y-1 pb-2">
+                            {subcategoriesByCategory[category.id].map((sub) => (
+                              <button
+                                key={sub.id}
+                                onClick={() => toggleSubCategory(sub.id)}
+                                className={`block text-xs py-1 hover:text-accent transition-colors ${
+                                  selectedSubCategories.includes(sub.id)
+                                    ? "text-accent font-medium"
+                                    : "text-gray-600"
+                                }`}
+                              >
+                                {sub.subCategoryName}
+                              </button>
+                            ))}
+                          </div>
+                        )}
                     </div>
                   ))}
                 </div>
@@ -241,14 +309,18 @@ export default function CategoriesPage() {
               {/* Brands */}
               {availableBrands.length > 0 && (
                 <div className="border-b border-gray-200">
-                  <h3 className="text-base font-semibold text-gray-900 px-4 py-3 bg-gray-50">Brands</h3>
+                  <h3 className="text-base font-semibold text-gray-900 px-4 py-3 bg-gray-50">
+                    Brands
+                  </h3>
                   <div className="px-4 py-3 space-y-2 max-h-64 overflow-y-auto">
                     {availableBrands.map((brand) => (
                       <button
                         key={brand}
                         onClick={() => toggleBrand(brand)}
-                        className={`block text-sm hover:text-accent transition-colors ${
-                          selectedBrands.includes(brand) ? 'text-accent font-medium' : 'text-gray-700'
+                        className={`block w-full text-left text-sm hover:text-accent transition-colors ${
+                          selectedBrands.includes(brand)
+                            ? "text-accent font-bold"
+                            : "text-gray-700 font-normal"
                         }`}
                       >
                         {brand}
@@ -260,47 +332,72 @@ export default function CategoriesPage() {
 
               {/* Price Range */}
               <div className="border-b border-gray-200">
-                <h3 className="text-base font-semibold text-gray-900 px-4 py-3 bg-gray-50">Price</h3>
-                <div className="px-4 py-4 space-y-4">
-                  {/* Range Slider */}
-                  <div className="relative pt-1">
+                <h3 className="text-base md:text-lg font-semibold text-gray-900 px-4 py-3 bg-gray-50">
+                  Price
+                </h3>
+                <div className="px-4 py-6 space-y-6">
+                  {/* Dual Handle Range Slider */}
+                  <div className="relative pt-2 pb-4">
+                    {/* Track */}
+                    <div className="relative h-2 bg-gray-200 rounded-full">
+                      {/* Active Range */}
+                      <div
+                        className="absolute h-2 bg-accent rounded-full"
+                        style={{
+                          left: `${(tempPriceRange[0] / 10000) * 100}%`,
+                          right: `${100 - (tempPriceRange[1] / 10000) * 100}%`,
+                        }}
+                      />
+                    </div>
+                    {/* Min Handle */}
                     <input
                       type="range"
                       min="0"
                       max="10000"
-                      step="10"
+                      step="50"
                       value={tempPriceRange[0]}
-                      onChange={(e) => setTempPriceRange([parseInt(e.target.value), tempPriceRange[1]])}
-                      className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-accent"
+                      onChange={(e) => {
+                        const newMin = parseInt(e.target.value);
+                        if (newMin < tempPriceRange[1]) {
+                          setTempPriceRange([newMin, tempPriceRange[1]]);
+                        }
+                      }}
+                      className="absolute w-full -top-2 h-2 bg-transparent appearance-none cursor-pointer pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-accent [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-md [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-accent [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:shadow-md"
                     />
+                    {/* Max Handle */}
                     <input
                       type="range"
                       min="0"
                       max="10000"
-                      step="10"
+                      step="50"
                       value={tempPriceRange[1]}
-                      onChange={(e) => setTempPriceRange([tempPriceRange[0], parseInt(e.target.value)])}
-                      className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-accent mt-2"
+                      onChange={(e) => {
+                        const newMax = parseInt(e.target.value);
+                        if (newMax > tempPriceRange[0]) {
+                          setTempPriceRange([tempPriceRange[0], newMax]);
+                        }
+                      }}
+                      className="absolute w-full -top-2 h-2 bg-transparent appearance-none cursor-pointer pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-accent [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-md [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-accent [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:shadow-md"
                     />
                   </div>
                   {/* Price Display */}
-                  <div className="text-center text-sm text-gray-700 font-medium">
-                    ${tempPriceRange[0]} - ${tempPriceRange[1]}
+                  <div className="text-center text-base md:text-lg text-gray-900 font-medium">
+                    {tempPriceRange[0]} - {tempPriceRange[1]}
                   </div>
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="p-4 flex gap-3">
+              <div className="p-4 md:p-5 flex gap-3">
                 <button
                   onClick={applyFilters}
-                  className="flex-1 px-4 py-2 bg-accent text-white rounded-lg hover:bg-opacity-90 transition-colors font-medium text-sm"
+                  className="flex-1 px-4 py-2.5 bg-white text-accent border-2 border-accent rounded-lg hover:bg-accent hover:text-white transition-all font-semibold text-sm"
                 >
                   Apply
                 </button>
                 <button
                   onClick={clearFilters}
-                  className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium text-sm"
+                  className="flex-1 px-4 py-2.5 bg-accent text-white rounded-lg hover:bg-opacity-90 transition-colors font-semibold text-sm"
                 >
                   Clear
                 </button>
@@ -311,17 +408,26 @@ export default function CategoriesPage() {
           {/* Main Content */}
           <main className="flex-1">
             {/* Results Header */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
-              <p className="text-sm text-gray-600 font-medium">
-                Showing {paginatedProducts.length > 0 ? (currentPage - 1) * productsPerPage + 1 : 0}-
-                {Math.min(currentPage * productsPerPage, products.length)} of <span className="text-gray-900 font-semibold">{products.length}</span> products
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 md:mb-6">
+              <p className="text-xs md:text-sm text-gray-600 font-medium">
+                Showing{" "}
+                {paginatedProducts.length > 0
+                  ? (currentPage - 1) * productsPerPage + 1
+                  : 0}
+                -{Math.min(currentPage * productsPerPage, products.length)} of{" "}
+                <span className="text-gray-900 font-semibold">
+                  {products.length}
+                </span>{" "}
+                products
               </p>
-              
+
               {/* Sort */}
               <select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as GetAllProductsParams['sortBy'])}
-                className="px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent text-gray-700 font-medium cursor-pointer"
+                onChange={(e) =>
+                  setSortBy(e.target.value as GetAllProductsParams["sortBy"])
+                }
+                className="w-full sm:w-auto px-3 md:px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent text-gray-700 font-medium cursor-pointer text-xs md:text-sm"
               >
                 <option value="latest">Latest</option>
                 <option value="popular">Most Popular</option>
@@ -350,74 +456,99 @@ export default function CategoriesPage() {
                 </button>
               </div>
             ) : ( */}
-              <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6 mb-8">
-                  {paginatedProducts.map((product) => (
-                    <ProductCard
-                      key={product.id}
-                      productId={product.id}
-                      image={product.coverImageUrl}
-                      title={product.productName || ''}
-                      description={product.productDescription}
-                      originalPrice={product.productPrice}
-                      discountedPrice={product.productDiscountPrice || product.productPrice}
-                      discount={product.productDiscountPercentage || 0}
-                    />
-                  ))}
-                </div>
+            <>
+              {/* Products Grid - All Screens */}
+              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-8">
+                {paginatedProducts.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    productId={product.id}
+                    image={product.coverImageUrl}
+                    title={product.productName || ""}
+                    description={product.productDescription}
+                    originalPrice={product.productPrice}
+                    discountedPrice={
+                      product.productDiscountPrice || product.productPrice
+                    }
+                    discount={product.productDiscountPercentage || 0}
+                  />
+                ))}
+              </div>
 
-                {/* Pagination */}
-                {totalPages > 1 && (
-                  <div className="flex items-center justify-center gap-2 mb-8">
-                    <button
-                      onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                      className="p-2 bg-white hover:bg-gray-50 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm border border-gray-200"
-                      disabled={currentPage === 1}
-                    >
-                      <ChevronLeft size={20} className={currentPage === 1 ? 'text-gray-300' : 'text-gray-700'} />
-                    </button>
-                    
-                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                      let pageNum
-                      if (totalPages <= 5) {
-                        pageNum = i + 1
-                      } else if (currentPage <= 3) {
-                        pageNum = i + 1
-                      } else if (currentPage >= totalPages - 2) {
-                        pageNum = totalPages - 4 + i
-                      } else {
-                        pageNum = currentPage - 2 + i
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-2 mb-8">
+                  <button
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    className="p-2 bg-white hover:bg-gray-50 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm border border-gray-200"
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft
+                      size={20}
+                      className={
+                        currentPage === 1 ? "text-gray-300" : "text-gray-700"
                       }
-                      
-                      return (
-                        <button
-                          key={pageNum}
-                          onClick={() => setCurrentPage(pageNum)}
-                          className={`min-w-8 h-8 px-3 rounded-lg font-medium transition-all ${
-                            currentPage === pageNum
-                              ? 'bg-accent text-white shadow-md'
-                              : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 shadow-sm'
-                          }`}
-                        >
-                          {pageNum}
-                        </button>
-                      )
-                    })}
-                    
-                    <button
-                      onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                      className="p-2 bg-white hover:bg-gray-50 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm border border-gray-200"
-                      disabled={currentPage === totalPages}
-                    >
-                      <ChevronRight size={20} className={currentPage === totalPages ? 'text-gray-300' : 'text-gray-700'} />
-                    </button>
-                  </div>
-                )}
-              </>
+                    />
+                  </button>
+
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum;
+                    if (totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (currentPage <= 3) {
+                      pageNum = i + 1;
+                    } else if (currentPage >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i;
+                    } else {
+                      pageNum = currentPage - 2 + i;
+                    }
+
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => setCurrentPage(pageNum)}
+                        className={`min-w-8 h-8 px-3 rounded-lg font-medium transition-all ${
+                          currentPage === pageNum
+                            ? "bg-accent text-white shadow-md"
+                            : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 shadow-sm"
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+
+                  <button
+                    onClick={() =>
+                      setCurrentPage(Math.min(totalPages, currentPage + 1))
+                    }
+                    className="p-2 bg-white hover:bg-gray-50 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm border border-gray-200"
+                    disabled={currentPage === totalPages}
+                  >
+                    <ChevronRight
+                      size={20}
+                      className={
+                        currentPage === totalPages
+                          ? "text-gray-300"
+                          : "text-gray-700"
+                      }
+                    />
+                  </button>
+                </div>
+              )}
+            </>
             {/* )} */}
           </main>
         </div>
       </div>
     </div>
-  )
+  );
+}
+
+export default function CategoriesPage() {
+  return (
+    <Suspense fallback={<CandleLoader />}>
+      <CategoriesPageContent />
+    </Suspense>
+  );
 }

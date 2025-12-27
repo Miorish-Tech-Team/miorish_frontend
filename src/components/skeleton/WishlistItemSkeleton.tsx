@@ -1,7 +1,7 @@
 export default function WishlistItemSkeleton() {
   return (
-    <div className="border-b border-gray-200 animate-pulse">
-      <div className="px-6 py-4">
+    <tr className="border-b border-gray-200 animate-pulse">
+      <td colSpan={5} className="px-6 py-4">
         <div className="flex items-center gap-4">
           {/* Image */}
           <div className="relative w-16 h-16 bg-gray-200 rounded-lg shrink-0"></div>
@@ -24,7 +24,7 @@ export default function WishlistItemSkeleton() {
             <div className="h-8 w-8 bg-gray-200 rounded"></div>
           </div>
         </div>
-      </div>
-    </div>
+      </td>
+    </tr>
   )
 }

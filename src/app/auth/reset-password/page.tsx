@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Eye, EyeOff, Lock, CheckCircle, Loader2 } from 'lucide-react'
 import { authAPI } from '@/services/authService'
+import toast from 'react-hot-toast'
 
 function ResetPasswordForm() {
   const router = useRouter()
@@ -14,7 +15,6 @@ function ResetPasswordForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
   const [isReset, setIsReset] = useState(false)
   const [formData, setFormData] = useState({
     password: '',
@@ -29,20 +29,19 @@ function ResetPasswordForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError('')
     
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match!')
+      toast.error('Passwords do not match!')
       return
     }
 
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long')
+      toast.error('Password must be at least 6 characters long')
       return
     }
 
     if (!email) {
-      setError('Email not found. Please try again.')
+      toast.error('Email not found. Please try again.')
       return
     }
 
@@ -54,9 +53,10 @@ function ResetPasswordForm() {
         newPassword: formData.password
       })
       setIsReset(true)
+      toast.success('Password reset successfully!')
     } catch (err) {
       const error = err as { response?: { data?: { message?: string } } }
-      setError(error.response?.data?.message || 'Failed to reset password')
+      toast.error(error.response?.data?.message || 'Failed to reset password')
     } finally {
       setIsLoading(false)
     }
@@ -84,13 +84,6 @@ function ResetPasswordForm() {
                   Create a new password for your account
                 </p>
               </div>
-
-              {/* Error Message */}
-              {error && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-sm text-red-600">{error}</p>
-                </div>
-              )}
 
               {/* Form */}
               <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5">

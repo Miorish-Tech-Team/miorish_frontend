@@ -6,13 +6,13 @@ import { useRouter } from 'next/navigation'
 import { Eye, EyeOff, Mail, Lock, Loader2 } from 'lucide-react'
 import { authAPI } from '@/services/authService'
 import { useAuth } from '@/contexts/AuthContext'
+import toast from 'react-hot-toast'
 
 export default function LoginPage() {
   const router = useRouter()
   const { login } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
   const [show2FA, setShow2FA] = useState(false)
   const [twoFactorCode, setTwoFactorCode] = useState('')
   
@@ -24,10 +24,7 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError('')
     setIsLoading(true)
-
-    // console.log('Submitting login for:', formData.email)
 
     try {
       const response = await authAPI.signin({
@@ -40,14 +37,15 @@ export default function LoginPage() {
       if (response.isTwoFactorAuthEnable) {
         // Show 2FA input
         setShow2FA(true)
-        setIsLoading(false)
-      } else if (response.success && response.token && response.user) {
-        login(response.user, response.token)
+        toast.success('Please enter the 2FA code sent to your email')
+      } else if (response.success && response.user) {
+        login(response.user)
+        toast.success('Login successful!')
         router.push('/')
       }
     } catch (err) {
       const error = err as { response?: { data?: { message?: string } } }
-      setError(error.response?.data?.message || 'Login failed. Please try again.')
+      toast.error(error.response?.data?.message || 'Login failed. Please try again.')
     } finally {
       setIsLoading(false)
     }
@@ -55,7 +53,6 @@ export default function LoginPage() {
 
   const handle2FASubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError('')
     setIsLoading(true)
 
     try {
@@ -63,13 +60,14 @@ export default function LoginPage() {
         verificationCode: twoFactorCode
       })
 
-      if (response.success && response.token && response.user) {
-        login(response.user, response.token)
+      if (response.success && response.user) {
+        login(response.user)
+        toast.success('2FA verification successful!')
         router.push('/')
       }
     } catch (err) {
       const error = err as { response?: { data?: { message?: string } } }
-      setError(error.response?.data?.message || '2FA verification failed.')
+      toast.error(error.response?.data?.message || '2FA verification failed.')
     } finally {
       setIsLoading(false)
     }
@@ -101,13 +99,6 @@ export default function LoginPage() {
               {show2FA ? 'Enter the code sent to your email' : 'Sign in to your account'}
             </p>
           </div>
-
-          {/* Error Message */}
-          {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-600">{error}</p>
-            </div>
-          )}
 
           {/* 2FA Form */}
           {show2FA ? (
@@ -142,7 +133,6 @@ export default function LoginPage() {
                 onClick={() => {
                   setShow2FA(false)
                   setTwoFactorCode('')
-                  setError('')
                 }}
                 className="w-full text-accent text-sm hover:underline"
               >

@@ -6,15 +6,14 @@ import Link from 'next/link'
 import { User, Camera, Loader2, Phone } from 'lucide-react'
 import { profileAPI, UpdateProfileData } from '@/services/profileService'
 import { useAuth } from '@/contexts/AuthContext'
-import AccountSidebar from '@/components/AccountSidebar'
+import AccountSidebar from '@/components/layout/AccountSidebar'
 import Image from 'next/image'
+import toast from 'react-hot-toast'
 
 export default function ProfilePage() {
   // const router = useRouter()
   const { user, updateUser } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
   
   // Profile form
   const [profileData, setProfileData] = useState({
@@ -60,8 +59,6 @@ export default function ProfilePage() {
     e.preventDefault()
     if (!user) return
     
-    setError('')
-    setSuccess('')
     setIsLoading(true)
 
     try {
@@ -77,11 +74,17 @@ export default function ProfilePage() {
       
       if (response.success && response.user) {
         updateUser(response.user)
-        setSuccess('Profile updated successfully!')
+        toast.success('Profile updated successfully!', {
+          duration: 4000,
+          position: 'top-right',
+        })
       }
     } catch (err) {
       const error = err as { response?: { data?: { message?: string } } }
-      setError(error.response?.data?.message || 'Failed to update profile')
+      toast.error(error.response?.data?.message || 'Failed to update profile', {
+        duration: 4000,
+        position: 'top-right',
+      })
     } finally {
       setIsLoading(false)
     }
@@ -100,9 +103,9 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-secondary">
-      <div className="container mx-auto px-8 md:px-25 py-6">
+      <div className="container mx-auto px-4 md:px-8 lg:px-16 xl:px-25 py-4 md:py-6">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-xs md:text-sm mb-6">
+        <div className="flex items-center gap-2 text-xs md:text-sm mb-4 md:mb-6">
           <Link href="/" className="text-accent hover:underline">Home</Link>
           <span className="text-gray-400">{'>'}</span>
           <Link href="/account" className="text-accent hover:underline">My Account</Link>
@@ -110,16 +113,16 @@ export default function ProfilePage() {
           <span className="text-dark">Profile</span>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6">
           {/* Sidebar */}
           <AccountSidebar activePage="profile" />
 
           {/* Main Content */}
           <main className="lg:col-span-3">
-            <div className="bg-white rounded-lg p-6 md:p-8">
+            <div className="bg-white rounded-lg p-4 md:p-6 lg:p-8 shadow-sm">
               {/* Profile Header */}
-              <div className="flex items-center gap-4 pb-6 mb-6 border-b border-gray-200">
-                <div className="relative">
+              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 pb-4 md:pb-6 mb-4 md:mb-6 border-b border-gray-200">
+                <div className="relative shrink-0">
                   {photoPreview ? (
                     <Image
                       src={photoPreview}
@@ -127,16 +130,17 @@ export default function ProfilePage() {
                       width={80}
                       height={80}
                       className="rounded-full object-cover"
+                      unoptimized
                     />
                   ) : (
-                    <div className="w-20 h-20 rounded-full bg-accent/10 flex items-center justify-center">
+                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-accent/10 flex items-center justify-center">
                       <User size={32} className="text-accent" />
                     </div>
                   )}
                 </div>
-                <div>
-                  <h1 className="text-2xl md:text-3xl font-serif text-dark">{user.fullName}</h1>
-                  <p className="text-gray-600 text-sm">{user.email}</p>
+                <div className="text-center sm:text-left">
+                  <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-dark">{user.fullName}</h1>
+                  <p className="text-gray-600 text-sm break-all">{user.email}</p>
                   <span className={`inline-block mt-1 px-3 py-1 rounded-full text-xs font-medium ${
                     user.isVerified ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
                   }`}>
@@ -145,25 +149,13 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              {/* Messages */}
-              {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded">
-                  <p className="text-sm text-red-600">{error}</p>
-                </div>
-              )}
-              {success && (
-                <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded">
-                  <p className="text-sm text-green-600">{success}</p>
-                </div>
-              )}
-
               {/* Profile Form */}
-              <form onSubmit={handleProfileSubmit} className="space-y-6">
+              <form onSubmit={handleProfileSubmit} className="space-y-4 md:space-y-6">
               {/* Profile Photo */}
               <div>
                 <label className="block text-sm font-medium text-dark mb-2">Profile Photo</label>
-                <div className="flex items-center gap-4">
-                  <div className="relative">
+                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
+                  <div className="relative shrink-0">
                     {photoPreview ? (
                         <Image
                           src={photoPreview}
@@ -171,15 +163,16 @@ export default function ProfilePage() {
                           width={96}
                           height={96}
                           className="rounded-full object-cover"
+                          unoptimized
                         />
                     ) : (
-                      <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center">
+                      <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gray-200 flex items-center justify-center">
                         <User size={40} className="text-gray-400" />
                       </div>
                     )}
                     <label
                       htmlFor="photo-upload"
-                      className="absolute bottom-0 right-0 bg-accent text-white p-2 rounded-full cursor-pointer hover:bg-opacity-90 transition-colors"
+                      className="absolute bottom-0 right-0 bg-accent text-white p-2 rounded-full cursor-pointer hover:bg-opacity-90 transition-colors shadow-lg"
                     >
                       <Camera size={16} />
                       <input
@@ -191,7 +184,7 @@ export default function ProfilePage() {
                       />
                     </label>
                   </div>
-                  <div className="text-sm text-gray-600">
+                  <div className="text-sm text-gray-600 text-center sm:text-left">
                     <p>Click the camera icon to upload a new photo</p>
                     <p className="text-xs mt-1">JPG, PNG or GIF (MAX. 5MB)</p>
                   </div>
@@ -301,7 +294,7 @@ export default function ProfilePage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-accent text-white py-3 rounded hover:bg-opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full bg-accent text-white py-3 rounded-lg hover:bg-opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-medium text-sm md:text-base"
               >
                 {isLoading && <Loader2 size={20} className="animate-spin" />}
                 {isLoading ? 'Updating...' : 'Update Profile'}

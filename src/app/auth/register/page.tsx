@@ -5,14 +5,13 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Eye, EyeOff, Mail, Lock, User, Phone, Loader2 } from 'lucide-react'
 import { authAPI } from '@/services/authService'
+import toast from 'react-hot-toast'
 
 export default function RegisterPage() {
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState(false)
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -25,20 +24,19 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError('')
 
     if (!formData.agreeToTerms) {
-      setError('You must agree to the terms and conditions')
+      toast.error('You must agree to the terms and conditions')
       return
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match!')
+      toast.error('Passwords do not match!')
       return
     }
 
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long')
+      toast.error('Password must be at least 6 characters long')
       return
     }
 
@@ -52,12 +50,12 @@ export default function RegisterPage() {
       })
 
       if (response.success) {
-        setSuccess(true)
+        toast.success('Account created successfully! Redirecting to login...')
         setTimeout(() => router.push('/auth/login'), 2000)
       }
     } catch (err) {
       const error = err as { response?: { data?: { message?: string } } }
-      setError(error.response?.data?.message || 'Registration failed.')
+      toast.error(error.response?.data?.message || 'Registration failed.')
     } finally {
       setIsLoading(false)
     }
@@ -89,22 +87,6 @@ export default function RegisterPage() {
               Sign up to get started
             </p>
           </div>
-
-          {/* Success */}
-          {success && (
-            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-              <p className="text-sm text-green-600">
-                Account created successfully! Redirecting...
-              </p>
-            </div>
-          )}
-
-          {/* Error */}
-          {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-600">{error}</p>
-            </div>
-          )}
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5">
@@ -233,7 +215,7 @@ export default function RegisterPage() {
             {/* Submit */}
             <button
               type="submit"
-              disabled={isLoading || success}
+              disabled={isLoading}
               className="w-full bg-accent text-white py-2.5 md:py-3 rounded-lg font-medium hover:bg-opacity-90 transition flex items-center justify-center gap-2"
             >
               {isLoading && <Loader2 size={20} className="animate-spin" />}

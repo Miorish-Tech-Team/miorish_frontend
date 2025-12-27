@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Shield, Loader2 } from 'lucide-react'
-import AccountSidebar from '@/components/AccountSidebar'
+import AccountSidebar from '@/components/layout/AccountSidebar'
 import { profileAPI } from '@/services/profileService'
 // import { useAuth } from '@/contexts/AuthContext'
 
