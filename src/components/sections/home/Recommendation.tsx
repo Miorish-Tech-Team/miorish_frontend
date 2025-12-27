@@ -68,7 +68,7 @@ export default function Recommendation({ products }: RecommendationProps) {
             Recommended for You
           </h2>
           <a
-            href="/products"
+            href="/categories"
             className="text-accent hover:underline text-sm md:text-base"
           >
             View More →
@@ -76,7 +76,7 @@ export default function Recommendation({ products }: RecommendationProps) {
         </div>
         {/* Mobile: Horizontal Scroll */}
         <div className="md:hidden flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide">
-          {products.slice(0, 5).map((product) => (
+          {products.map((product) => (
             <div key={product.id} className="flex-shrink-0 w-[45%] snap-start">
               <ProductCard
                 productId={product.id}
@@ -91,8 +91,8 @@ export default function Recommendation({ products }: RecommendationProps) {
           ))}
         </div>
         {/* Desktop: Grid */}
-        <div className="hidden md:grid md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
-          {products.slice(0, 5).map((product) => (
+        <div className="hidden md:grid md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+          {products.slice(0, 10).map((product) => (
             <ProductCard
               key={product.id}
               productId={product.id}

@@ -47,7 +47,7 @@ export default function AccountSidebar({ activePage }: AccountSidebarProps) {
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center">
               <span className="text-white font-bold text-lg">
-                {user?.fullName?.charAt(0).toUpperCase() || 'S'}
+                {user?.fullName?.charAt(0).toUpperCase() || 'U'}
               </span>
             </div>
             <div className="text-left">
@@ -98,13 +98,13 @@ export default function AccountSidebar({ activePage }: AccountSidebarProps) {
                       />
                     ) : (
                       <span className="text-white font-bold text-2xl">
-                        {user?.fullName?.charAt(0).toUpperCase() || 'S'}
+                        {user?.fullName?.charAt(0).toUpperCase() || 'U'}
                       </span>
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h3 className="text-lg font-bold text-dark truncate">{user?.fullName || 'Shalu Kumari'}</h3>
-                    <p className="text-xs text-gray-600 truncate">{user?.email || 'shalukumari193129@gmail.com'}</p>
+                    <h3 className="text-lg font-bold text-dark truncate">{user?.fullName || 'User'}</h3>
+                    <p className="text-xs text-gray-600 truncate">{user?.email || 'user@example.com'}</p>
                   </div>
                 </div>
               </div>
@@ -179,13 +179,13 @@ export default function AccountSidebar({ activePage }: AccountSidebarProps) {
                 />
               ) : (
                 <span className="text-white font-bold text-2xl">
-                  {user?.fullName?.charAt(0).toUpperCase() || 'S'}
+                  {user?.fullName?.charAt(0).toUpperCase() || 'U'}
                 </span>
               )}
             </div>
             <div className="min-w-0 flex-1">
-              <h3 className="text-lg font-bold text-dark truncate">{user?.fullName || 'Shalu Kumari'}</h3>
-              <p className="text-xs text-gray-600 truncate">{user?.email || 'shalukumari193129@gmail.com'}</p>
+              <h3 className="text-lg font-bold text-dark truncate">{user?.fullName || 'User'}</h3>
+              <p className="text-xs text-gray-600 truncate">{user?.email || 'user@example.com'}</p>
             </div>
           </div>
         </div>
