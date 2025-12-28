@@ -82,7 +82,7 @@ export default function AddressFormModal({ isOpen, onClose, onAddressAdded }: Ad
                   required
                   value={formData.recipientName}
                   onChange={(e) => setFormData({ ...formData, recipientName: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+                  className="w-full px-4 py-2 text-dark text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
                   placeholder="John Doe"
                 />
               </div>
@@ -96,7 +96,7 @@ export default function AddressFormModal({ isOpen, onClose, onAddressAdded }: Ad
                   required
                   value={formData.phoneNumber}
                   onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+                  className="w-full px-4 py-2 text-dark text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
                   placeholder="1234567890"
                 />
               </div>
@@ -111,7 +111,7 @@ export default function AddressFormModal({ isOpen, onClose, onAddressAdded }: Ad
                 required
                 value={formData.street}
                 onChange={(e) => setFormData({ ...formData, street: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+                className="w-full px-4 py-2 text-dark text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
                 placeholder="123 Main Street, Apt 4B"
               />
             </div>
@@ -126,7 +126,7 @@ export default function AddressFormModal({ isOpen, onClose, onAddressAdded }: Ad
                   required
                   value={formData.city}
                   onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+                  className="w-full px-4 py-2 text-dark text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
                   placeholder="Mumbai"
                 />
               </div>
@@ -140,7 +140,7 @@ export default function AddressFormModal({ isOpen, onClose, onAddressAdded }: Ad
                   required
                   value={formData.state}
                   onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+                  className="w-full px-4 py-2 text-dark text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
                   placeholder="Maharashtra"
                 />
               </div>
@@ -156,7 +156,7 @@ export default function AddressFormModal({ isOpen, onClose, onAddressAdded }: Ad
                   required
                   value={formData.postalCode}
                   onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+                  className="w-full px-4 py-2 text-dark text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
                   placeholder="400001"
                 />
               </div>
@@ -170,7 +170,7 @@ export default function AddressFormModal({ isOpen, onClose, onAddressAdded }: Ad
                   required
                   value={formData.country}
                   onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+                  className="w-full px-4 py-2 text-dark text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
                   placeholder="India"
                 />
               </div>
@@ -183,7 +183,7 @@ export default function AddressFormModal({ isOpen, onClose, onAddressAdded }: Ad
               <select
                 value={formData.type}
                 onChange={(e) => setFormData({ ...formData, type: e.target.value as 'home' | 'work' | 'other' })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
+                className="w-full appearance-none px-4 py-2 text-dark text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
               >
                 <option value="home">Home</option>
                 <option value="work">Work</option>

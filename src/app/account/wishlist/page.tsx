@@ -176,7 +176,7 @@ export default function WishlistPage() {
                                 <button
                                   onClick={() => handleRemove(item.id)}
                                   disabled={isRemoving}
-                                  className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
+                                  className="p-2 text-dark hover:bg-dark/10 cursor-pointer rounded transition-colors disabled:opacity-50"
                                 >
                                   {isRemoving ? (
                                     <Loader2 size={18} className="animate-spin" />

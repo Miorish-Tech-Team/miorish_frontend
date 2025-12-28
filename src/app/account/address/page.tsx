@@ -251,7 +251,7 @@ export default function AddressPage() {
                             <div className="flex md:flex-col gap-2">
                               <button
                                 onClick={() => handleEdit(addr)}
-                                className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 rounded text-xs hover:bg-blue-100 transition-colors"
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded text-xs hover:bg-primary/20 cursor-pointer transition-colors"
                               >
                                 <Pencil size={14} />
                                 Edit
@@ -259,7 +259,7 @@ export default function AddressPage() {
                               {!addr.isDefault && (
                                 <button
                                   onClick={() => handleSetDefault(addr.id)}
-                                  className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded text-xs hover:bg-gray-200 transition-colors"
+                                  className="px-3 py-1.5 border border-accent/70 text-accent hover:text-white hover:bg-accent/70 rounded text-xs cursor-pointer transition-colors"
                                 >
                                   Set Default
                                 </button>
@@ -267,7 +267,7 @@ export default function AddressPage() {
                               <button
                                 onClick={() => handleDelete(addr.id)}
                                 disabled={deletingId === addr.id}
-                                className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-600 rounded text-xs hover:bg-red-100 transition-colors disabled:opacity-50"
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-dark/5 text-dark rounded text-xs hover:bg-dark/70 hover:text-secondary cursor-pointer transition-colors disabled:opacity-50"
                               >
                                 {deletingId === addr.id ? (
                                   <Loader2 size={14} className="animate-spin" />

@@ -170,7 +170,11 @@ export const getRecentProducts = async (): Promise<ProductsResponse> => {
 // Get similar products
 export const getSimilarProducts = async (productId: number | string): Promise<ProductsResponse> => {
   const response = await api.get(`/general/products/similar/${productId}`)
-  return response.data
+  // Backend returns similarProducts, map it to products for consistency
+  return {
+    ...response.data,
+    products: response.data.similarProducts || []
+  }
 }
 
 // Get product reviews

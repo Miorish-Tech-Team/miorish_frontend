@@ -144,7 +144,7 @@ export default function CartPage() {
                         clearCart()
                       }
                     }}
-                    className="text-sm text-red-600 hover:text-red-700 font-medium"
+                    className="text-sm text-dark/80 hover:text-dark font-medium cursor-pointer"
                   >
                     Clear Cart
                   </button>
@@ -199,7 +199,7 @@ export default function CartPage() {
 
                           {/* Quantity Controls */}
                           <div className="flex items-center gap-4 mt-3">
-                            <div className="flex items-center border border-gray-300 rounded">
+                            <div className="flex items-center border text-accent border-accent rounded">
                               <button
                                 onClick={() => handleQuantityChange(item.id, item.quantity - 1, product.availableStockQuantity)}
                                 disabled={item.quantity <= 1 || isUpdating}
@@ -222,7 +222,7 @@ export default function CartPage() {
                             <button
                               onClick={() => handleRemoveItem(item.id)}
                               disabled={isRemoving}
-                              className="text-red-600 hover:text-red-700 p-2 disabled:opacity-50"
+                              className="text-dark hover:scale-115 transition-transform duration-300 p-2 disabled:opacity-50 cursor-pointer"
                             >
                               {isRemoving ? <Loader2 size={18} className="animate-spin" /> : <Trash2 size={18} />}
                             </button>

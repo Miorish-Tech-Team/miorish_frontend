@@ -35,13 +35,10 @@ export default function ForgotPasswordPage() {
     setIsLoading(true)
 
     try {
-      await authAPI.verifyResetOtp({ verificationCode: otp })
+      const response = await authAPI.verifyResetOtp({ verificationCode: otp })
       setStep('success')
-      toast.success('Code verified! Redirecting...')
-      // Redirect to reset password page
-      setTimeout(() => {
-        router.push(`/auth/reset-password?email=${encodeURIComponent(email)}`)
-      }, 1500)
+      toast.success(response.message || 'Code verified! Check your email for reset link.')
+      // Don't redirect, show success message to check email
     } catch (err) {
       const error = err as { response?: { data?: { message?: string } } }
       toast.error(error.response?.data?.message || 'Invalid or expired code')
@@ -164,9 +161,18 @@ export default function ForgotPasswordPage() {
                   </div>
                 </div>
                 <h1 className="text-2xl md:text-3xl font-bold text-dark mb-2">Code Verified!</h1>
-                <p className="text-sm md:text-base text-gray-600 mb-6">
-                  Redirecting to reset password page...
+                <p className="text-sm md:text-base text-gray-600 mb-4">
+                  A password reset link has been sent to your email.
                 </p>
+                <p className="text-xs md:text-sm text-gray-500 text-center mb-6">
+                  Please check your inbox and click the link to reset your password.
+                </p>
+                <Link 
+                  href="/auth/login"
+                  className="inline-block text-accent hover:underline text-sm font-medium"
+                >
+                  Back to Login
+                </Link>
               </div>
             </>
           )}

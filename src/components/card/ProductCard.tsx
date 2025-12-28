@@ -198,10 +198,10 @@ export default function ProductCard({
 
   return (
     // Reduced outer padding (p-1.5) and max-width to keep it compact
-    <div className="max-w-[250px] p-1 border border-accent rounded-md overflow-hidden hover:shadow-md transition-shadow bg-white">
+    <div className="min-w-[200px] max-w-[250px] p-1 border border-accent rounded-md overflow-hidden hover:shadow-md transition-shadow bg-white">
       {/* Image - Smaller aspect ratio/height */}
       <Link href={`/product/${productId}`}>
-        <div className="relative aspect-[4/3] bg-secondary cursor-pointer overflow-hidden rounded-sm">
+        <div className="relative aspect-4/3 bg-secondary cursor-pointer overflow-hidden rounded-sm">
           <Image
             src={image}
             alt={title}

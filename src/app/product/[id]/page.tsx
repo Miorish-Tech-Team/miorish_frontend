@@ -10,6 +10,8 @@ import { getProductById, getSimilarProducts, getProductReviews, type Product, Re
 import { useCart } from '@/contexts/CartContext'
 import { toast } from 'react-hot-toast'
 import CandleLoader from '@/components/CandleLoader'
+import { useAuth } from '@/contexts/AuthContext'
+import { addToWishlist, getUserWishlist, removeFromWishlistByProductId } from '@/services/wishlistService'
 
 export default function ProductPage() {
   const params = useParams()
@@ -26,6 +28,30 @@ export default function ProductPage() {
   const [selectedImage, setSelectedImage] = useState(0)
   const [activeTab, setActiveTab] = useState('description')
 
+  const { user } = useAuth();
+  const [isInWishlist, setIsInWishlist] = useState<boolean>(false);
+  const [wishlistItemId, setWishlistItemId] = useState<number | null>(null);
+
+  useEffect(() => {
+      if (user) {
+        const checkWishlist = async () => {
+          try {
+            const response = await getUserWishlist();
+            const wishlistItem = response.wishlist.find(
+              (item) => item.productId === Number(productId)
+            );
+            if (wishlistItem) {
+              setIsInWishlist(true);
+              setWishlistItemId(wishlistItem.id);
+            }
+          } catch (error) {
+            // Silently fail
+          }
+        };
+        checkWishlist();
+      }
+    }, [user, productId]);
+
   useEffect(() => {
     const fetchProductData = async () => {
       try {
@@ -36,6 +62,7 @@ export default function ProductPage() {
           getProductReviews(productId).catch(() => ({ reviews: [], success: true }))
         ])
 
+        console.log('Fetched product data:', productRes)
         setProduct(productRes.product)
         setSimilarProducts(similarRes.products || [])
         setReviews(reviewsRes.reviews || [])
@@ -53,7 +80,7 @@ export default function ProductPage() {
 
   const handleAddToCart = async () => {
     if (!product) return
-    
+
     try {
       setAddingToCart(true)
       await addToCartContext(Number(productId), quantity)
@@ -67,7 +94,7 @@ export default function ProductPage() {
 
   const handleBuyNow = () => {
     if (!product) return
-    
+
     // Store buy now data in session storage for checkout
     sessionStorage.setItem('buyNowData', JSON.stringify({
       productId: Number(productId),
@@ -80,13 +107,45 @@ export default function ProductPage() {
         productDiscountPrice: product.productDiscountPrice
       }
     }))
-    
+
     router.push('/checkout?type=buynow')
   }
 
-  const handleAddToWishlist = () => {
-    toast('Wishlist feature coming soon!', { icon: 'ℹ️' })
-  }
+  const handleAddToWishlist = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!user) {
+      toast.error("Please login to add items to wishlist");
+      return;
+    }
+
+    // Toggle wishlist: remove if already in wishlist, add if not
+    try {
+      if (isInWishlist) {
+        // Remove from wishlist using product ID
+        await removeFromWishlistByProductId(Number(productId));
+        setIsInWishlist(false);
+        setWishlistItemId(null);
+        toast.success("Removed from wishlist!");
+      } else {
+        // Add to wishlist
+        const response = await addToWishlist(Number(productId));
+        setIsInWishlist(true);
+        setWishlistItemId(response.wishlistItem.id);
+        toast.success("Added to wishlist!");
+      }
+    } catch (error) {
+      const err = error as { response?: { data?: { message?: string } } };
+      const message = err.response?.data?.message;
+      if (message?.includes("already in wishlist")) {
+        setIsInWishlist(true);
+        toast("Already in wishlist", { icon: "ℹ️" });
+      } else {
+        toast.error(message || "Failed to update wishlist");
+      }
+    }
+  };
 
   if (loading) {
     return <CandleLoader />
@@ -129,8 +188,8 @@ export default function ProductPage() {
           <div>
             {/* Main Image */}
             <div className="relative aspect-square bg-white rounded-lg overflow-hidden mb-3 md:mb-4">
-              <Image 
-                src={images[selectedImage]} 
+              <Image
+                src={images[selectedImage]}
                 alt={product.productName}
                 fill
                 className="object-cover"
@@ -148,11 +207,17 @@ export default function ProductPage() {
                 </div>
               )}
               {/* Action buttons */}
-              <button 
+              <button
                 onClick={handleAddToWishlist}
                 className="absolute top-2 right-2 md:top-4 md:right-4 bg-white rounded-full p-1.5 md:p-2 shadow-md hover:bg-gray-100 transition-colors"
               >
-                <Heart size={18} className="text-gray-600 md:w-5 md:h-5" />
+                <Heart
+                  size={16}
+                  className={`transition-colors cursor-pointer ${isInWishlist
+                      ? "text-accent fill-accent"
+                      : "text-accent hover:fill-accent"
+                    }`}
+                />
               </button>
               <button className="absolute top-10 right-2 md:top-14 md:right-4 bg-white rounded-full p-1.5 md:p-2 shadow-md hover:bg-gray-100 transition-colors">
                 <Share2 size={18} className="text-gray-600 md:w-5 md:h-5" />
@@ -166,12 +231,11 @@ export default function ProductPage() {
                   <button
                     key={index}
                     onClick={() => setSelectedImage(index)}
-                    className={`relative aspect-square bg-white rounded-lg overflow-hidden border-2 transition-all ${
-                      selectedImage === index ? 'border-accent' : 'border-transparent'
-                    }`}
+                    className={`relative aspect-square bg-white rounded-lg overflow-hidden border-2 transition-all ${selectedImage === index ? 'border-accent' : 'border-transparent'
+                      }`}
                   >
-                    <Image 
-                      src={img} 
+                    <Image
+                      src={img}
                       alt={`${product.productName} ${index + 1}`}
                       fill
                       className="object-cover"
@@ -204,11 +268,10 @@ export default function ProductPage() {
                   <Star
                     key={i}
                     size={18}
-                    className={`${
-                      i < Math.floor(product.averageCustomerRating)
+                    className={`${i < Math.floor(product.averageCustomerRating)
                         ? 'fill-yellow-400 text-yellow-400'
                         : 'text-gray-300'
-                    }`}
+                      }`}
                   />
                 ))}
               </div>
@@ -244,15 +307,15 @@ export default function ProductPage() {
             {/* Quantity and Actions */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 md:gap-4 mb-4 md:mb-6 px-0 md:px-15">
               <div className="flex items-center justify-center border border-accent rounded">
-                <button 
+                <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
                   className="p-2 md:p-3 text-accent hover:bg-accent/10 transition-colors cursor-pointer"
                   disabled={quantity <= 1}
                 >
-                  <Minus size={14} className="md:w-4 md:h-4"/>
+                  <Minus size={14} className="md:w-4 md:h-4" />
                 </button>
                 <span className="px-4 md:px-6 text-accent text-base md:text-lg font-medium">{quantity}</span>
-                <button 
+                <button
                   onClick={() => setQuantity(Math.min(product.availableStockQuantity, quantity + 1))}
                   className="p-2 md:p-3 text-accent hover:bg-accent/10 transition-colors cursor-pointer"
                   disabled={quantity >= product.availableStockQuantity}
@@ -261,7 +324,7 @@ export default function ProductPage() {
                 </button>
               </div>
 
-              <button 
+              <button
                 onClick={handleAddToCart}
                 disabled={product.inventoryStatus === 'OutOfStock' || addingToCart}
                 className="flex-1 bg-accent text-white py-2.5 md:py-3 px-4 md:px-6 rounded text-sm md:text-base font-medium hover:bg-opacity-90 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
@@ -279,7 +342,7 @@ export default function ProductPage() {
                 )}
               </button>
 
-              <button 
+              <button
                 onClick={handleBuyNow}
                 disabled={product.inventoryStatus === 'OutOfStock'}
                 className="sm:flex-none bg-accent text-white py-2.5 md:py-3 px-4 md:px-6 rounded text-sm md:text-base font-medium hover:bg-opacity-90 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
@@ -316,31 +379,28 @@ export default function ProductPage() {
           <div className="flex gap-4 md:gap-8 border-b mb-4 md:mb-6 overflow-x-auto">
             <button
               onClick={() => setActiveTab('description')}
-              className={`pb-2 md:pb-3 text-sm md:text-base font-medium transition-colors whitespace-nowrap ${
-                activeTab === 'description' 
-                  ? 'text-dark border-b-2 border-accent' 
+              className={`pb-2 md:pb-3 text-sm md:text-base font-medium transition-colors whitespace-nowrap ${activeTab === 'description'
+                  ? 'text-dark border-b-2 border-accent'
                   : 'text-gray-400'
-              }`}
+                }`}
             >
               Additional Information
             </button>
             <button
               onClick={() => setActiveTab('specifications')}
-              className={`pb-2 md:pb-3 text-sm md:text-base font-medium transition-colors whitespace-nowrap ${
-                activeTab === 'specifications' 
-                  ? 'text-dark border-b-2 border-accent' 
+              className={`pb-2 md:pb-3 text-sm md:text-base font-medium transition-colors whitespace-nowrap ${activeTab === 'specifications'
+                  ? 'text-dark border-b-2 border-accent'
                   : 'text-gray-400'
-              }`}
+                }`}
             >
               Specifications
             </button>
             <button
               onClick={() => setActiveTab('reviews')}
-              className={`pb-2 md:pb-3 text-sm md:text-base font-medium transition-colors whitespace-nowrap ${
-                activeTab === 'reviews' 
-                  ? 'text-dark border-b-2 border-accent' 
+              className={`pb-2 md:pb-3 text-sm md:text-base font-medium transition-colors whitespace-nowrap ${activeTab === 'reviews'
+                  ? 'text-dark border-b-2 border-accent'
                   : 'text-gray-400'
-              }`}
+                }`}
             >
               Reviews({reviews.length})
             </button>
@@ -423,11 +483,10 @@ export default function ProductPage() {
                         <Star
                           key={i}
                           size={16}
-                          className={`${
-                            i < (review.rating || 0)
+                          className={`${i < (review.rating || 0)
                               ? 'fill-yellow-400 text-yellow-400'
                               : 'text-gray-300'
-                          }`}
+                            }`}
                         />
                       ))}
                     </div>
@@ -452,10 +511,10 @@ export default function ProductPage() {
         {similarProducts.length > 0 && (
           <section>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 md:mb-6 gap-2">
-              <h2 className="text-xl md:text-2xl lg:text-3xl font-serif text-dark">Similar Products</h2>
+              <h2 className="text-xl md:text-2xl lg:text-3xl xl:text-4xl font-serif text-dark">Similar Products</h2>
               <Link href="/categories" className="text-accent hover:underline text-xs md:text-sm">See More →</Link>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            <div className="flex gap-4 not-lg:overflow-scroll pb-2">
               {similarProducts.map((prod) => (
                 <ProductCard
                   key={prod.id}
