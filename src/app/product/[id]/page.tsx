@@ -12,6 +12,7 @@ import { toast } from 'react-hot-toast'
 import CandleLoader from '@/components/CandleLoader'
 import { useAuth } from '@/contexts/AuthContext'
 import { addToWishlist, getUserWishlist, removeFromWishlistByProductId } from '@/services/wishlistService'
+import ReviewFormModal from '@/components/modal/ReviewFormModal'
 
 export default function ProductPage() {
   const params = useParams()
@@ -27,6 +28,7 @@ export default function ProductPage() {
   const [quantity, setQuantity] = useState(1)
   const [selectedImage, setSelectedImage] = useState(0)
   const [activeTab, setActiveTab] = useState('description')
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false)
 
   const { user } = useAuth();
   const [isInWishlist, setIsInWishlist] = useState<boolean>(false);
@@ -77,6 +79,33 @@ export default function ProductPage() {
       fetchProductData()
     }
   }, [productId])
+
+  const fetchReviews = async () => {
+    try {
+      const reviewsRes = await getProductReviews(productId)
+      setReviews(reviewsRes.reviews || [])
+      
+      // Also refresh product data to get updated rating
+      const productRes = await getProductById(productId)
+      setProduct(productRes.product)
+    } catch (error) {
+      console.error('Error fetching reviews:', error)
+    }
+  }
+
+  const handleReviewSubmitted = () => {
+    fetchReviews()
+  }
+
+  const handleWriteReview = () => {
+    if (!user) {
+      toast.error('Please login to write a review')
+      router.push('/auth/login')
+      return
+    }
+    setIsReviewModalOpen(true)
+  }
+  // }, [productId])
 
   const handleAddToCart = async () => {
     if (!product) return
@@ -474,6 +503,18 @@ export default function ProductPage() {
 
           {activeTab === 'reviews' && (
             <div className="space-y-4 md:space-y-6">
+              {/* Write Review Button */}
+              <div className="flex justify-between items-center pb-4 border-b border-gray-200">
+                <h3 className="text-lg font-semibold text-dark">Customer Reviews</h3>
+                <button
+                  onClick={handleWriteReview}
+                  className="px-4 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:bg-opacity-90 transition-colors"
+                >
+                  Write a Review
+                </button>
+              </div>
+
+              {/* Reviews List */}
               {reviews.length > 0 ? (
                 reviews.map((review: Review) => (
                   <div key={review.id} className="border-b pb-4 md:pb-6 last:border-0">
@@ -491,17 +532,44 @@ export default function ProductPage() {
                       ))}
                     </div>
 
-                    {/* Reviewer Name */}
-                    <p className="text-sm font-semibold text-dark mb-2">{review.user.fullName || 'Anonymous'}</p>
+                    {/* Reviewer Name and Date */}
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-sm font-semibold text-dark">{review.user.fullName || 'Anonymous'}</p>
+                      {review.reviewDate && (
+                        <p className="text-xs text-gray-500">
+                          {new Date(review.reviewDate).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
 
                     {/* Review Text */}
-                    <p className="text-xs md:text-sm text-gray-700 leading-relaxed">
-                      {review.comment}
+                    <p className="text-xs md:text-sm text-gray-700 leading-relaxed mb-3">
+                      {review.reviewText}
                     </p>
+
+                    {/* Review Photo */}
+                    {review.reviewPhoto && (
+                      <div className="relative w-32 h-32 rounded-lg overflow-hidden">
+                        <Image
+                          src={review.reviewPhoto}
+                          alt="Review photo"
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    )}
                   </div>
                 ))
               ) : (
-                <p className="text-gray-500 text-center py-8">No reviews yet. Be the first to review this product!</p>
+                <div className="text-center py-8">
+                  <p className="text-gray-500 mb-4">No reviews yet. Be the first to review this product!</p>
+                  <button
+                    onClick={handleWriteReview}
+                    className="px-6 py-2.5 bg-accent text-white rounded-lg text-sm font-medium hover:bg-opacity-90 transition-colors"
+                  >
+                    Write the First Review
+                  </button>
+                </div>
               )}
             </div>
           )}
@@ -531,6 +599,17 @@ export default function ProductPage() {
           </section>
         )}
       </div>
+
+      {/* Review Form Modal */}
+      {product && (
+        <ReviewFormModal
+          isOpen={isReviewModalOpen}
+          onClose={() => setIsReviewModalOpen(false)}
+          productId={Number(productId)}
+          productName={product.productName}
+          onReviewSubmitted={handleReviewSubmitted}
+        />
+      )}
     </div>
   )
 }

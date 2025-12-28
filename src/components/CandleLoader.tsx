@@ -31,11 +31,8 @@ export default function CandleLoader() {
           <div className="absolute inset-0 bg-accent/20 rounded-lg blur-xl animate-pulse"></div>
         </div>
 
-        {/* Loading text */}
-        <p className="text-center mt-6 text-gray-600 font-medium animate-pulse">
-          Loading...
-        </p>
-
+        
+        {/* Styles */}
         <style jsx>{`
           @keyframes flicker {
             0%, 100% { transform: scale(1) translateY(0); opacity: 1; }

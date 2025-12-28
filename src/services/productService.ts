@@ -55,7 +55,9 @@ export interface Review{
     productId: number,
     userId: number,
     rating?: number,
-    comment?: string,
+    reviewText?: string,
+    reviewPhoto?: string,
+    reviewDate?: string,
     createdAt: string,
     updatedAt: string,
     user: {
