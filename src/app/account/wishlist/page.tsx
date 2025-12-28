@@ -171,7 +171,7 @@ export default function WishlistPage() {
                                   className="flex items-center gap-1.5 px-4 py-2 bg-accent text-white rounded text-sm font-medium hover:bg-opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                   <ShoppingCart size={16} />
-                                  Add to Cart
+                                  {product.availableStockQuantity === 0 ? 'Out of Stock' : 'Add to Cart'}
                                 </button>
                                 <button
                                   onClick={() => handleRemove(item.id)}

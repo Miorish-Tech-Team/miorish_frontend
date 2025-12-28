@@ -28,19 +28,33 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       const url = error.config?.url || ''
       
-      // Don't redirect for public endpoints (general routes)
+      // Don't redirect for public endpoints (general routes, auth, products, recommendations)
       const isPublicEndpoint = url.includes('/general/') || 
                               url.includes('/auth/') ||
-                              url.includes('/product/')
+                              url.includes('/product/')||
+                              url.includes('/recommendation')
       
-      // Don't redirect if already on auth pages to prevent infinite loops
-      const isOnAuthPage = typeof window !== 'undefined' && 
+      // Don't redirect if already on auth pages or public pages to prevent infinite loops
+      const isOnAuthOrPublicPage = typeof window !== 'undefined' && 
                           (window.location.pathname.startsWith('/auth/') ||
                            window.location.pathname === '/auth/login' ||
-                           window.location.pathname === '/auth/register')
+                           window.location.pathname === '/auth/register' ||
+                           window.location.pathname === '/categories' ||
+                           window.location.pathname.startsWith('/categories') ||
+                           window.location.pathname === '/' ||
+                           window.location.pathname.startsWith('/products'))
       
-      if (!isPublicEndpoint && !isOnAuthPage && typeof window !== 'undefined') {
+      console.log('[Axios Interceptor] 401 Error:', {
+        url,
+        isPublicEndpoint,
+        isOnAuthOrPublicPage,
+        pathname: typeof window !== 'undefined' ? window.location.pathname : 'server',
+        willRedirect: !isPublicEndpoint && !isOnAuthOrPublicPage
+      })
+      
+      if (!isPublicEndpoint && !isOnAuthOrPublicPage && typeof window !== 'undefined') {
         // Only redirect if we're trying to access protected user endpoints
+        console.log('[Axios Interceptor] Redirecting to login')
         window.location.href = '/auth/login'
       }
     }

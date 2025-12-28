@@ -170,7 +170,7 @@ export default function AddressPage() {
                     resetForm()
                     setShowAddForm(!showAddForm)
                   }}
-                  className="flex items-center gap-2 px-4 py-2 bg-accent text-white rounded hover:bg-opacity-90 transition-colors text-sm"
+                  className="flex items-center gap-2 px-4 py-2 text-accent border border-accent cursor-pointer rounded hover:bg-opacity-90 transition-colors text-sm"
                 >
                   <Plus size={18} />
                   {showAddForm ? 'Cancel' : 'Add Address'}
@@ -302,7 +302,7 @@ export default function AddressPage() {
                               required
                               value={formData.recipientName}
                               onChange={handleInputChange}
-                              className="w-full px-4 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
+                              className="w-full px-4 py-2 border text-dark border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
                               placeholder="John Doe"
                             />
                           </div>
@@ -317,7 +317,7 @@ export default function AddressPage() {
                               required
                               value={formData.phoneNumber}
                               onChange={handleInputChange}
-                              className="w-full px-4 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
+                              className="w-full px-4 py-2 border text-dark border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
                               placeholder="1234567890"
                             />
                           </div>
@@ -332,7 +332,7 @@ export default function AddressPage() {
                               required
                               value={formData.street}
                               onChange={handleInputChange}
-                              className="w-full px-4 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
+                              className="w-full px-4 py-2 text-dark border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
                               placeholder="123 Main Street, Apt 4B"
                             />
                           </div>
@@ -347,7 +347,7 @@ export default function AddressPage() {
                               required
                               value={formData.city}
                               onChange={handleInputChange}
-                              className="w-full px-4 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
+                              className="w-full px-4 py-2 text-dark border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
                               placeholder="Mumbai"
                             />
                           </div>
@@ -362,7 +362,7 @@ export default function AddressPage() {
                               required
                               value={formData.state}
                               onChange={handleInputChange}
-                              className="w-full px-4 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
+                              className="w-full px-4 py-2 text-dark border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
                               placeholder="Maharashtra"
                             />
                           </div>
@@ -377,7 +377,7 @@ export default function AddressPage() {
                               required
                               value={formData.postalCode}
                               onChange={handleInputChange}
-                              className="w-full px-4 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
+                              className="w-full px-4 py-2 text-dark border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
                               placeholder="400001"
                             />
                           </div>
@@ -392,7 +392,7 @@ export default function AddressPage() {
                               required
                               value={formData.country}
                               onChange={handleInputChange}
-                              className="w-full px-4 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
+                              className="w-full px-4 py-2 text-dark border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
                               placeholder="India"
                             />
                           </div>
@@ -405,7 +405,7 @@ export default function AddressPage() {
                               name="type"
                               value={formData.type}
                               onChange={handleInputChange}
-                              className="w-full px-4 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
+                              className="w-full px-4 py-2 text-dark appearance-none border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
                             >
                               <option value="home">Home</option>
                               <option value="work">Work</option>

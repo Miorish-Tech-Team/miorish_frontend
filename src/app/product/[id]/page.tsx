@@ -314,7 +314,7 @@ export default function ProductPage() {
                 >
                   <Minus size={14} className="md:w-4 md:h-4" />
                 </button>
-                <span className="px-4 md:px-6 text-accent text-base md:text-lg font-medium">{quantity}</span>
+                <span className="px-2 md:px-4 text-accent text-base md:text-lg font-medium">{quantity}</span>
                 <button
                   onClick={() => setQuantity(Math.min(product.availableStockQuantity, quantity + 1))}
                   className="p-2 md:p-3 text-accent hover:bg-accent/10 transition-colors cursor-pointer"
@@ -326,8 +326,8 @@ export default function ProductPage() {
 
               <button
                 onClick={handleAddToCart}
-                disabled={product.inventoryStatus === 'OutOfStock' || addingToCart}
-                className="flex-1 bg-accent text-white py-2.5 md:py-3 px-4 md:px-6 rounded text-sm md:text-base font-medium hover:bg-opacity-90 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                disabled={product.availableStockQuantity === 0 || addingToCart}
+                className="flex-1 bg-accent text-white py-2.5 md:py-3 px-4 md:px-6 cursor-pointer rounded text-sm md:text-base font-medium hover:bg-opacity-90 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {addingToCart ? (
                   <>
@@ -337,7 +337,7 @@ export default function ProductPage() {
                 ) : (
                   <>
                     <ShoppingCart size={18} />
-                    Add to Cart
+                    {product.availableStockQuantity === 0 ? 'Unavailable' : 'Add to Cart'}
                   </>
                 )}
               </button>
@@ -345,7 +345,7 @@ export default function ProductPage() {
               <button
                 onClick={handleBuyNow}
                 disabled={product.inventoryStatus === 'OutOfStock'}
-                className="sm:flex-none bg-accent text-white py-2.5 md:py-3 px-4 md:px-6 rounded text-sm md:text-base font-medium hover:bg-opacity-90 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="sm:flex-none bg-accent text-white cursor-pointer py-2.5 md:py-3 px-4 md:px-6 rounded text-sm md:text-base font-medium hover:bg-opacity-90 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 Buy Now
               </button>
@@ -361,7 +361,7 @@ export default function ProductPage() {
 
             {/* Additional Info */}
             {(product.productWarrantyInfo || product.productReturnPolicy) && (
-              <div className="border-t pt-4 mt-4 space-y-2 text-sm px-0 md:px-15">
+              <div className="border-t pt-4 mt-4 space-y-2 text-primary text-sm px-0 md:px-15">
                 {product.productWarrantyInfo && (
                   <p><strong>Warranty:</strong> {product.productWarrantyInfo}</p>
                 )}
