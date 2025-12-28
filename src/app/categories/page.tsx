@@ -239,46 +239,43 @@ function CategoriesPageContent() {
             </span>
             <ChevronRight
               size={20}
-              className={`transform transition-transform ${
-                showMobileFilters ? "rotate-90" : ""
-              }`}
+              className={`transform transition-transform ${showMobileFilters ? "rotate-90" : ""
+                }`}
             />
           </button>
 
           {/* Sidebar */}
           <aside
-            className={`w-full lg:w-64 shrink-0 ${
-              showMobileFilters ? "block" : "hidden lg:block"
-            }`}
+            className={`w-full lg:w-64 shrink-0 ${showMobileFilters ? "block" : "hidden lg:block"
+              }`}
           >
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div className="py-3 rounded-lg shadow-sm border border-accent overflow-hidden">
               {/* Categories */}
-              <div className="border-b border-gray-200">
-                <h3 className="text-base font-semibold text-gray-900 px-4 py-3 bg-gray-50">
+              <div className="border-b border-accent">
+                <h3 className="text-xl font-semibold text-gray-900 px-4 py-1 ">
                   Categories
                 </h3>
-                <div className="px-4 py-3 space-y-1 max-h-80 overflow-y-auto">
+                <div className="px-8 py-1  max-h-80 overflow-y-auto">
                   {categories.map((category) => (
                     <div key={category.id}>
-                      <div className="flex items-center justify-between py-1.5">
+                      <div className="flex items-center justify-between py-1">
                         <button
                           onClick={() => toggleCategory(category.id)}
-                          className={`text-sm hover:text-accent transition-colors font-normal flex-1 text-left ${
-                            selectedCategories.includes(category.id)
+                          className={`text-sm hover:text-accent transition-colors font-normal flex-1 text-left ${selectedCategories.includes(category.id)
                               ? "text-accent font-medium"
                               : "text-gray-700"
-                          }`}
+                            }`}
                         >
                           {category.categoryName}
                         </button>
                         <button
                           onClick={() => toggleCategoryExpand(category.id)}
-                          className="p-1 hover:bg-gray-100 rounded transition-colors"
+                          className="p-1 rounded transition-colors"
                         >
                           {expandedCategories.includes(category.id) ? (
-                            <Minus size={16} className="text-gray-600" />
+                            <Minus size={16} className="text-gray-600 hover:text-accent cursor-pointer" />
                           ) : (
-                            <Plus size={16} className="text-gray-600" />
+                            <Plus size={16} className="text-gray-600 hover:text-accent cursor-pointer" />
                           )}
                         </button>
                       </div>
@@ -290,11 +287,10 @@ function CategoriesPageContent() {
                               <button
                                 key={sub.id}
                                 onClick={() => toggleSubCategory(sub.id)}
-                                className={`block text-xs py-1 hover:text-accent transition-colors ${
-                                  selectedSubCategories.includes(sub.id)
+                                className={`block text-xs py-1 hover:text-accent transition-colors ${selectedSubCategories.includes(sub.id)
                                     ? "text-accent font-medium"
                                     : "text-gray-600"
-                                }`}
+                                  }`}
                               >
                                 {sub.subCategoryName}
                               </button>
@@ -308,20 +304,19 @@ function CategoriesPageContent() {
 
               {/* Brands */}
               {availableBrands.length > 0 && (
-                <div className="border-b border-gray-200">
-                  <h3 className="text-base font-semibold text-gray-900 px-4 py-3 bg-gray-50">
+                <div className="border-b border-accent">
+                  <h3 className="text-xl font-semibold text-gray-900 px-4 py-3">
                     Brands
                   </h3>
-                  <div className="px-4 py-3 space-y-2 max-h-64 overflow-y-auto">
+                  <div className="px-8 py-1 space-y-2 max-h-64 overflow-y-auto">
                     {availableBrands.map((brand) => (
                       <button
                         key={brand}
                         onClick={() => toggleBrand(brand)}
-                        className={`block w-full text-left text-sm hover:text-accent transition-colors ${
-                          selectedBrands.includes(brand)
+                        className={`block w-full text-left text-sm hover:text-accent transition-colors ${selectedBrands.includes(brand)
                             ? "text-accent font-bold"
                             : "text-gray-700 font-normal"
-                        }`}
+                          }`}
                       >
                         {brand}
                       </button>
@@ -331,15 +326,15 @@ function CategoriesPageContent() {
               )}
 
               {/* Price Range */}
-              <div className="border-b border-gray-200">
-                <h3 className="text-base md:text-lg font-semibold text-gray-900 px-4 py-3 bg-gray-50">
+              <div className="border-b border-accent">
+                <h3 className="text-base md:text-lg lg:text-xl font-semibold text-gray-900 px-4 py-3">
                   Price
                 </h3>
                 <div className="px-4 py-6 space-y-6">
                   {/* Dual Handle Range Slider */}
                   <div className="relative pt-2 pb-4">
                     {/* Track */}
-                    <div className="relative h-2 bg-gray-200 rounded-full">
+                    <div className="relative h-2 bg-gray-300   rounded-full">
                       {/* Active Range */}
                       <div
                         className="absolute h-2 bg-accent rounded-full"
@@ -391,7 +386,7 @@ function CategoriesPageContent() {
               <div className="p-4 md:p-5 flex gap-3">
                 <button
                   onClick={applyFilters}
-                  className="flex-1 px-4 py-2.5 bg-white text-accent border-2 border-accent rounded-lg hover:bg-accent hover:text-white transition-all font-semibold text-sm"
+                  className="flex-1 px-4 py-2.5 text-accent border-2 border-accent rounded-lg hover:border-accent/10 hover:bg-accent/50 hover:text-white transition-all font-semibold text-sm"
                 >
                   Apply
                 </button>
@@ -422,19 +417,39 @@ function CategoriesPageContent() {
               </p>
 
               {/* Sort */}
-              <select
-                value={sortBy}
-                onChange={(e) =>
-                  setSortBy(e.target.value as GetAllProductsParams["sortBy"])
-                }
-                className="w-full sm:w-auto px-3 md:px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent text-gray-700 font-medium cursor-pointer text-xs md:text-sm"
-              >
-                <option value="latest">Latest</option>
-                <option value="popular">Most Popular</option>
-                <option value="rating">Highest Rated</option>
-                <option value="priceLowToHigh">Price: Low to High</option>
-                <option value="priceHighToLow">Price: High to Low</option>
-              </select>
+              <div className="relative w-full sm:w-56">
+                <select
+                  value={sortBy}
+                  onChange={(e) =>
+                    setSortBy(e.target.value as GetAllProductsParams["sortBy"])
+                  }
+                  className="
+                            appearance-none w-full
+                            bg-transparent
+                            border border-accent/40
+                            text-accent
+                            font-medium text-xs md:text-sm
+                            px-4 py-2.5 pr-10
+                            rounded-xl
+                            cursor-pointer
+                            transition-all
+                            focus:outline-none focus:ring-2 focus:ring-accent/60
+                            hover:border-accent
+                          "
+                >
+                  <option value="latest">Latest</option>
+                  <option value="popular">Most Popular</option>
+                  <option value="rating">Highest Rated</option>
+                  <option value="priceLowToHigh">Price: Low → High</option>
+                  <option value="priceHighToLow">Price: High → Low</option>
+                </select>
+
+                {/* Custom Arrow */}
+                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-accent/70">
+                  ▼
+                </span>
+              </div>
+
             </div>
 
             {/* Products Grid */}
@@ -507,11 +522,10 @@ function CategoriesPageContent() {
                       <button
                         key={pageNum}
                         onClick={() => setCurrentPage(pageNum)}
-                        className={`min-w-8 h-8 px-3 rounded-lg font-medium transition-all ${
-                          currentPage === pageNum
+                        className={`min-w-8 h-8 px-3 rounded-lg font-medium transition-all ${currentPage === pageNum
                             ? "bg-accent text-white shadow-md"
                             : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 shadow-sm"
-                        }`}
+                          }`}
                       >
                         {pageNum}
                       </button>

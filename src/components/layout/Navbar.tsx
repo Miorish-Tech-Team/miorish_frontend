@@ -172,53 +172,53 @@ export default function Navbar() {
 
           {/* Search Bar - Hidden on mobile */}
           <div className="hidden lg:flex flex-1 max-w-2xl mx-8 relative" ref={suggestionsRef}>
-            <div className="flex w-full bg-white rounded-lg overflow-hidden">
-              <div className="relative" ref={categoryDropdownRef}>
+            <div className="relative w-full" ref={categoryDropdownRef}>
+              <div className="flex w-full bg-white rounded-lg overflow-hidden">
                 <button 
-                  className="flex items-center gap-2 px-4 py-2.5 bg-white text-dark text-sm border-r border-gray-200 hover:bg-gray-50 transition-colors whitespace-nowrap"
+                  className="flex items-center gap-1 px-4 py-2.5 bg-white text-dark text-sm border-r border-gray-200 hover:bg-gray-50 transition-colors whitespace-nowrap"
                   onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
                 >
                   <span className="max-w-[100px] truncate">{searchCategory}</span>
-                  <ChevronDown size={16} className='cursor-pointer'/>
+                  <ChevronDown size={16} className={`cursor-pointer ${showCategoryDropdown ? "rotate-180" : ""} transition-transform duration-200`}/>
                 </button>
                 
-                {/* Category Dropdown */}
-                {showCategoryDropdown && (
-                  <div className="absolute text-gray-900 top-full left-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
-                    <button
-                      className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors"
-                      onClick={() => handleCategorySelect('All')}
-                    >
-                      All Categories
-                    </button>
-                    {categories.map((category) => (
-                      <button
-                        key={category.id}
-                        className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors border-t border-gray-100"
-                        onClick={() => handleCategorySelect(category.categoryName)}
-                      >
-                        {category.categoryName}
-                      </button>
-                    ))}
-                  </div>
-                )}
+                <input
+                  type="text"
+                  placeholder="Find your signature fragrance..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearch(searchQuery)}
+                  className="flex-1 px-4 py-2.5 text-dark text-sm focus:outline-none"
+                />
+                
+                <button 
+                  className="bg-accent text-white px-3 py-2.5 text-sm font-bold cursor-pointer  hover:bg-opacity-90 transition-colors"
+                  onClick={() => handleSearch(searchQuery)}
+                >
+                  Search
+                </button>
               </div>
               
-              <input
-                type="text"
-                placeholder="Find your signature fragrance..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch(searchQuery)}
-                className="flex-1 px-4 py-2.5 text-dark text-sm focus:outline-none"
-              />
-              
-              <button 
-                className="bg-accent text-white px-6 py-2.5 text-sm font-bold cursor-pointer  hover:bg-opacity-90 transition-colors"
-                onClick={() => handleSearch(searchQuery)}
-              >
-                Search
-              </button>
+              {/* Category Dropdown */}
+              {showCategoryDropdown && (
+                <div className="absolute text-gray-900 top-full left-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
+                  <button
+                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors"
+                    onClick={() => handleCategorySelect('All')}
+                  >
+                    All Categories
+                  </button>
+                  {categories.map((category) => (
+                    <button
+                      key={category.id}
+                      className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors border-t border-gray-100"
+                      onClick={() => handleCategorySelect(category.categoryName)}
+                    >
+                      {category.categoryName}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             
             {/* Search Suggestions Dropdown */}
