@@ -74,6 +74,7 @@ export default function NewArrivals({ products }: NewArrivalsProps) {
                 originalPrice={product.productPrice}
                 discountedPrice={product.productDiscountPrice}
                 discount={product.productDiscountPercentage}
+                availableStock={product.availableStockQuantity}
                 onWishlistToggle={() => handleWishlistToggle(product.id)}
                 isInWishlist={wishlistItems.has(product.id)}
               />
@@ -92,6 +93,7 @@ export default function NewArrivals({ products }: NewArrivalsProps) {
               originalPrice={product.productPrice}
               discountedPrice={product.productDiscountPrice}
               discount={product.productDiscountPercentage}
+              availableStock={product.availableStockQuantity}
               onWishlistToggle={() => handleWishlistToggle(product.id)}
               isInWishlist={wishlistItems.has(product.id)}
             />

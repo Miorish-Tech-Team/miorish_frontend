@@ -23,6 +23,7 @@ interface ProductCardProps {
   productId?: number | string;
   onWishlistToggle?: () => void;
   isInWishlist?: boolean;
+  availableStock?: number;
 }
 
 export default function ProductCard({
@@ -35,7 +36,9 @@ export default function ProductCard({
   productId = 1,
   onWishlistToggle,
   isInWishlist: isInWishlistProp,
+  availableStock = 999,
 }: ProductCardProps) {
+  const isOutOfStock = availableStock === 0;
   const [quantity, setQuantity] = useState(1);
   const [cartQuantity, setCartQuantity] = useState(0); // Actual quantity in cart
   const [addingToCart, setAddingToCart] = useState(false);
@@ -198,10 +201,17 @@ export default function ProductCard({
 
   return (
     // Compact mobile design with responsive sizing
-    <div className="w-full p-1.5 md:p-2 border border-accent rounded-md overflow-hidden hover:shadow-md transition-shadow bg-white">
+    <div className="w-full p-1.5 md:p-2 border border-accent rounded-md overflow-hidden hover:shadow-md transition-shadow bg-white relative">
+      {/* Out of Stock Badge */}
+      {isOutOfStock && (
+        <div className="absolute top-0 left-0 right-0 bg-red-600 text-white text-center py-1 z-10">
+          <span className="text-[10px] md:text-xs font-bold">OUT OF STOCK</span>
+        </div>
+      )}
+      
       {/* Image - Smaller aspect ratio on mobile */}
       <Link href={`/product/${productId}`}>
-        <div className="relative aspect-square md:aspect-4/3 bg-secondary cursor-pointer overflow-hidden rounded-sm">
+        <div className={`relative aspect-square md:aspect-4/3 bg-secondary cursor-pointer overflow-hidden rounded-sm ${isOutOfStock ? 'opacity-60' : ''}`}>
           <Image
             src={image}
             alt={title}
@@ -212,10 +222,11 @@ export default function ProductCard({
           <button
             className="bg-white/80 absolute top-1 md:top-1.5 right-1 md:right-1.5 rounded-full p-1 hover:bg-white transition-colors shadow-sm"
             onClick={handleAddToWishlist}
+            disabled={isOutOfStock}
           >
             <Heart
               size={14}
-              className={`md:w-4 md:h-4 transition-colors cursor-pointer ${
+              className={`md:w-4 md:h-4 transition-colors ${isOutOfStock ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'} ${
                 isInWishlist
                   ? "text-accent fill-accent"
                   : "text-accent hover:fill-accent"
@@ -258,11 +269,20 @@ export default function ProductCard({
         {/* Actions - More compact buttons */}
         {/* Actions Section */}
         <div className="flex items-center w-full mt-1.5 md:mt-2">
-          <div className="flex items-center w-full border-2 border-accent rounded-lg overflow-hidden bg-white h-8 md:h-9 lg:h-10">
+          <div className={`flex items-center w-full border-2 rounded-lg overflow-hidden h-8 md:h-9 lg:h-10 ${
+            isOutOfStock 
+              ? 'border-gray-300 bg-gray-100' 
+              : 'border-accent bg-white'
+          }`}>
             {/* Minus Button */}
             <button
               onClick={decrementQuantity}
-              className="flex items-center justify-center px-1.5 md:px-2 lg:px-3 h-full text-accent hover:bg-accent/5 transition-colors border-r-2 border-accent"
+              disabled={isOutOfStock}
+              className={`flex items-center justify-center px-1.5 md:px-2 lg:px-3 h-full border-r-2 transition-colors ${
+                isOutOfStock
+                  ? 'border-gray-300 text-gray-400 cursor-not-allowed'
+                  : 'text-accent hover:bg-accent/5 border-accent'
+              }`}
               aria-label="Decrease quantity"
             >
               <Minus size={14} strokeWidth={3} className="md:w-4 md:h-4" />
@@ -271,14 +291,18 @@ export default function ProductCard({
             {/* Center Action/Display */}
             <button
               onClick={handleAddToCart}
-              disabled={addingToCart}
+              disabled={addingToCart || isOutOfStock}
               className={`flex-1 h-full text-center text-[10px] md:text-xs lg:text-sm font-bold uppercase tracking-wide transition-colors ${
-                addingToCart
-                  ? "bg-accent/10"
-                  : "bg-transparent hover:bg-accent/5"
-              } text-accent`}
+                isOutOfStock
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : addingToCart
+                  ? "bg-accent/10 text-accent"
+                  : "bg-transparent hover:bg-accent/5 text-accent"
+              }`}
             >
-              {addingToCart ? (
+              {isOutOfStock ? (
+                <span>UNAVAILABLE</span>
+              ) : addingToCart ? (
                 <span className="animate-pulse">...</span>
               ) : (
                 <span className="flex items-center justify-center h-full">
@@ -290,7 +314,12 @@ export default function ProductCard({
             {/* Plus Button */}
             <button
               onClick={incrementQuantity}
-              className="flex items-center justify-center px-1.5 md:px-2 lg:px-3 h-full text-accent hover:bg-accent/5 transition-colors border-l-2 border-accent"
+              disabled={isOutOfStock}
+              className={`flex items-center justify-center px-1.5 md:px-2 lg:px-3 h-full border-l-2 transition-colors ${
+                isOutOfStock
+                  ? 'border-gray-300 text-gray-400 cursor-not-allowed'
+                  : 'text-accent hover:bg-accent/5 border-accent'
+              }`}
               aria-label="Increase quantity"
             >
               <Plus size={14} strokeWidth={3} className="md:w-4 md:h-4" />

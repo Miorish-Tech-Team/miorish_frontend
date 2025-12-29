@@ -86,6 +86,7 @@ export default function Recommendation({ products }: RecommendationProps) {
                 originalPrice={product.productPrice}
                 discountedPrice={product.productDiscountPrice}
                 discount={product.productDiscountPercentage}
+                availableStock={product.availableStockQuantity}
               />
             </div>
           ))}
@@ -102,6 +103,7 @@ export default function Recommendation({ products }: RecommendationProps) {
               originalPrice={product.productPrice}
               discountedPrice={product.productDiscountPrice}
               discount={product.productDiscountPercentage}
+              availableStock={product.availableStockQuantity}
             />
           ))}
         </div>

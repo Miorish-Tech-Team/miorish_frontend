@@ -1,14 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { Eye, EyeOff, Mail, Lock, User, Phone, Loader2 } from 'lucide-react'
+import { Eye, EyeOff, Mail, Lock, User, Loader2, X } from 'lucide-react'
 import { authAPI } from '@/services/authService'
+import { useAuthModal } from '@/contexts/AuthModalContext'
 import toast from 'react-hot-toast'
 
-export default function RegisterPage() {
-  const router = useRouter()
+export default function RegisterModal() {
+  const { closeModal, openLoginModal } = useAuthModal()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -16,7 +15,6 @@ export default function RegisterPage() {
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
-    phone: '',
     password: '',
     confirmPassword: '',
     agreeToTerms: false
@@ -50,8 +48,8 @@ export default function RegisterPage() {
       })
 
       if (response.success) {
-        toast.success('Account created successfully! Redirecting to login...')
-        setTimeout(() => router.push('/auth/login'), 2000)
+        toast.success('Account created successfully! Please sign in.')
+        setTimeout(() => openLoginModal(), 1500)
       }
     } catch (err) {
       const error = err as { response?: { data?: { message?: string } } }
@@ -74,10 +72,17 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-secondary flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md">
-        {/* Card */}
-        <div className="bg-white rounded-lg shadow-lg p-6 md:p-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="bg-white rounded-lg shadow-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto">
+        <div className="p-6 md:p-8 relative">
+          {/* Close Button */}
+          <button
+            onClick={closeModal}
+            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <X size={24} />
+          </button>
+
           {/* Header */}
           <div className="text-center mb-6 md:mb-8">
             <h1 className="text-2xl md:text-3xl font-bold text-dark mb-2">
@@ -122,25 +127,6 @@ export default function RegisterPage() {
                   onChange={handleChange}
                   className="w-full pl-10 pr-4 py-2.5 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-transparent focus:ring-2 focus:ring-accent text-dark"
                   placeholder="Enter your email"
-                  required
-                />
-              </div>
-            </div>
-
-            {/* Phone */}
-            <div>
-              <label className="block text-sm font-medium text-dark mb-2">
-                Phone Number
-              </label>
-              <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-2.5 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-transparent focus:ring-2 focus:ring-accent text-dark"
-                  placeholder="+91 XXXXXXXXXX"
                   required
                 />
               </div>
@@ -253,9 +239,13 @@ export default function RegisterPage() {
           {/* Footer */}
           <p className="mt-6 text-center text-sm text-gray-600">
             Already have an account?{' '}
-            <Link href="/auth/login" className="text-accent font-medium hover:underline">
+            <button
+              type="button"
+              onClick={openLoginModal}
+              className="text-accent font-medium hover:underline"
+            >
               Sign In
-            </Link>
+            </button>
           </p>
         </div>
       </div>

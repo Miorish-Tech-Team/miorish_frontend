@@ -8,12 +8,14 @@ import { useRouter } from 'next/navigation'
 import { Minus, Plus, Trash2, Loader2, ShoppingBag, ChevronRight } from 'lucide-react'
 import { useCart } from '@/contexts/CartContext'
 import AccountSidebar from '@/components/layout/AccountSidebar'
+import ClearCartModal from '@/components/modals/ClearCartModal'
 
 export default function CartPage() {
   const router = useRouter()
   const { cart, summary, loading, updateQuantity, removeItem, clearCart } = useCart()
   const [updatingItems, setUpdatingItems] = useState<Set<number>>(new Set())
   const [removingItems, setRemovingItems] = useState<Set<number>>(new Set())
+  const [showClearModal, setShowClearModal] = useState(false)
 
   const handleQuantityChange = async (itemId: number, newQuantity: number, maxStock: number) => {
     if (newQuantity < 1 || newQuantity > maxStock) return
@@ -139,11 +141,7 @@ export default function CartPage() {
                     Cart Items ({summary.totalItems} {summary.totalItems === 1 ? 'item' : 'items'})
                   </h2>
                   <button
-                    onClick={() => {
-                      if (confirm('Are you sure you want to clear your cart?')) {
-                        clearCart()
-                      }
-                    }}
+                    onClick={() => setShowClearModal(true)}
                     className="text-sm text-dark/80 hover:text-dark font-medium cursor-pointer"
                   >
                     Clear Cart
@@ -289,6 +287,14 @@ export default function CartPage() {
           </div>
         )}
       </div>
+
+      {/* Clear Cart Confirmation Modal */}
+      <ClearCartModal
+        isOpen={showClearModal}
+        onClose={() => setShowClearModal(false)}
+        onConfirm={clearCart}
+        itemCount={summary.totalItems}
+      />
     </div>
   )
 }

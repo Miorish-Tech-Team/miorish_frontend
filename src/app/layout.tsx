@@ -6,6 +6,8 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
+import { AuthModalProvider } from "@/contexts/AuthModalContext";
+import AuthModals from "@/components/modals/AuthModals";
 import { Toaster } from "react-hot-toast";
 
 const cinzel = Cinzel({
@@ -33,33 +35,36 @@ export default function RootLayout({
       >
         <AuthProvider>
           <CartProvider>
-            <Toaster 
-              position="top-right"
-              toastOptions={{
-                duration: 3000,
-                style: {
-                  background: '#363636',
-                  color: '#fff',
-                },
-                success: {
+            <AuthModalProvider>
+              <Toaster 
+                position="top-right"
+                toastOptions={{
                   duration: 3000,
-                  iconTheme: {
-                    primary: '#10b981',
-                    secondary: '#fff',
+                  style: {
+                    background: '#363636',
+                    color: '#fff',
                   },
-                },
-                error: {
-                  duration: 4000,
-                  iconTheme: {
-                    primary: '#ef4444',
-                    secondary: '#fff',
+                  success: {
+                    duration: 3000,
+                    iconTheme: {
+                      primary: '#10b981',
+                      secondary: '#fff',
+                    },
                   },
-                },
-              }}
-            />
-            <Navbar />
-            {children}
-            <Footer />
+                  error: {
+                    duration: 4000,
+                    iconTheme: {
+                      primary: '#ef4444',
+                      secondary: '#fff',
+                    },
+                  },
+                }}
+              />
+              <AuthModals />
+              <Navbar />
+              {children}
+              <Footer />
+            </AuthModalProvider>
           </CartProvider>
         </AuthProvider>
       </body>

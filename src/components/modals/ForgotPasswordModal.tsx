@@ -1,14 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { Mail, ArrowLeft, CheckCircle, Loader2 } from 'lucide-react'
+import { Mail, CheckCircle, Loader2, X, ArrowLeft } from 'lucide-react'
 import { authAPI } from '@/services/authService'
+import { useAuthModal } from '@/contexts/AuthModalContext'
 import toast from 'react-hot-toast'
 
-export default function ForgotPasswordPage() {
-  const router = useRouter()
+export default function ForgotPasswordModal() {
+  const { closeModal, openLoginModal } = useAuthModal()
   const [email, setEmail] = useState('')
   const [otp, setOtp] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -38,7 +37,6 @@ export default function ForgotPasswordPage() {
       const response = await authAPI.verifyResetOtp({ verificationCode: otp })
       setStep('success')
       toast.success(response.message || 'Code verified! Check your email for reset link.')
-      // Don't redirect, show success message to check email
     } catch (err) {
       const error = err as { response?: { data?: { message?: string } } }
       toast.error(error.response?.data?.message || 'Invalid or expired code')
@@ -48,18 +46,25 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-secondary flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md">
-        {/* Card */}
-        <div className="bg-white rounded-lg shadow-lg p-6 md:p-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="bg-white rounded-lg shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <div className="p-6 md:p-8 relative">
+          {/* Close Button */}
+          <button
+            onClick={closeModal}
+            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <X size={24} />
+          </button>
+
           {/* Back to Login Link */}
-          <Link 
-            href="/auth/login" 
+          <button
+            onClick={openLoginModal}
             className="inline-flex items-center gap-2 text-sm text-accent hover:underline mb-6"
           >
             <ArrowLeft size={16} />
             Back to Login
-          </Link>
+          </button>
 
           {step === 'email' ? (
             <>
@@ -167,12 +172,12 @@ export default function ForgotPasswordPage() {
                 <p className="text-xs md:text-sm text-gray-500 text-center mb-6">
                   Please check your inbox and click the link to reset your password.
                 </p>
-                <Link 
-                  href="/auth/login"
+                <button
+                  onClick={openLoginModal}
                   className="inline-block text-accent hover:underline text-sm font-medium"
                 >
                   Back to Login
-                </Link>
+                </button>
               </div>
             </>
           )}
@@ -181,9 +186,13 @@ export default function ForgotPasswordPage() {
           {step === 'email' && (
             <p className="mt-6 text-center text-sm text-gray-600">
               Remember your password?{' '}
-              <Link href="/auth/login" className="text-accent font-medium hover:underline">
+              <button
+                type="button"
+                onClick={openLoginModal}
+                className="text-accent font-medium hover:underline"
+              >
                 Sign In
-              </Link>
+              </button>
             </p>
           )}
         </div>

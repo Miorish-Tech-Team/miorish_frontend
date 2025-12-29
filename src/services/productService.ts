@@ -98,7 +98,7 @@ export interface GetAllProductsParams {
   maxPrice?: number
   inventoryStatus?: string // comma-separated
   colors?: string // comma-separated
-  sortBy?: 'popular' | 'rating' | 'priceLowToHigh' | 'priceHighToLow' | 'latest'
+  sortBy?: 'popular' | 'rating' | 'priceLowToHigh' | 'priceHighToLow' | 'discountHighToLow' | 'latest'
 }
 
 // Get all products with filters

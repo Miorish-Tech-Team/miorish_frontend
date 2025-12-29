@@ -31,7 +31,7 @@ import {
   getUserWishlist,
   removeFromWishlistByProductId,
 } from "@/services/wishlistService";
-import ReviewFormModal from "@/components/modal/ReviewFormModal";
+import ReviewFormModal from "@/components/modals/ReviewFormModal";
 
 export default function ProductPage() {
   const params = useParams();
@@ -378,13 +378,12 @@ export default function ProductPage() {
 
             {/* Stock Status */}
             <div className="mb-4 text-center lg:text-left px-0 md:px-15">
-              {product.inventoryStatus === "InStock" &&
-              product.availableStockQuantity > 0 ? (
+              {product.availableStockQuantity === 0 ? (
+                <p className="text-red-600 font-semibold">OUT OF STOCK</p>
+              ) : product.availableStockQuantity > 0 ? (
                 <p className="text-green-600 font-semibold">
                   In Stock ({product.availableStockQuantity} available)
                 </p>
-              ) : product.inventoryStatus === "OutOfStock" ? (
-                <p className="text-red-600 font-semibold">Out of Stock</p>
               ) : product.inventoryStatus === "BackOrder" ? (
                 <p className="text-yellow-600 font-semibold">
                   Available on Backorder
@@ -394,11 +393,11 @@ export default function ProductPage() {
 
             {/* Quantity and Actions */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 md:gap-4 mb-4 md:mb-6 px-0 md:px-15">
-              <div className="flex items-center justify-center border border-accent rounded">
+              <div className={`flex items-center justify-center border rounded ${product.availableStockQuantity === 0 ? 'border-gray-300 opacity-50' : 'border-accent'}`}>
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="p-2 md:p-3 text-accent hover:bg-accent/10 transition-colors cursor-pointer"
-                  disabled={quantity <= 1}
+                  className="p-2 md:p-3 text-accent hover:bg-accent/10 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={quantity <= 1 || product.availableStockQuantity === 0}
                 >
                   <Minus size={14} className="md:w-4 md:h-4" />
                 </button>
@@ -411,8 +410,8 @@ export default function ProductPage() {
                       Math.min(product.availableStockQuantity, quantity + 1)
                     )
                   }
-                  className="p-2 md:p-3 text-accent hover:bg-accent/10 transition-colors cursor-pointer"
-                  disabled={quantity >= product.availableStockQuantity}
+                  className="p-2 md:p-3 text-accent hover:bg-accent/10 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={quantity >= product.availableStockQuantity || product.availableStockQuantity === 0}
                 >
                   <Plus size={14} className="md:w-4 md:h-4" />
                 </button>
@@ -432,7 +431,7 @@ export default function ProductPage() {
                   <>
                     <ShoppingCart size={18} />
                     {product.availableStockQuantity === 0
-                      ? "Unavailable"
+                      ? "UNAVAILABLE"
                       : "Add to Cart"}
                   </>
                 )}
@@ -440,7 +439,7 @@ export default function ProductPage() {
 
               <button
                 onClick={handleBuyNow}
-                disabled={product.inventoryStatus === "OutOfStock"}
+                disabled={product.availableStockQuantity === 0}
                 className="sm:flex-none bg-accent text-white cursor-pointer py-2.5 md:py-3 px-4 md:px-6 rounded text-sm md:text-base font-medium hover:bg-opacity-90 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 Buy Now
@@ -730,6 +729,7 @@ export default function ProductPage() {
                       prod.productDiscountPrice || prod.productPrice
                     }
                     discount={prod.productDiscountPercentage || 0}
+                    availableStock={prod.availableStockQuantity}
                   />
                 </div>
               ))}

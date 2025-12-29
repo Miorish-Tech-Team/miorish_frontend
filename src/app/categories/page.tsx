@@ -442,6 +442,7 @@ function CategoriesPageContent() {
                   <option value="rating">Highest Rated</option>
                   <option value="priceLowToHigh">Price: Low → High</option>
                   <option value="priceHighToLow">Price: High → Low</option>
+                  <option value="discountHighToLow">Discount: High → Low</option>
                 </select>
 
                 {/* Custom Arrow */}
@@ -451,26 +452,6 @@ function CategoriesPageContent() {
               </div>
 
             </div>
-
-            {/* Products Grid */}
-            {/* {searchLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6 mb-8">
-                {[...Array(6)].map((_, i) => (
-                  <ProductCardSkeleton key={i} />
-                ))}
-              </div>
-            ) : paginatedProducts.length === 0 ? (
-              <div className="text-center py-20 bg-white rounded-lg shadow-sm">
-                <p className="text-gray-600 text-lg font-medium mb-2">No products found</p>
-                <p className="text-gray-500 text-sm mb-6">Try adjusting your filters or search terms</p>
-                <button
-                  onClick={clearFilters}
-                  className="mt-4 px-6 py-2.5 bg-accent text-white rounded-lg hover:bg-opacity-90 transition-colors font-medium"
-                >
-                  Clear All Filters
-                </button>
-              </div>
-            ) : ( */}
             <>
               {/* Products Grid - All Screens */}
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3 md:gap-4 lg:gap-6 mb-6 md:mb-8">
@@ -486,6 +467,7 @@ function CategoriesPageContent() {
                       product.productDiscountPrice || product.productPrice
                     }
                     discount={product.productDiscountPercentage || 0}
+                    availableStock={product.availableStockQuantity}
                   />
                 ))}
               </div>

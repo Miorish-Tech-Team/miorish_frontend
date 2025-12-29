@@ -1,16 +1,15 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { Eye, EyeOff, Mail, Lock, Loader2 } from 'lucide-react'
+import { Eye, EyeOff, Mail, Lock, Loader2, X } from 'lucide-react'
 import { authAPI } from '@/services/authService'
 import { useAuth } from '@/contexts/AuthContext'
+import { useAuthModal } from '@/contexts/AuthModalContext'
 import toast from 'react-hot-toast'
 
-export default function LoginPage() {
-  const router = useRouter()
+export default function LoginModal() {
   const { login } = useAuth()
+  const { closeModal, openRegisterModal, openForgotPasswordModal } = useAuthModal()
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [show2FA, setShow2FA] = useState(false)
@@ -32,16 +31,13 @@ export default function LoginPage() {
         password: formData.password
       })
 
-      console.log('Login response:', response)
-
       if (response.isTwoFactorAuthEnable) {
-        // Show 2FA input
         setShow2FA(true)
         toast.success('Please enter the 2FA code sent to your email')
       } else if (response.success && response.user) {
         login(response.user)
         toast.success('Login successful!')
-        router.push('/')
+        closeModal()
       }
     } catch (err) {
       const error = err as { response?: { data?: { message?: string } } }
@@ -63,7 +59,7 @@ export default function LoginPage() {
       if (response.success && response.user) {
         login(response.user)
         toast.success('2FA verification successful!')
-        router.push('/')
+        closeModal()
       }
     } catch (err) {
       const error = err as { response?: { data?: { message?: string } } }
@@ -86,10 +82,17 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-secondary flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md">
-        {/* Card */}
-        <div className="bg-white rounded-lg shadow-lg p-6 md:p-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="bg-white rounded-lg shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <div className="p-6 md:p-8 relative">
+          {/* Close Button */}
+          <button
+            onClick={closeModal}
+            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <X size={24} />
+          </button>
+
           {/* Header */}
           <div className="text-center mb-6 md:mb-8">
             <h1 className="text-2xl md:text-3xl font-bold text-dark mb-2">
@@ -142,90 +145,91 @@ export default function LoginPage() {
           ) : (
             /* Login Form */
             <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5">
-            {/* Email Input */}
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-dark mb-2">
-                Email Address
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail size={18} className="text-gray-400" />
+              {/* Email Input */}
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-dark mb-2">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Mail size={18} className="text-gray-400" />
+                  </div>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="w-full pl-10 pr-4 py-2.5 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent text-dark text-sm md:text-base"
+                    placeholder="Enter your email"
+                    required
+                  />
                 </div>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-2.5 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent text-dark text-sm md:text-base"
-                  placeholder="Enter your email"
-                  required
-                />
               </div>
-            </div>
 
-            {/* Password Input */}
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-dark mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock size={18} className="text-gray-400" />
+              {/* Password Input */}
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-dark mb-2">
+                  Password
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Lock size={18} className="text-gray-400" />
+                  </div>
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    id="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    className="w-full pl-10 pr-12 py-2.5 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent text-dark text-sm md:text-base"
+                    placeholder="Enter your password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-accent transition-colors"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
                 </div>
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  id="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="w-full pl-10 pr-12 py-2.5 md:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent text-dark text-sm md:text-base"
-                  placeholder="Enter your password"
-                  required
-                />
+              </div>
+
+              {/* Remember Me & Forgot Password */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="rememberMe"
+                    name="rememberMe"
+                    checked={formData.rememberMe}
+                    onChange={handleChange}
+                    className="w-4 h-4 text-accent border-gray-300 rounded focus:ring-accent focus:ring-2"
+                  />
+                  <label htmlFor="rememberMe" className="ml-2 text-sm text-dark">
+                    Remember me
+                  </label>
+                </div>
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-accent transition-colors"
+                  onClick={openForgotPasswordModal}
+                  className="text-sm text-accent hover:underline font-medium"
                 >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  Forgot Password?
                 </button>
               </div>
-            </div>
 
-            {/* Remember Me & Forgot Password */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="rememberMe"
-                  name="rememberMe"
-                  checked={formData.rememberMe}
-                  onChange={handleChange}
-                  className="w-4 h-4 text-accent border-gray-300 rounded focus:ring-accent focus:ring-2"
-                />
-                <label htmlFor="rememberMe" className="ml-2 text-sm text-dark">
-                  Remember me
-                </label>
-              </div>
-              <Link 
-                href="/auth/forgot-password" 
-                className="text-sm text-accent hover:underline font-medium"
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-accent text-white py-2.5 md:py-3 rounded-lg font-medium text-sm md:text-base hover:bg-opacity-90 transition-colors shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                Forgot Password?
-              </Link>
-            </div>
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-accent text-white py-2.5 md:py-3 rounded-lg font-medium text-sm md:text-base hover:bg-opacity-90 transition-colors shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {isLoading && <Loader2 size={20} className="animate-spin" />}
-              Sign In
-            </button>
-          </form>
+                {isLoading && <Loader2 size={20} className="animate-spin" />}
+                Sign In
+              </button>
+            </form>
           )}
 
           {/* Divider */}
@@ -239,7 +243,8 @@ export default function LoginPage() {
                   <span className="px-4 bg-white text-gray-500">OR</span>
                 </div>
               </div>
-          </>)}
+            </>
+          )}
 
           {/* Social Login */}
           {!show2FA && (
@@ -263,9 +268,13 @@ export default function LoginPage() {
           {/* Sign Up Link */}
           <p className="mt-6 text-center text-sm text-gray-600">
             Don&apos;t have an account?{' '}
-            <Link href="/auth/register" className="text-accent font-medium hover:underline">
+            <button
+              type="button"
+              onClick={openRegisterModal}
+              className="text-accent font-medium hover:underline"
+            >
               Sign Up
-            </Link>
+            </button>
           </p>
         </div>
       </div>

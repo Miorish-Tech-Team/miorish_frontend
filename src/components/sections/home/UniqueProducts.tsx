@@ -70,6 +70,7 @@ export default function UniqueProducts({ products }: UniqueProductsProps) {
                 originalPrice={product.productPrice}
                 discountedPrice={product.productDiscountPrice}
                 discount={product.productDiscountPercentage}
+                availableStock={product.availableStockQuantity}
               />
             </div>
           ))}
@@ -86,6 +87,7 @@ export default function UniqueProducts({ products }: UniqueProductsProps) {
               originalPrice={product.productPrice}
               discountedPrice={product.productDiscountPrice}
               discount={product.productDiscountPercentage}
+              availableStock={product.availableStockQuantity}
             />
           ))}
         </div>

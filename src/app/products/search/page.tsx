@@ -16,7 +16,7 @@ function SearchResults() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
-  const productsPerPage = 12
+  const productsPerPage = 15
 
   useEffect(() => {
     const fetchSearchResults = async () => {
@@ -109,6 +109,7 @@ function SearchResults() {
                   originalPrice={product.productPrice}
                   discountedPrice={product.productDiscountPrice || product.productPrice}
                   discount={product.productDiscountPercentage || 0}
+                  availableStock={product.availableStockQuantity}
                 />
               ))}
             </div>
@@ -119,7 +120,7 @@ function SearchResults() {
                 <button
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
-                  className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="p-2 rounded-lg border text-accent border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronLeft size={20} />
                 </button>
@@ -138,7 +139,7 @@ function SearchResults() {
                         className={`px-4 py-2 rounded-lg border transition-colors ${
                           currentPage === page
                             ? 'bg-primary text-white border-primary'
-                            : 'border-gray-300 hover:bg-gray-100'
+                            : 'border-gray-300 hover:bg-gray-100 text-accent font-bold'
                         }`}
                       >
                         {page}
@@ -153,7 +154,7 @@ function SearchResults() {
                 <button
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === totalPages}
-                  className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="p-2 rounded-lg border text-accent border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronRight size={20} />
                 </button>

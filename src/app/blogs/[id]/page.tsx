@@ -115,7 +115,7 @@ export default function BlogDetailPage() {
           {/* Article Content */}
           <div className="p-4 sm:p-6 md:p-10">
             {/* Title */}
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-serif text-dark mb-6">
+            <h1 className="text-2xl font-semibold sm:text-3xl md:text-4xl lg:text-5xl font-serif text-dark mb-6">
               {blog.title}
             </h1>
 
@@ -146,7 +146,7 @@ export default function BlogDetailPage() {
 
             {/* Description/Content */}
             <div className="prose prose-lg max-w-none">
-              <div className="text-gray-700 leading-relaxed whitespace-pre-wrap text-base md:text-lg">
+              <div className="text-gray-700 text-sm md:text-base leading-relaxed whitespace-pre-wrap ">
                 {blog.description}
               </div>
             </div>
@@ -172,7 +172,7 @@ export default function BlogDetailPage() {
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <Link
                   href="/blogs"
-                  className="w-full sm:w-auto text-center px-6 py-3 border-2 border-primary font-bold text-primary rounded-lg hover:bg-gray-50 transition-colors"
+                  className="w-full text-sm md:text-lg sm:w-auto text-center px-6 py-3 border-2 border-primary font-bold text-primary rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   View More Blogs
                 </Link>
@@ -181,18 +181,7 @@ export default function BlogDetailPage() {
           </div>
         </div>
       </article>
-
-      {/* Related or Back to Top */}
-      <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-20 py-8">
-        <div className="text-center">
-          <button
-            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            className="text-accent hover:underline"
-          >
-            Back to Top ↑
-          </button>
-        </div>
-      </div>
+      
     </div>
   );
 }

@@ -56,17 +56,18 @@ export default async function Home() {
     }
 
     if (productsRes?.success && productsRes.products) {
-      const allProducts = productsRes.products;
+      // Filter out products with 0 stock for home page
+      const inStockProducts = productsRes.products.filter((p: Product) => p.availableStockQuantity > 0);
 
       // Filter new arrivals
-      const arrivals = allProducts
+      const arrivals = inStockProducts
         .filter((p: Product) => p.isNewArrivalProduct)
         .slice(0, 5);
       newArrivalProducts =
-        arrivals.length > 0 ? arrivals : allProducts.slice(0, 5);
+        arrivals.length > 0 ? arrivals : inStockProducts.slice(0, 5);
 
       // Get unique products (next 5)
-      uniqueProducts = allProducts.slice(5, 10);
+      uniqueProducts = inStockProducts.slice(5, 10);
     }
 
     // Set banners
@@ -88,7 +89,10 @@ export default async function Home() {
 
     // Only use recommendation API if user is authenticated
     if (isAuthenticated && recommendationRes?.success && recommendationRes.recommended) {
-      recommendedProducts = recommendationRes.recommended.slice(0, 5);
+      // Filter out products with 0 stock
+      recommendedProducts = recommendationRes.recommended
+        .filter((p: Product) => p.availableStockQuantity > 0)
+        .slice(0, 5);
     } else {
       console.log("[Server] No recommendations to display", {
         isAuthenticated,

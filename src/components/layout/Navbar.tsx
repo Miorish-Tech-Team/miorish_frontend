@@ -6,6 +6,7 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
 import { useCart } from '@/contexts/CartContext'
+import { useAuthModal } from '@/contexts/AuthModalContext'
 import { getAllCategories, Category } from '@/services/categoryService'
 import { getSearchSuggestions } from '@/services/productService'
 import { useRouter } from 'next/navigation'
@@ -26,6 +27,7 @@ export default function Navbar() {
   
   const { user } = useAuth()
   const { cartItemCount } = useCart()
+  const { openLoginModal, openRegisterModal } = useAuthModal()
   const router = useRouter()
   
   const categoryDropdownRef = useRef<HTMLDivElement>(null)
@@ -259,12 +261,13 @@ export default function Navbar() {
                   <span className='text-[10px] lg:text-xs'>Profile</span>
                 </button>
               </Link>) : (
-              <Link href="/auth/login">
-                <button className="flex flex-col items-center justify-center gap-1 hover:text-accent transition-colors cursor-pointer">
-                  <User size={20} className="lg:w-6 lg:h-6" />
-                  <span className='text-[10px] lg:text-xs'>Login</span>
-                </button>
-              </Link>)}
+              <button 
+                onClick={openLoginModal}
+                className="flex flex-col items-center justify-center gap-1 hover:text-accent transition-colors cursor-pointer">
+                <User size={20} className="lg:w-6 lg:h-6" />
+                <span className='text-[10px] lg:text-xs'>Login</span>
+              </button>
+            )}
             <Link href="/account/wishlist">
               <button className="flex flex-col items-center justify-center gap-1 hover:text-accent transition-colors cursor-pointer">
                 <Heart size={20} className="lg:w-6 lg:h-6" />
@@ -359,7 +362,13 @@ export default function Navbar() {
                   </div>
                 </Link>
               ) : (
-                <Link href="/auth/login" onClick={() => setMobileMenuOpen(false)}>
+                <button 
+                  onClick={() => {
+                    setMobileMenuOpen(false)
+                    openLoginModal()
+                  }}
+                  className="w-full text-left"
+                >
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-full bg-accent flex items-center justify-center">
                       <User size={24} className="text-white" />
@@ -369,7 +378,7 @@ export default function Navbar() {
                       <p className="text-xs text-gray-600">Access your account</p>
                     </div>
                   </div>
-                </Link>
+                </button>
               )}
             </div>
 
