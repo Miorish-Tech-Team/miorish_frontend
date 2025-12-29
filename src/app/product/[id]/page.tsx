@@ -1,144 +1,172 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
-import Image from 'next/image'
-import Link from 'next/link'
-import { ChevronRight, Heart, Share2, Minus, Plus, Loader2, Star, ShoppingCart } from 'lucide-react'
-import ProductCard from '@/components/card/ProductCard'
-import { getProductById, getSimilarProducts, getProductReviews, type Product, Review } from '@/services/productService'
-import { useCart } from '@/contexts/CartContext'
-import { toast } from 'react-hot-toast'
-import CandleLoader from '@/components/CandleLoader'
-import { useAuth } from '@/contexts/AuthContext'
-import { addToWishlist, getUserWishlist, removeFromWishlistByProductId } from '@/services/wishlistService'
-import ReviewFormModal from '@/components/modal/ReviewFormModal'
+import { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
+import {
+  ChevronRight,
+  Heart,
+  Share2,
+  Minus,
+  Plus,
+  Loader2,
+  Star,
+  ShoppingCart,
+} from "lucide-react";
+import ProductCard from "@/components/card/ProductCard";
+import {
+  getProductById,
+  getSimilarProducts,
+  getProductReviews,
+  type Product,
+  Review,
+} from "@/services/productService";
+import { useCart } from "@/contexts/CartContext";
+import { toast } from "react-hot-toast";
+import CandleLoader from "@/components/CandleLoader";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  addToWishlist,
+  getUserWishlist,
+  removeFromWishlistByProductId,
+} from "@/services/wishlistService";
+import ReviewFormModal from "@/components/modal/ReviewFormModal";
 
 export default function ProductPage() {
-  const params = useParams()
-  const router = useRouter()
-  const productId = params.id as string
-  const { addToCart: addToCartContext } = useCart()
+  const params = useParams();
+  const router = useRouter();
+  const productId = params.id as string;
+  const { addToCart: addToCartContext } = useCart();
 
-  const [product, setProduct] = useState<Product | null>(null)
-  const [similarProducts, setSimilarProducts] = useState<Product[]>([])
-  const [reviews, setReviews] = useState<Review[]>([])
-  const [loading, setLoading] = useState(true)
-  const [addingToCart, setAddingToCart] = useState(false)
-  const [quantity, setQuantity] = useState(1)
-  const [selectedImage, setSelectedImage] = useState(0)
-  const [activeTab, setActiveTab] = useState('description')
-  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false)
+  const [product, setProduct] = useState<Product | null>(null);
+  const [similarProducts, setSimilarProducts] = useState<Product[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [addingToCart, setAddingToCart] = useState(false);
+  const [quantity, setQuantity] = useState(1);
+  const [selectedImage, setSelectedImage] = useState(0);
+  const [activeTab, setActiveTab] = useState("description");
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
   const { user } = useAuth();
   const [isInWishlist, setIsInWishlist] = useState<boolean>(false);
   const [wishlistItemId, setWishlistItemId] = useState<number | null>(null);
 
   useEffect(() => {
-      if (user) {
-        const checkWishlist = async () => {
-          try {
-            const response = await getUserWishlist();
-            const wishlistItem = response.wishlist.find(
-              (item) => item.productId === Number(productId)
-            );
-            if (wishlistItem) {
-              setIsInWishlist(true);
-              setWishlistItemId(wishlistItem.id);
-            }
-          } catch (error) {
-            // Silently fail
+    if (user) {
+      const checkWishlist = async () => {
+        try {
+          const response = await getUserWishlist();
+          const wishlistItem = response.wishlist.find(
+            (item) => item.productId === Number(productId)
+          );
+          if (wishlistItem) {
+            setIsInWishlist(true);
+            setWishlistItemId(wishlistItem.id);
           }
-        };
-        checkWishlist();
-      }
-    }, [user, productId]);
+        } catch (error) {
+          // Silently fail
+        }
+      };
+      checkWishlist();
+    }
+  }, [user, productId]);
 
   useEffect(() => {
     const fetchProductData = async () => {
       try {
-        setLoading(true)
+        setLoading(true);
         const [productRes, similarRes, reviewsRes] = await Promise.all([
           getProductById(productId),
-          getSimilarProducts(productId).catch(() => ({ products: [], success: true })),
-          getProductReviews(productId).catch(() => ({ reviews: [], success: true }))
-        ])
+          getSimilarProducts(productId).catch(() => ({
+            products: [],
+            success: true,
+          })),
+          getProductReviews(productId).catch(() => ({
+            reviews: [],
+            success: true,
+          })),
+        ]);
 
-        console.log('Fetched product data:', productRes)
-        setProduct(productRes.product)
-        setSimilarProducts(similarRes.products || [])
-        setReviews(reviewsRes.reviews || [])
+        console.log("Fetched product data:", productRes);
+        setProduct(productRes.product);
+        setSimilarProducts(similarRes.products || []);
+        setReviews(reviewsRes.reviews || []);
       } catch (error) {
-        console.error('Error fetching product:', error)
+        console.error("Error fetching product:", error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
     if (productId) {
-      fetchProductData()
+      fetchProductData();
     }
-  }, [productId])
+  }, [productId]);
 
   const fetchReviews = async () => {
     try {
-      const reviewsRes = await getProductReviews(productId)
-      setReviews(reviewsRes.reviews || [])
-      
+      const reviewsRes = await getProductReviews(productId);
+      setReviews(reviewsRes.reviews || []);
+
       // Also refresh product data to get updated rating
-      const productRes = await getProductById(productId)
-      setProduct(productRes.product)
+      const productRes = await getProductById(productId);
+      setProduct(productRes.product);
     } catch (error) {
-      console.error('Error fetching reviews:', error)
+      console.error("Error fetching reviews:", error);
     }
-  }
+  };
 
   const handleReviewSubmitted = () => {
-    fetchReviews()
-  }
+    fetchReviews();
+  };
 
   const handleWriteReview = () => {
     if (!user) {
-      toast.error('Please login to write a review')
-      router.push('/auth/login')
-      return
+      toast.error("Please login to write a review");
+      router.push("/auth/login");
+      return;
     }
-    setIsReviewModalOpen(true)
-  }
+    setIsReviewModalOpen(true);
+  };
   // }, [productId])
 
   const handleAddToCart = async () => {
-    if (!product) return
+    if (!product) return;
 
     try {
-      setAddingToCart(true)
-      await addToCartContext(Number(productId), quantity)
+      setAddingToCart(true);
+      await addToCartContext(Number(productId), quantity);
     } catch (error: unknown) {
       // Error already handled in context with toast
-      console.error('Add to cart error:', error)
+      console.error("Add to cart error:", error);
     } finally {
-      setAddingToCart(false)
+      setAddingToCart(false);
     }
-  }
+  };
 
   const handleBuyNow = () => {
-    if (!product) return
+    if (!product) return;
 
     // Store buy now data in session storage for checkout
-    sessionStorage.setItem('buyNowData', JSON.stringify({
-      productId: Number(productId),
-      quantity,
-      product: {
-        id: product.id,
-        productName: product.productName,
-        coverImageUrl: product.coverImageUrl,
-        productPrice: product.productPrice,
-        productDiscountPrice: product.productDiscountPrice
-      }
-    }))
+    sessionStorage.setItem(
+      "buyNowData",
+      JSON.stringify({
+        productId: Number(productId),
+        quantity,
+        product: {
+          id: product.id,
+          productName: product.productName,
+          coverImageUrl: product.coverImageUrl,
+          productPrice: product.productPrice,
+          productDiscountPrice: product.productDiscountPrice,
+        },
+      })
+    );
 
-    router.push('/checkout?type=buynow')
-  }
+    router.push("/checkout?type=buynow");
+  };
 
   const handleAddToWishlist = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -177,7 +205,7 @@ export default function ProductPage() {
   };
 
   if (loading) {
-    return <CandleLoader />
+    return <CandleLoader />;
   }
 
   if (!product) {
@@ -190,25 +218,36 @@ export default function ProductPage() {
           </Link>
         </div>
       </div>
-    )
+    );
   }
 
-  const images = [product.coverImageUrl, ...(product.galleryImageUrls || [])]
-  const discountPrice = product.productDiscountPrice || product.productPrice
-  const hasDiscount = product.productDiscountPercentage && product.productDiscountPercentage > 0
+  const images = [product.coverImageUrl, ...(product.galleryImageUrls || [])];
+  const discountPrice = product.productDiscountPrice || product.productPrice;
+  const hasDiscount =
+    product.productDiscountPercentage && product.productDiscountPercentage > 0;
 
   return (
     <div className="min-h-screen bg-secondary">
       <div className="container mx-auto px-4 md:px-8 lg:px-14 py-4 md:py-6">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-xs md:text-sm mb-4 md:mb-6 overflow-x-auto">
-          <Link href="/" className="text-accent hover:underline whitespace-nowrap">Home</Link>
-          <ChevronRight size={16} className="text-gray-400 shrink-0" />
-          <Link href="/categories" className="text-accent hover:underline whitespace-nowrap">
-            {product.category?.categoryName || 'Products'}
+          <Link
+            href="/"
+            className="text-accent hover:underline whitespace-nowrap"
+          >
+            Home
           </Link>
           <ChevronRight size={16} className="text-gray-400 shrink-0" />
-          <span className="text-dark whitespace-nowrap">{product.productName}</span>
+          <Link
+            href="/categories"
+            className="text-accent hover:underline whitespace-nowrap"
+          >
+            {product.category?.categoryName || "Products"}
+          </Link>
+          <ChevronRight size={16} className="text-gray-400 shrink-0" />
+          <span className="text-dark whitespace-nowrap">
+            {product.productName}
+          </span>
         </div>
 
         {/* Product Details Section */}
@@ -225,7 +264,7 @@ export default function ProductPage() {
                 unoptimized
               />
               {/* Status Badge */}
-              {product.inventoryStatus === 'onSale' && (
+              {product.inventoryStatus === "onSale" && (
                 <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
                   Sale
                 </div>
@@ -242,10 +281,11 @@ export default function ProductPage() {
               >
                 <Heart
                   size={16}
-                  className={`transition-colors cursor-pointer ${isInWishlist
+                  className={`transition-colors cursor-pointer ${
+                    isInWishlist
                       ? "text-accent fill-accent"
                       : "text-accent hover:fill-accent"
-                    }`}
+                  }`}
                 />
               </button>
               <button className="absolute top-10 right-2 md:top-14 md:right-4 bg-white rounded-full p-1.5 md:p-2 shadow-md hover:bg-gray-100 transition-colors">
@@ -260,14 +300,18 @@ export default function ProductPage() {
                   <button
                     key={index}
                     onClick={() => setSelectedImage(index)}
-                    className={`relative aspect-square bg-white rounded-lg overflow-hidden border-2 transition-all ${selectedImage === index ? 'border-accent' : 'border-transparent'
-                      }`}
+                    className={`relative aspect-square bg-white rounded-lg overflow-hidden border-2 transition-all ${
+                      selectedImage === index
+                        ? "border-accent"
+                        : "border-transparent"
+                    }`}
                   >
                     <Image
                       src={img}
                       alt={`${product.productName} ${index + 1}`}
                       fill
                       className="object-cover"
+                      unoptimized
                     />
                   </button>
                 ))}
@@ -279,7 +323,9 @@ export default function ProductPage() {
           <div className="rounded-lg p-4 md:p-6">
             {/* Category */}
             <p className="text-accent text-sm md:text-base mb-1">
-              {product.category?.categoryName} {product.subcategory && `• ${product.subcategory.subCategoryName}`}
+              {product.category?.categoryName}{" "}
+              {product.subcategory &&
+                `• ${product.subcategory.subCategoryName}`}
             </p>
 
             {/* Product Name */}
@@ -288,7 +334,9 @@ export default function ProductPage() {
             </h1>
 
             {/* Brand */}
-            <p className="text-gray-600 mb-3 text-center lg:text-left px-0 md:px-15">{product.productBrand}</p>
+            <p className="text-gray-600 mb-3 text-center lg:text-left px-0 md:px-15">
+              {product.productBrand}
+            </p>
 
             {/* Rating */}
             <div className="flex items-center justify-center lg:justify-start gap-2 mb-4 px-0 md:px-15">
@@ -297,24 +345,30 @@ export default function ProductPage() {
                   <Star
                     key={i}
                     size={18}
-                    className={`${i < Math.floor(product.averageCustomerRating)
-                        ? 'fill-yellow-400 text-yellow-400'
-                        : 'text-gray-300'
-                      }`}
+                    className={`${
+                      i < Math.floor(product.averageCustomerRating)
+                        ? "fill-yellow-400 text-yellow-400"
+                        : "text-gray-300"
+                    }`}
                   />
                 ))}
               </div>
               <span className="text-sm text-gray-600">
-                {product.averageCustomerRating.toFixed(1)} ({product.totalCustomerReviews} reviews)
+                {product.averageCustomerRating.toFixed(1)} (
+                {product.totalCustomerReviews} reviews)
               </span>
             </div>
 
             {/* Price */}
             <div className="border-accent border-t pt-4 md:pt-6 flex flex-wrap items-center justify-center lg:justify-start gap-2 md:gap-3 mb-4 md:mb-6 px-0 md:px-15">
               {hasDiscount && (
-                <span className="text-gray-400 line-through text-base md:text-lg">Rs.{product.productPrice}</span>
+                <span className="text-gray-400 line-through text-base md:text-lg">
+                  Rs.{product.productPrice}
+                </span>
               )}
-              <span className="text-accent text-2xl md:text-3xl font-bold">Rs.{discountPrice}</span>
+              <span className="text-accent text-2xl md:text-3xl font-bold">
+                Rs.{discountPrice}
+              </span>
               {hasDiscount && (
                 <span className="bg-green-100 text-green-700 px-2 md:px-3 py-1 rounded text-xs md:text-sm font-semibold">
                   {product.productDiscountPercentage}% OFF
@@ -324,12 +378,17 @@ export default function ProductPage() {
 
             {/* Stock Status */}
             <div className="mb-4 text-center lg:text-left px-0 md:px-15">
-              {product.inventoryStatus === 'InStock' && product.availableStockQuantity > 0 ? (
-                <p className="text-green-600 font-semibold">In Stock ({product.availableStockQuantity} available)</p>
-              ) : product.inventoryStatus === 'OutOfStock' ? (
+              {product.inventoryStatus === "InStock" &&
+              product.availableStockQuantity > 0 ? (
+                <p className="text-green-600 font-semibold">
+                  In Stock ({product.availableStockQuantity} available)
+                </p>
+              ) : product.inventoryStatus === "OutOfStock" ? (
                 <p className="text-red-600 font-semibold">Out of Stock</p>
-              ) : product.inventoryStatus === 'BackOrder' ? (
-                <p className="text-yellow-600 font-semibold">Available on Backorder</p>
+              ) : product.inventoryStatus === "BackOrder" ? (
+                <p className="text-yellow-600 font-semibold">
+                  Available on Backorder
+                </p>
               ) : null}
             </div>
 
@@ -343,9 +402,15 @@ export default function ProductPage() {
                 >
                   <Minus size={14} className="md:w-4 md:h-4" />
                 </button>
-                <span className="px-2 md:px-4 text-accent text-base md:text-lg font-medium">{quantity}</span>
+                <span className="px-2 md:px-4 text-accent text-base md:text-lg font-medium">
+                  {quantity}
+                </span>
                 <button
-                  onClick={() => setQuantity(Math.min(product.availableStockQuantity, quantity + 1))}
+                  onClick={() =>
+                    setQuantity(
+                      Math.min(product.availableStockQuantity, quantity + 1)
+                    )
+                  }
                   className="p-2 md:p-3 text-accent hover:bg-accent/10 transition-colors cursor-pointer"
                   disabled={quantity >= product.availableStockQuantity}
                 >
@@ -366,14 +431,16 @@ export default function ProductPage() {
                 ) : (
                   <>
                     <ShoppingCart size={18} />
-                    {product.availableStockQuantity === 0 ? 'Unavailable' : 'Add to Cart'}
+                    {product.availableStockQuantity === 0
+                      ? "Unavailable"
+                      : "Add to Cart"}
                   </>
                 )}
               </button>
 
               <button
                 onClick={handleBuyNow}
-                disabled={product.inventoryStatus === 'OutOfStock'}
+                disabled={product.inventoryStatus === "OutOfStock"}
                 className="sm:flex-none bg-accent text-white cursor-pointer py-2.5 md:py-3 px-4 md:px-6 rounded text-sm md:text-base font-medium hover:bg-opacity-90 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 Buy Now
@@ -382,7 +449,9 @@ export default function ProductPage() {
 
             {/* Product Description */}
             <div className="border-accent border-t pt-4 md:pt-6 px-0 md:px-15">
-              <h3 className="text-base md:text-lg font-semibold text-dark mb-2 md:mb-3">Product Description</h3>
+              <h3 className="text-base md:text-lg font-semibold text-dark mb-2 md:mb-3">
+                Product Description
+              </h3>
               <div className="text-xs md:text-sm text-gray-700 space-y-1 md:space-y-2">
                 <p>{product.productDescription}</p>
               </div>
@@ -392,10 +461,15 @@ export default function ProductPage() {
             {(product.productWarrantyInfo || product.productReturnPolicy) && (
               <div className="border-t pt-4 mt-4 space-y-2 text-primary text-sm px-0 md:px-15">
                 {product.productWarrantyInfo && (
-                  <p><strong>Warranty:</strong> {product.productWarrantyInfo}</p>
+                  <p>
+                    <strong>Warranty:</strong> {product.productWarrantyInfo}
+                  </p>
                 )}
                 {product.productReturnPolicy && (
-                  <p><strong>Return Policy:</strong> {product.productReturnPolicy}</p>
+                  <p>
+                    <strong>Return Policy:</strong>{" "}
+                    {product.productReturnPolicy}
+                  </p>
                 )}
               </div>
             )}
@@ -407,105 +481,150 @@ export default function ProductPage() {
           {/* Tab Headers */}
           <div className="flex gap-4 md:gap-8 border-b mb-4 md:mb-6 overflow-x-auto">
             <button
-              onClick={() => setActiveTab('description')}
-              className={`pb-2 md:pb-3 text-sm md:text-base font-medium transition-colors whitespace-nowrap ${activeTab === 'description'
-                  ? 'text-dark border-b-2 border-accent'
-                  : 'text-gray-400'
-                }`}
+              onClick={() => setActiveTab("description")}
+              className={`pb-2 md:pb-3 text-sm md:text-base font-medium transition-colors whitespace-nowrap ${
+                activeTab === "description"
+                  ? "text-dark border-b-2 border-accent"
+                  : "text-gray-400"
+              }`}
             >
               Additional Information
             </button>
             <button
-              onClick={() => setActiveTab('specifications')}
-              className={`pb-2 md:pb-3 text-sm md:text-base font-medium transition-colors whitespace-nowrap ${activeTab === 'specifications'
-                  ? 'text-dark border-b-2 border-accent'
-                  : 'text-gray-400'
-                }`}
+              onClick={() => setActiveTab("specifications")}
+              className={`pb-2 md:pb-3 text-sm md:text-base font-medium transition-colors whitespace-nowrap ${
+                activeTab === "specifications"
+                  ? "text-dark border-b-2 border-accent"
+                  : "text-gray-400"
+              }`}
             >
               Specifications
             </button>
             <button
-              onClick={() => setActiveTab('reviews')}
-              className={`pb-2 md:pb-3 text-sm md:text-base font-medium transition-colors whitespace-nowrap ${activeTab === 'reviews'
-                  ? 'text-dark border-b-2 border-accent'
-                  : 'text-gray-400'
-                }`}
+              onClick={() => setActiveTab("reviews")}
+              className={`pb-2 md:pb-3 text-sm md:text-base font-medium transition-colors whitespace-nowrap ${
+                activeTab === "reviews"
+                  ? "text-dark border-b-2 border-accent"
+                  : "text-gray-400"
+              }`}
             >
               Reviews({reviews.length})
             </button>
           </div>
 
           {/* Tab Content */}
-          {activeTab === 'description' && (
+          {activeTab === "description" && (
             <div className="text-sm md:text-base text-gray-700">
               <p className="mb-4">{product.productDescription}</p>
               {product.productMaterial && (
-                <p className="mb-2"><strong>Material:</strong> {product.productMaterial}</p>
+                <p className="mb-2">
+                  <strong>Material:</strong> {product.productMaterial}
+                </p>
               )}
               {product.productWeight && (
-                <p className="mb-2"><strong>Weight:</strong> {product.productWeight}g</p>
+                <p className="mb-2">
+                  <strong>Weight:</strong> {product.productWeight}g
+                </p>
               )}
             </div>
           )}
 
-          {activeTab === 'specifications' && (
+          {activeTab === "specifications" && (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <tbody>
                   <tr className="border-b">
-                    <td className="py-3 md:py-4 text-dark font-medium w-1/3 text-sm md:text-base">Product Code</td>
-                    <td className="py-3 md:py-4 text-gray-700 text-sm md:text-base">{product.productCode}</td>
+                    <td className="py-3 md:py-4 text-dark font-medium w-1/3 text-sm md:text-base">
+                      Product Code
+                    </td>
+                    <td className="py-3 md:py-4 text-gray-700 text-sm md:text-base">
+                      {product.productCode}
+                    </td>
                   </tr>
                   <tr className="border-b">
-                    <td className="py-3 md:py-4 text-dark font-medium text-sm md:text-base">Brand</td>
-                    <td className="py-3 md:py-4 text-gray-700 text-sm md:text-base">{product.productBrand}</td>
+                    <td className="py-3 md:py-4 text-dark font-medium text-sm md:text-base">
+                      Brand
+                    </td>
+                    <td className="py-3 md:py-4 text-gray-700 text-sm md:text-base">
+                      {product.productBrand}
+                    </td>
                   </tr>
                   {product.productWeight && (
                     <tr className="border-b">
-                      <td className="py-3 md:py-4 text-dark font-medium text-sm md:text-base">Weight</td>
-                      <td className="py-3 md:py-4 text-gray-700 text-sm md:text-base">{product.productWeight}g</td>
+                      <td className="py-3 md:py-4 text-dark font-medium text-sm md:text-base">
+                        Weight
+                      </td>
+                      <td className="py-3 md:py-4 text-gray-700 text-sm md:text-base">
+                        {product.productWeight}g
+                      </td>
                     </tr>
                   )}
                   {product.waxType && (
                     <tr className="border-b">
-                      <td className="py-3 md:py-4 text-dark font-medium text-sm md:text-base">Wax Type</td>
-                      <td className="py-3 md:py-4 text-gray-700 text-sm md:text-base">{product.waxType}</td>
+                      <td className="py-3 md:py-4 text-dark font-medium text-sm md:text-base">
+                        Wax Type
+                      </td>
+                      <td className="py-3 md:py-4 text-gray-700 text-sm md:text-base">
+                        {product.waxType}
+                      </td>
                     </tr>
                   )}
                   {product.productMaterial && (
                     <tr className="border-b">
-                      <td className="py-3 md:py-4 text-dark font-medium text-sm md:text-base">Material</td>
-                      <td className="py-3 md:py-4 text-gray-700 text-sm md:text-base">{product.productMaterial}</td>
+                      <td className="py-3 md:py-4 text-dark font-medium text-sm md:text-base">
+                        Material
+                      </td>
+                      <td className="py-3 md:py-4 text-gray-700 text-sm md:text-base">
+                        {product.productMaterial}
+                      </td>
                     </tr>
                   )}
                   {product.singleOrCombo && (
                     <tr className="border-b">
-                      <td className="py-3 md:py-4 text-dark font-medium text-sm md:text-base">Type</td>
-                      <td className="py-3 md:py-4 text-gray-700 text-sm md:text-base">{product.singleOrCombo}</td>
+                      <td className="py-3 md:py-4 text-dark font-medium text-sm md:text-base">
+                        Type
+                      </td>
+                      <td className="py-3 md:py-4 text-gray-700 text-sm md:text-base">
+                        {product.singleOrCombo}
+                      </td>
                     </tr>
                   )}
-                  {product.productColors && Array.isArray(product.productColors) && product.productColors.length > 0 && (
-                    <tr className="border-b">
-                      <td className="py-3 md:py-4 text-dark font-medium text-sm md:text-base">Colors</td>
-                      <td className="py-3 md:py-4 text-gray-700 text-sm md:text-base">{product.productColors.join(', ')}</td>
-                    </tr>
-                  )}
-                  {product.productSizes && Array.isArray(product.productSizes) && product.productSizes.length > 0 && (
-                    <tr className="border-b">
-                      <td className="py-3 md:py-4 text-dark font-medium text-sm md:text-base">Sizes</td>
-                      <td className="py-3 md:py-4 text-gray-700 text-sm md:text-base">{product.productSizes.join(', ')}</td>
-                    </tr>
-                  )}
+                  {product.productColors &&
+                    Array.isArray(product.productColors) &&
+                    product.productColors.length > 0 && (
+                      <tr className="border-b">
+                        <td className="py-3 md:py-4 text-dark font-medium text-sm md:text-base">
+                          Colors
+                        </td>
+                        <td className="py-3 md:py-4 text-gray-700 text-sm md:text-base">
+                          {product.productColors.join(", ")}
+                        </td>
+                      </tr>
+                    )}
+                  {product.productSizes &&
+                    Array.isArray(product.productSizes) &&
+                    product.productSizes.length > 0 && (
+                      <tr className="border-b">
+                        <td className="py-3 md:py-4 text-dark font-medium text-sm md:text-base">
+                          Sizes
+                        </td>
+                        <td className="py-3 md:py-4 text-gray-700 text-sm md:text-base">
+                          {product.productSizes.join(", ")}
+                        </td>
+                      </tr>
+                    )}
                 </tbody>
               </table>
             </div>
           )}
 
-          {activeTab === 'reviews' && (
+          {activeTab === "reviews" && (
             <div className="space-y-4 md:space-y-6">
               {/* Write Review Button */}
               <div className="flex justify-between items-center pb-4 border-b border-gray-200">
-                <h3 className="text-lg font-semibold text-dark">Customer Reviews</h3>
+                <h3 className="text-lg font-semibold text-dark">
+                  Customer Reviews
+                </h3>
                 <button
                   onClick={handleWriteReview}
                   className="px-4 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:bg-opacity-90 transition-colors"
@@ -517,24 +636,30 @@ export default function ProductPage() {
               {/* Reviews List */}
               {reviews.length > 0 ? (
                 reviews.map((review: Review) => (
-                  <div key={review.id} className="border-b pb-4 md:pb-6 last:border-0">
+                  <div
+                    key={review.id}
+                    className="border-b pb-4 md:pb-6 last:border-0"
+                  >
                     {/* Rating */}
                     <div className="flex gap-1 mb-2">
                       {[...Array(5)].map((_, i) => (
                         <Star
                           key={i}
                           size={16}
-                          className={`${i < (review.rating || 0)
-                              ? 'fill-yellow-400 text-yellow-400'
-                              : 'text-gray-300'
-                            }`}
+                          className={`${
+                            i < (review.rating || 0)
+                              ? "fill-yellow-400 text-yellow-400"
+                              : "text-gray-300"
+                          }`}
                         />
                       ))}
                     </div>
 
                     {/* Reviewer Name and Date */}
                     <div className="flex items-center justify-between mb-2">
-                      <p className="text-sm font-semibold text-dark">{review.user.fullName || 'Anonymous'}</p>
+                      <p className="text-sm font-semibold text-dark">
+                        {review.user.fullName || "Anonymous"}
+                      </p>
                       {review.reviewDate && (
                         <p className="text-xs text-gray-500">
                           {new Date(review.reviewDate).toLocaleDateString()}
@@ -555,6 +680,7 @@ export default function ProductPage() {
                           alt="Review photo"
                           fill
                           className="object-cover"
+                          unoptimized
                         />
                       </div>
                     )}
@@ -562,7 +688,9 @@ export default function ProductPage() {
                 ))
               ) : (
                 <div className="text-center py-8">
-                  <p className="text-gray-500 mb-4">No reviews yet. Be the first to review this product!</p>
+                  <p className="text-gray-500 mb-4">
+                    No reviews yet. Be the first to review this product!
+                  </p>
                   <button
                     onClick={handleWriteReview}
                     className="px-6 py-2.5 bg-accent text-white rounded-lg text-sm font-medium hover:bg-opacity-90 transition-colors"
@@ -579,21 +707,31 @@ export default function ProductPage() {
         {similarProducts.length > 0 && (
           <section>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 md:mb-6 gap-2">
-              <h2 className="text-xl md:text-2xl lg:text-3xl xl:text-4xl font-serif text-dark">Similar Products</h2>
-              <Link href="/categories" className="text-accent hover:underline text-xs md:text-sm">See More →</Link>
+              <h2 className="text-xl md:text-2xl lg:text-3xl xl:text-4xl font-serif text-dark">
+                Similar Products
+              </h2>
+              <Link
+                href="/categories"
+                className="text-accent hover:underline text-xs md:text-sm"
+              >
+                See More →
+              </Link>
             </div>
-            <div className="flex gap-4 not-lg:overflow-scroll pb-2">
-              {similarProducts.map((prod) => (
-                <ProductCard
-                  key={prod.id}
-                  productId={prod.id}
-                  image={prod.coverImageUrl}
-                  title={prod.category?.categoryName || ''}
-                  description={prod.productName}
-                  originalPrice={prod.productPrice}
-                  discountedPrice={prod.productDiscountPrice || prod.productPrice}
-                  discount={prod.productDiscountPercentage || 0}
-                />
+            <div className="flex gap-4 overflow-x-auto lg:grid lg:grid-cols-5 lg:overflow-visible pb-2">
+              {similarProducts.slice(0, 5).map((prod) => (
+                <div key={prod.id} className="min-w-[250px] lg:min-w-0">
+                  <ProductCard
+                    productId={prod.id}
+                    image={prod.coverImageUrl}
+                    title={prod.category?.categoryName || ""}
+                    description={prod.productName}
+                    originalPrice={prod.productPrice}
+                    discountedPrice={
+                      prod.productDiscountPrice || prod.productPrice
+                    }
+                    discount={prod.productDiscountPercentage || 0}
+                  />
+                </div>
               ))}
             </div>
           </section>
@@ -611,5 +749,5 @@ export default function ProductPage() {
         />
       )}
     </div>
-  )
+  );
 }

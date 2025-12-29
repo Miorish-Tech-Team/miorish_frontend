@@ -1,62 +1,49 @@
 import React from "react";
 import Image from "next/image";
+import { type Banner } from "@/services/bannerService";
 
-export default function BrandPromotion() {
+interface BrandPromotionProps {
+  banners: Banner[];
+}
+
+export default function BrandPromotion({ banners }: BrandPromotionProps) {
+  // Use banners or fallback to default
+  const displayBanners =
+    banners.length > 0
+      ? banners
+      : [
+          { id: 1, image: "/images/cardImage3.jpg", title: "Brand 1" },
+          { id: 2, image: "/images/cardImage3.jpg", title: "Brand 2" },
+          { id: 3, image: "/images/cardImage3.jpg", title: "Brand 3" },
+          { id: 4, image: "/images/cardImage3.jpg", title: "Brand 4" },
+          { id: 5, image: "/images/cardImage3.jpg", title: "Brand 5" },
+        ];
+
   return (
-          <section className="py-8 md:py-12 lg:py-16 bg-white">
-            <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-20">
-              <h2 className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-serif text-center text-dark mb-8 md:mb-12">
-                Brand Promotions
-              </h2>
-              {/* Mobile: Horizontal Scroll */}
-              <div className="md:hidden flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide">
-                {[1, 2, 3, 4].map((item) => (
-                  <div
-                    key={item}
-                    className="relative h-[250px] flex-shrink-0 w-[70%] rounded-lg overflow-hidden group cursor-pointer snap-start"
-                  >
-                    <Image
-                      src="/images/cardImage3.jpg"
-                      alt="Promotion"
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute inset-0 bg-linear-to-t from-black/50 to-transparent flex items-end p-4 md:p-6">
-                      <div className="text-white">
-                        <p className="text-2xl md:text-3xl font-bold mb-1">
-                          25% OFF
-                        </p>
-                        <p className="text-xs md:text-sm">On all premium items</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+    <section className="p-8 md:p-12 lg:p-12 bg-white">
+      <div className="border-2 border-accent p-5 rounded-xl">
+        <div className=" mx-auto">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-serif  text-dark mb-8 md:mb-12">
+            Brand Promotions
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 md:gap-6">
+            {displayBanners.slice(0, 4).map((banner) => (
+              <div
+                key={banner.id}
+                className="relative aspect-square rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
+              >
+                <Image
+                  src={banner.image}
+                  alt={banner.title}
+                  fill
+                  className="object-cover"
+                  unoptimized
+                />
               </div>
-              {/* Desktop: Grid */}
-              <div className="hidden md:grid md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-                {[1, 2, 3, 4].map((item) => (
-                  <div
-                    key={item}
-                    className="relative h-[250px] md:h-[300px] rounded-lg overflow-hidden group cursor-pointer"
-                  >
-                    <Image
-                      src="/images/cardImage3.jpg"
-                      alt="Promotion"
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute inset-0 bg-linear-to-t from-black/50 to-transparent flex items-end p-4 md:p-6">
-                      <div className="text-white">
-                        <p className="text-2xl md:text-3xl font-bold mb-1">
-                          25% OFF
-                        </p>
-                        <p className="text-xs md:text-sm">On all premium items</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-    );
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
 }

@@ -107,7 +107,7 @@ export default function OrdersPage() {
                   <select 
                     value={filterStatus}
                     onChange={(e) => setFilterStatus(e.target.value)}
-                    className="px-4 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
+                    className="px-4 py-2 border border-gray-300 text-primary rounded text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
                   >
                     <option>All orders</option>
                     <option>Delivered</option>
@@ -124,7 +124,7 @@ export default function OrdersPage() {
                     placeholder="Search by order ID or product name"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full px-4 py-2 pr-4 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
+                    className="w-full px-4 py-2 pr-4 border text-accent border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
                   />
                 </div>
               </div>

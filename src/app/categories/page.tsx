@@ -218,13 +218,13 @@ function CategoriesPageContent() {
 
   return (
     <div className="min-h-screen bg-secondary">
-      <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-20 py-4 md:py-6">
+      <div className="container mx-auto px-3 sm:px-4 md:px-8 lg:px-12 xl:px-20 py-3 md:py-6">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm mb-4 md:mb-6">
+        <div className="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm mb-3 md:mb-6">
           <Link href="/" className="text-accent hover:underline font-medium">
             Home
           </Link>
-          <ChevronRight size={16} className="text-gray-400" />
+          <ChevronRight size={14} className="text-gray-400" />
           <span className="text-gray-700 font-medium">Products</span>
         </div>
 
@@ -249,13 +249,13 @@ function CategoriesPageContent() {
             className={`w-full lg:w-64 shrink-0 ${showMobileFilters ? "block" : "hidden lg:block"
               }`}
           >
-            <div className="py-3 rounded-lg shadow-sm border border-accent overflow-hidden">
+            <div className="py-2 md:py-3 rounded-lg shadow-sm border border-accent overflow-hidden">
               {/* Categories */}
               <div className="border-b border-accent">
-                <h3 className="text-xl font-semibold text-gray-900 px-4 py-1 ">
+                <h3 className="text-base md:text-xl font-semibold text-gray-900 px-3 md:px-4 py-2">
                   Categories
                 </h3>
-                <div className="px-8 py-1  max-h-80 overflow-y-auto">
+                <div className="px-4 md:px-8 py-1 max-h-64 md:max-h-80 overflow-y-auto">
                   {categories.map((category) => (
                     <div key={category.id}>
                       <div className="flex items-center justify-between py-1">
@@ -327,10 +327,10 @@ function CategoriesPageContent() {
 
               {/* Price Range */}
               <div className="border-b border-accent">
-                <h3 className="text-base md:text-lg lg:text-xl font-semibold text-gray-900 px-4 py-3">
+                <h3 className="text-base md:text-xl font-semibold text-gray-900 px-3 md:px-4 py-2 md:py-3">
                   Price
                 </h3>
-                <div className="px-4 py-6 space-y-6">
+                <div className="px-3 md:px-4 py-4 md:py-6 space-y-4 md:space-y-6">
                   {/* Dual Handle Range Slider */}
                   <div className="relative pt-2 pb-4">
                     {/* Track */}
@@ -376,23 +376,23 @@ function CategoriesPageContent() {
                     />
                   </div>
                   {/* Price Display */}
-                  <div className="text-center text-base md:text-lg text-gray-900 font-medium">
-                    {tempPriceRange[0]} - {tempPriceRange[1]}
+                  <div className="text-center text-sm md:text-lg text-gray-900 font-medium">
+                    ₹{tempPriceRange[0]} - ₹{tempPriceRange[1]}
                   </div>
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="p-4 md:p-5 flex gap-3">
+              <div className="p-3 md:p-5 flex gap-2 md:gap-3">
                 <button
                   onClick={applyFilters}
-                  className="flex-1 px-4 py-2.5 text-accent border-2 border-accent rounded-lg hover:border-accent/10 hover:bg-accent/50 hover:text-white transition-all font-semibold text-sm"
+                  className="flex-1 px-3 md:px-4 py-2 md:py-2.5 text-accent border-2 border-accent rounded-lg hover:border-accent/10 hover:bg-accent/50 hover:text-white transition-all font-semibold text-xs md:text-sm"
                 >
                   Apply
                 </button>
                 <button
                   onClick={clearFilters}
-                  className="flex-1 px-4 py-2.5 bg-accent text-white rounded-lg hover:bg-opacity-90 transition-colors font-semibold text-sm"
+                  className="flex-1 px-3 md:px-4 py-2 md:py-2.5 bg-accent text-white rounded-lg hover:bg-opacity-90 transition-colors font-semibold text-xs md:text-sm"
                 >
                   Clear
                 </button>
@@ -473,7 +473,7 @@ function CategoriesPageContent() {
             ) : ( */}
             <>
               {/* Products Grid - All Screens */}
-              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-8">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3 md:gap-4 lg:gap-6 mb-6 md:mb-8">
                 {paginatedProducts.map((product) => (
                   <ProductCard
                     key={product.id}
@@ -492,14 +492,14 @@ function CategoriesPageContent() {
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="flex items-center justify-center gap-2 mb-8">
+                <div className="flex items-center justify-center gap-1.5 md:gap-2 mb-6 md:mb-8">
                   <button
                     onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                    className="p-2 bg-white hover:bg-gray-50 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm border border-gray-200"
+                    className="p-1.5 md:p-2 bg-white hover:bg-gray-50 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm border border-gray-200"
                     disabled={currentPage === 1}
                   >
                     <ChevronLeft
-                      size={20}
+                      size={18}
                       className={
                         currentPage === 1 ? "text-gray-300" : "text-gray-700"
                       }
@@ -522,7 +522,7 @@ function CategoriesPageContent() {
                       <button
                         key={pageNum}
                         onClick={() => setCurrentPage(pageNum)}
-                        className={`min-w-8 h-8 px-3 rounded-lg font-medium transition-all ${currentPage === pageNum
+                        className={`min-w-7 md:min-w-8 h-7 md:h-8 px-2 md:px-3 rounded-lg text-xs md:text-sm font-medium transition-all ${currentPage === pageNum
                             ? "bg-accent text-white shadow-md"
                             : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 shadow-sm"
                           }`}
@@ -536,11 +536,11 @@ function CategoriesPageContent() {
                     onClick={() =>
                       setCurrentPage(Math.min(totalPages, currentPage + 1))
                     }
-                    className="p-2 bg-white hover:bg-gray-50 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm border border-gray-200"
+                    className="p-1.5 md:p-2 bg-white hover:bg-gray-50 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm border border-gray-200"
                     disabled={currentPage === totalPages}
                   >
                     <ChevronRight
-                      size={20}
+                      size={18}
                       className={
                         currentPage === totalPages
                           ? "text-gray-300"

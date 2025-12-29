@@ -5,6 +5,7 @@ import Hero from "@/components/sections/home/Hero";
 import { getAllCategories, type Category } from "@/services/categoryService";
 import { getAllProducts, type Product } from "@/services/productService";
 import { getCombinedRecommendations } from "@/services/recommendationService";
+import { getHomepageBanners, getWeeklyPromotionBanners, getPopularBanners, getBrandPosterBanners, type Banner } from "@/services/bannerService";
 import PromotionBanner1 from "@/components/sections/home/PromotionBanner1";
 import UniqueProducts from "@/components/sections/home/UniqueProducts";
 import PromotionBanner2 from "@/components/sections/home/PromotionBanner2";
@@ -23,6 +24,10 @@ export default async function Home() {
   let uniqueProducts: Product[] = [];
   let recommendedProducts: Product[] = [];
   let isAuthenticated = false;
+  let homepageBanners: Banner[] = [];
+  let weeklyBanners: Banner[] = [];
+  let popularBanners: Banner[] = [];
+  let brandBanners: Banner[] = [];
 
   try {
     // Check if user is authenticated by checking for auth token
@@ -35,19 +40,16 @@ export default async function Home() {
     isAuthenticated = !!(token || tokenMiddleware || accessToken);
   
 
-    // Fetch categories and products data
-    const [categoriesRes, productsRes] = await Promise.all([
+    // Fetch all data in parallel
+    const [categoriesRes, productsRes, homepageBannersRes, weeklyBannersRes, popularBannersRes, brandBannersRes, recommendationRes] = await Promise.all([
       getAllCategories(),
       getAllProducts({ sortBy: "latest" }),
+      getHomepageBanners(),
+      getWeeklyPromotionBanners(),
+      getPopularBanners(),
+      getBrandPosterBanners(),
+      isAuthenticated ? getCombinedRecommendations() : Promise.resolve(null),
     ]);
-
-    // Only fetch recommendations if user is authenticated
-    let recommendationRes = null;
-    if (isAuthenticated) {
-      recommendationRes = await getCombinedRecommendations();
-    } else {
-      console.log("[Server] Skipping recommendations - user not authenticated");
-    }
 
     if (categoriesRes?.categories && Array.isArray(categoriesRes.categories)) {
       categories = categoriesRes.categories;
@@ -67,9 +69,26 @@ export default async function Home() {
       uniqueProducts = allProducts.slice(5, 10);
     }
 
+    // Set banners
+    if (homepageBannersRes?.success && Array.isArray(homepageBannersRes.banners)) {
+      homepageBanners = homepageBannersRes.banners;
+    }
+    
+    if (weeklyBannersRes?.success && Array.isArray(weeklyBannersRes.banners)) {
+      weeklyBanners = weeklyBannersRes.banners;
+    }
+    
+    if (popularBannersRes?.success && Array.isArray(popularBannersRes.banners)) {
+      popularBanners = popularBannersRes.banners;
+    }
+    
+    if (brandBannersRes?.success && Array.isArray(brandBannersRes.banners)) {
+      brandBanners = brandBannersRes.banners;
+    }
+
     // Only use recommendation API if user is authenticated
     if (isAuthenticated && recommendationRes?.success && recommendationRes.recommended) {
-      recommendedProducts = recommendationRes.recommended.slice(0, 12);
+      recommendedProducts = recommendationRes.recommended.slice(0, 5);
     } else {
       console.log("[Server] No recommendations to display", {
         isAuthenticated,
@@ -117,12 +136,12 @@ export default async function Home() {
         </div>
       </div>
       {/* Hero Section - Candles */}
-      <Hero />
-      <PromotionBanner1 />
+      <Hero banners={homepageBanners} />
+      <PromotionBanner1 banners={weeklyBanners} />
       <UniqueProducts products={uniqueProducts} />
-      <PromotionBanner2 />
+      <PromotionBanner2 banners={popularBanners} />
       <NewArrivals products={newArrivalProducts} />
-      <BrandPromotion />
+      <BrandPromotion banners={brandBanners} />
       {isAuthenticated && recommendedProducts.length > 0 && (
         <Recommendation products={recommendedProducts} />
       )}

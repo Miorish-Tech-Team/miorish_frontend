@@ -314,7 +314,7 @@ function CheckoutForm() {
           <ChevronRight size={16} className="text-gray-400" />
           {checkoutType === 'cart' && (
             <>
-              <Link href="/cart" className="text-accent hover:underline font-medium">Cart</Link>
+              <Link href="/account/cart" className="text-accent hover:underline font-medium">Cart</Link>
               <ChevronRight size={16} className="text-gray-400" />
             </>
           )}
@@ -454,6 +454,7 @@ function CheckoutForm() {
                         alt={item.name}
                         fill
                         className="object-cover"
+                        unoptimized
                       />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -469,7 +470,7 @@ function CheckoutForm() {
               <div className="space-y-2 mb-4 pb-4 border-b">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Subtotal</span>
-                  <span className="font-medium">Rs.{subtotal.toFixed(2)}</span>
+                  <span className="font-medium text-primary">Rs.{subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Shipping</span>

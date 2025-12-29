@@ -1,29 +1,41 @@
 'use client'
+// This component must be 'use client' because Swiper requires browser APIs
+// However, all data (banners) is fetched server-side and passed as props
+// This is the correct Next.js 14 pattern for interactive components with SSR data
+
 import React from 'react';
 import Image from 'next/image';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination, EffectFade } from 'swiper/modules';
+import { type Banner } from '@/services/bannerService';
 
 // Import Swiper styles
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/effect-fade';
 
-const heroImages = [
-  { id: 1, src: '/images/hero1.jpg', alt: 'Latest Collection' },
-  { id: 2, src: '/images/hero2.jpg', alt: 'Summer Sale' },
-  { id: 3, src: '/images/hero3.jpg', alt: 'New Arrivals' },
-];
+interface HeroProps {
+  banners: Banner[];
+}
 
-export default function Hero() {
+export default function Hero({ banners }: HeroProps) {
+  // Fallback to default images if no banners
+  const heroImages = banners.length > 0 
+    ? banners 
+    : [
+        { id: 1, image: '/images/hero1.jpg', title: 'Latest Collection' },
+        { id: 2, image: '/images/hero2.jpg', title: 'Summer Sale' },
+        { id: 3, image: '/images/hero3.jpg', title: 'New Arrivals' },
+      ];
+
   return (
-    <section className="relative w-full h-[60vh] md:h-[90vh] overflow-hidden bg-secondary">
+    <section className="relative w-full h-[60vh] md:h-[80vh] overflow-hidden bg-secondary">
       <Swiper
         modules={[Autoplay, Pagination, EffectFade]}
         spaceBetween={0}
         slidesPerView={1}
-        loop={true} // Enables Infinite Loop
-        effect="fade" // Smooth fade transition (optional)
+        loop={true}
+        effect="fade"
         speed={1000}
         autoplay={{
           delay: 5000,
@@ -35,21 +47,20 @@ export default function Hero() {
         }}
         className="h-full w-full"
       >
-        {heroImages.map((image) => (
-          <SwiperSlide key={image.id}>
+        {heroImages.map((item, index) => (
+          <SwiperSlide key={item.id}>
             <div className="relative w-full h-full">
               <Image
-                src={image.src}
-                alt={image.alt}
+                src={item.image}
+                alt={item.title}
                 fill
-                priority={image.id === 1}
+                priority={index === 0}
                 className="object-cover"
-                unoptimized // Keep this if using local public images without a loader
+                unoptimized
               />
-              {/* Optional Overlay for Text visibility */}
               <div className="absolute inset-0 bg-black/20 flex flex-col items-center justify-center text-white text-center p-4">
                 <h1 className="text-4xl md:text-6xl font-bold mb-4 drop-shadow-lg">
-                  {image.alt}
+                  {item.title}
                 </h1>
                 <p className="text-lg md:text-xl max-w-lg drop-shadow-md">
                   Discover premium quality products crafted just for you.
@@ -60,7 +71,6 @@ export default function Hero() {
         ))}
       </Swiper>
 
-      {/* Custom Styles for Pagination Dots */}
       <style jsx global>{`
         .swiper-pagination-bullet {
           background: white;
@@ -69,7 +79,7 @@ export default function Hero() {
           height: 10px;
         }
         .swiper-pagination-bullet-active {
-          background: #B49157 !important; /* Use your hex accent color here */
+          background: #B49157 !important;
           width: 25px;
           border-radius: 5px;
           transition: all 0.3s ease;

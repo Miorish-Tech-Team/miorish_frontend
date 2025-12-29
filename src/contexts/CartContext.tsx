@@ -76,9 +76,32 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const updateQuantity = async (itemId: number, quantity: number) => {
+    // Optimistic update - update local state immediately
+    if (cart?.CartItems) {
+      const updatedCartItems = cart.CartItems.map(item => 
+        item.id === itemId 
+          ? { ...item, quantity, totalPrice: (item.Product.productDiscountPrice || item.Product.productPrice) * quantity }
+          : item
+      )
+      
+      // Calculate new summary
+      const newTotalItems = updatedCartItems.reduce((sum, item) => sum + item.quantity, 0)
+      const newTotalPrice = updatedCartItems.reduce((sum, item) => sum + item.totalPrice, 0)
+      
+      // Update local state immediately
+      setCart({ ...cart, CartItems: updatedCartItems })
+      setSummary({ totalItems: newTotalItems, totalPrice: newTotalPrice })
+    }
+
     try {
+      // Update on server in background
       await updateCartItemQuantity(itemId, { quantity })
-      await refreshCart()
+      // Silently refresh to sync with server (no loading state)
+      const data = await getUserCartWithSummary()
+      if (!('message' in data)) {
+        setCart(data.cart as Cart)
+        setSummary(data.summary)
+      }
       toast.success('Quantity updated!')
     } catch (error: unknown) {
       console.error('Error updating quantity:', error)
@@ -86,14 +109,43 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
         : undefined
       toast.error(message || 'Failed to update quantity')
+      // Revert to server state on error
+      await refreshCart()
       throw error
     }
   }
 
   const removeItem = async (itemId: number) => {
+    // Optimistic update - remove from local state immediately
+    if (cart?.CartItems) {
+      const updatedCartItems = cart.CartItems.filter(item => item.id !== itemId)
+      
+      // Calculate new summary
+      const newTotalItems = updatedCartItems.reduce((sum, item) => sum + item.quantity, 0)
+      const newTotalPrice = updatedCartItems.reduce((sum, item) => sum + item.totalPrice, 0)
+      
+      // Update local state immediately
+      if (updatedCartItems.length === 0) {
+        setCart(null)
+        setSummary({ totalItems: 0, totalPrice: 0 })
+      } else {
+        setCart({ ...cart, CartItems: updatedCartItems })
+        setSummary({ totalItems: newTotalItems, totalPrice: newTotalPrice })
+      }
+    }
+
     try {
+      // Remove on server in background
       await removeCartItem(itemId)
-      await refreshCart()
+      // Silently refresh to sync with server
+      const data = await getUserCartWithSummary()
+      if ('message' in data && data.message === 'Cart is empty') {
+        setCart(null)
+        setSummary({ totalItems: 0, totalPrice: 0 })
+      } else {
+        setCart(data.cart as Cart)
+        setSummary(data.summary)
+      }
       toast.success('Item removed from cart')
     } catch (error: unknown) {
       console.error('Error removing item:', error)
@@ -101,6 +153,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
         : undefined
       toast.error(message || 'Failed to remove item')
+      // Revert to server state on error
+      await refreshCart()
       throw error
     }
   }

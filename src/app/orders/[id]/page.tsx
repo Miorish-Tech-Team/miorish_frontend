@@ -125,6 +125,7 @@ export default function OrderDetailsPage() {
                           alt={item.productName}
                           fill
                           className="object-cover"
+                          unoptimized
                         />
                       </div>
                     </Link>

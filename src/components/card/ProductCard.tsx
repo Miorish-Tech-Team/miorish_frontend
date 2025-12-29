@@ -197,11 +197,11 @@ export default function ProductCard({
   };
 
   return (
-    // Reduced outer padding (p-1.5) and max-width to keep it compact
-    <div className="min-w-[200px] max-w-[250px] p-1 border border-accent rounded-md overflow-hidden hover:shadow-md transition-shadow bg-white">
-      {/* Image - Smaller aspect ratio/height */}
+    // Compact mobile design with responsive sizing
+    <div className="w-full p-1.5 md:p-2 border border-accent rounded-md overflow-hidden hover:shadow-md transition-shadow bg-white">
+      {/* Image - Smaller aspect ratio on mobile */}
       <Link href={`/product/${productId}`}>
-        <div className="relative aspect-4/3 bg-secondary cursor-pointer overflow-hidden rounded-sm">
+        <div className="relative aspect-square md:aspect-4/3 bg-secondary cursor-pointer overflow-hidden rounded-sm">
           <Image
             src={image}
             alt={title}
@@ -210,12 +210,12 @@ export default function ProductCard({
             unoptimized
           />
           <button
-            className="bg-white/80 absolute top-1.5 right-1.5 rounded-full p-1 hover:bg-white transition-colors shadow-sm"
+            className="bg-white/80 absolute top-1 md:top-1.5 right-1 md:right-1.5 rounded-full p-1 hover:bg-white transition-colors shadow-sm"
             onClick={handleAddToWishlist}
           >
             <Heart
-              size={16}
-              className={`transition-colors cursor-pointer ${
+              size={14}
+              className={`md:w-4 md:h-4 transition-colors cursor-pointer ${
                 isInWishlist
                   ? "text-accent fill-accent"
                   : "text-accent hover:fill-accent"
@@ -226,28 +226,28 @@ export default function ProductCard({
       </Link>
 
       {/* Content - Reduced padding and smaller typography */}
-      <div className="pt-2 px-1">
+      <div className="pt-1.5 md:pt-2 px-1">
         <Link href={`/product/${productId}`}>
-          <h3 className="font-bold text-xs md:text-xl text-dark leading-tight mb-0.5 truncate hover:text-accent transition-colors">
+          <h3 className="font-bold text-[11px] md:text-base lg:text-xl text-dark leading-tight mb-0.5 truncate hover:text-accent transition-colors">
             {title}
           </h3>
         </Link>
-        <p className="text-[10px] md:text-sm text-gray-500 mb-1.5 line-clamp-1">
+        <p className="text-[9px] md:text-xs lg:text-sm text-gray-500 mb-1 md:mb-1.5 line-clamp-1">
           {description}
         </p>
 
         {/* Price - Tightened spacing */}
-        <div className="flex items-center gap-1.5 mb-2 flex-wrap">
-          <span className="text-sm font-extrabold text-dark">
+        <div className="flex items-center gap-1 md:gap-1.5 mb-1.5 md:mb-2 flex-wrap">
+          <span className="text-xs md:text-sm lg:text-base font-extrabold text-dark">
             ₹{discountedPrice || originalPrice}
           </span>
           {discountedPrice && discountedPrice < originalPrice && (
             <>
-              <span className="text-[10px] md:text-sm text-gray-400 line-through">
+              <span className="text-[9px] md:text-xs lg:text-sm text-gray-400 line-through">
                 ₹{originalPrice}
               </span>
               {discount && (
-                <span className="text-[10px] md:text-sm text-green-600 font-semibold">
+                <span className="text-[9px] md:text-xs lg:text-sm text-green-600 font-semibold">
                   {discount}%
                 </span>
               )}
@@ -257,22 +257,22 @@ export default function ProductCard({
 
         {/* Actions - More compact buttons */}
         {/* Actions Section */}
-        <div className="flex items-center w-full mt-2">
-          <div className="flex items-center w-full border-2 border-accent rounded-lg overflow-hidden bg-white h-9 md:h-10">
+        <div className="flex items-center w-full mt-1.5 md:mt-2">
+          <div className="flex items-center w-full border-2 border-accent rounded-lg overflow-hidden bg-white h-8 md:h-9 lg:h-10">
             {/* Minus Button */}
             <button
               onClick={decrementQuantity}
-              className="flex items-center justify-center px-2 md:px-3 h-full text-accent hover:bg-accent/5 transition-colors border-r-2 border-accent"
+              className="flex items-center justify-center px-1.5 md:px-2 lg:px-3 h-full text-accent hover:bg-accent/5 transition-colors border-r-2 border-accent"
               aria-label="Decrease quantity"
             >
-              <Minus size={16} strokeWidth={3} />
+              <Minus size={14} strokeWidth={3} className="md:w-4 md:h-4" />
             </button>
 
             {/* Center Action/Display */}
             <button
               onClick={handleAddToCart}
               disabled={addingToCart}
-              className={`flex-1 h-full text-center text-xs md:text-sm font-bold uppercase tracking-wide transition-colors ${
+              className={`flex-1 h-full text-center text-[10px] md:text-xs lg:text-sm font-bold uppercase tracking-wide transition-colors ${
                 addingToCart
                   ? "bg-accent/10"
                   : "bg-transparent hover:bg-accent/5"
@@ -290,10 +290,10 @@ export default function ProductCard({
             {/* Plus Button */}
             <button
               onClick={incrementQuantity}
-              className="flex items-center justify-center px-2 md:px-3 h-full text-accent hover:bg-accent/5 transition-colors border-l-2 border-accent"
+              className="flex items-center justify-center px-1.5 md:px-2 lg:px-3 h-full text-accent hover:bg-accent/5 transition-colors border-l-2 border-accent"
               aria-label="Increase quantity"
             >
-              <Plus size={16} strokeWidth={3} />
+              <Plus size={14} strokeWidth={3} className="md:w-4 md:h-4" />
             </button>
           </div>
         </div>
