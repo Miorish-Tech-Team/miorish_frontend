@@ -9,6 +9,7 @@ import { CartProvider } from "@/contexts/CartContext";
 import { AuthModalProvider } from "@/contexts/AuthModalContext";
 import AuthModals from "@/components/modals/AuthModals";
 import { Toaster } from "react-hot-toast";
+import AuthToastHandler from "@/components/AuthToastHandler";
 
 const cinzel = Cinzel({
   variable: "--font-cinzel",
@@ -60,6 +61,7 @@ export default function RootLayout({
                   },
                 }}
               />
+              <AuthToastHandler />
               <AuthModals />
               <Navbar />
               {children}

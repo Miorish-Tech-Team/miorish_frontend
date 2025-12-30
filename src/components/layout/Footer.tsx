@@ -2,8 +2,26 @@
 
 import Image from 'next/image'
 import { ArrowUp} from 'lucide-react'
+import { useAuth } from '@/contexts/AuthContext'
+import { useAuthModal } from '@/contexts/AuthModalContext'
+import toast from 'react-hot-toast'
+import { useRouter } from 'next/navigation'
 
 export default function Footer() {
+  const { user } = useAuth()
+  const { openLoginModal } = useAuthModal()
+  const router = useRouter()
+
+  const handleProtectedLink = (e: React.MouseEvent<HTMLAnchorElement>, path: string) => {
+    if (!user) {
+      e.preventDefault()
+      toast.error('Please login to access this page')
+      openLoginModal()
+    } else {
+      e.preventDefault()
+      router.push(path)
+    }
+  }
   return (
     <footer className="bg-primary text-white">
       <div className="container mx-auto px-4 sm:px-6 md:px-20 lg:px-20 xl:px-30 py-8 md:py-12 lg:py-16">
@@ -28,9 +46,9 @@ export default function Footer() {
               <li><a href="/policies/shipping_delivery" className=" hover:text-accent transition-colors">Shipping Policy</a></li>
               <li><a href="/policies/refund_policy" className=" hover:text-accent transition-colors">Return Policy</a></li>
               <li><a href="/policies/terms_conditions" className=" hover:text-accent transition-colors">Terms & Conditions</a></li>
-              <li><a href="#" className=" hover:text-accent transition-colors">Contact Us</a></li>
-              <li><a href="#" className=" hover:text-accent transition-colors">About Us</a></li>
-              <li><a href="#" className=" hover:text-accent transition-colors">FAQs</a></li>
+              <li><a href="/contact" className=" hover:text-accent transition-colors">Contact Us</a></li>
+              {/* <li><a href="#" className=" hover:text-accent transition-colors">About Us</a></li> */}
+              <li><a href="/faqs" className=" hover:text-accent transition-colors">FAQs</a></li>
             </ul>
           </div>
 
@@ -38,11 +56,44 @@ export default function Footer() {
           <div className="text-center sm:text-left">
             <h3 className="text-accent text-base md:text-lg font-bold mb-4 md:mb-5">Account</h3>
             <ul className="space-y-2.5 text-accent font-light text-xs md:text-sm">
-              <li><a href="#" className=" hover:text-accent transition-colors">My Account</a></li>
-              <li><a href="#" className=" hover:text-accent transition-colors">Login / Register</a></li>
-              <li><a href="#" className=" hover:text-accent transition-colors">Cart</a></li>
-              <li><a href="#" className=" hover:text-accent transition-colors">Wishlist</a></li>
-              <li><a href="#" className=" hover:text-accent transition-colors">Shop</a></li>
+              <li>
+                <a 
+                  href="/account/profile" 
+                  onClick={(e) => handleProtectedLink(e, '/account/profile')}
+                  className=" hover:text-accent transition-colors cursor-pointer"
+                >
+                  My Account
+                </a>
+              </li>
+              {!user && (
+                <li>
+                  <button 
+                    onClick={() => openLoginModal()} 
+                    className="hover:text-accent transition-colors text-left"
+                  >
+                    Login / Register
+                  </button>
+                </li>
+              )}
+              <li>
+                <a 
+                  href="/account/cart" 
+                  onClick={(e) => handleProtectedLink(e, '/account/cart')}
+                  className=" hover:text-accent transition-colors cursor-pointer"
+                >
+                  Cart
+                </a>
+              </li>
+              <li>
+                <a 
+                  href="/account/wishlist" 
+                  onClick={(e) => handleProtectedLink(e, '/account/wishlist')}
+                  className=" hover:text-accent transition-colors cursor-pointer"
+                >
+                  Wishlist
+                </a>
+              </li>
+              <li><a href="/categories" className=" hover:text-accent transition-colors">Shop</a></li>
             </ul>
           </div>
 

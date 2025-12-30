@@ -22,10 +22,11 @@ export function middleware(request: NextRequest) {
   const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
   const isAuthRoute = authRoutes.some(route => pathname.startsWith(route))
 
-  // If trying to access protected route without token, redirect to login
+  // If trying to access protected route without token, redirect to home with blocked parameter
   if (isProtectedRoute && !token) {
-    const url = new URL('/auth/login', request.url)
-    url.searchParams.set('redirect', pathname)
+    const url = new URL('/', request.url)
+    url.searchParams.set('blocked', 'true')
+    url.searchParams.set('message', 'Please login to access this page')
     return NextResponse.redirect(url)
   }
 

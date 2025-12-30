@@ -21,6 +21,8 @@ import { getSearchSuggestions } from "@/services/productService";
 import { useRouter } from "next/navigation";
 import AnnouncementBar from "./AnnouncementBar";
 import { MdOutlineShoppingBag } from "react-icons/md";
+import toast from 'react-hot-toast';
+
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -291,12 +293,21 @@ export default function Navbar() {
 
           {/* Icons - Desktop Only */}
           <div className="hidden lg:flex items-center gap-4 lg:gap-6">
-            <Link href="/account/orders">
-              <button className="flex flex-col items-center justify-center gap-1 hover:text-accent transition-colors cursor-pointer">
-                <MdOutlineShoppingBag size={20} className="lg:w-6 lg:h-6" />
-                <span className="text-[10px] lg:text-xs">My Orders</span>
-              </button>
-            </Link>
+            <button 
+              onClick={(e) => {
+                if (!user) {
+                  e.preventDefault();
+                  toast.error('Please login to access this page');
+                  openLoginModal();
+                } else {
+                  router.push('/account/orders');
+                }
+              }}
+              className="flex flex-col items-center justify-center gap-1 hover:text-accent transition-colors cursor-pointer"
+            >
+              <MdOutlineShoppingBag size={20} className="lg:w-6 lg:h-6" />
+              <span className="text-[10px] lg:text-xs">My Orders</span>
+            </button>
 
             {user ? (
               <Link href="/account/profile">
@@ -314,23 +325,41 @@ export default function Navbar() {
                 <span className="text-[10px] lg:text-xs">Login</span>
               </button>
             )}
-            <Link href="/account/wishlist">
-              <button className="flex flex-col items-center justify-center gap-1 hover:text-accent transition-colors cursor-pointer">
-                <Heart size={20} className="lg:w-6 lg:h-6" />
-                <span className="text-[10px] lg:text-xs">Wishlist</span>
-              </button>
-            </Link>
-            <Link href="/account/cart">
-              <button className="flex flex-col items-center justify-center gap-1 hover:text-accent transition-colors cursor-pointer relative">
-                <ShoppingCart size={20} className="lg:w-6 lg:h-6" />
-                {cartItemCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-accent text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                    {cartItemCount > 9 ? "9+" : cartItemCount}
-                  </span>
-                )}
-                <span className="text-[10px] lg:text-xs">Cart</span>
-              </button>
-            </Link>
+            <button 
+              onClick={(e) => {
+                if (!user) {
+                  e.preventDefault();
+                  toast.error('Please login to access this page');
+                  openLoginModal();
+                } else {
+                  router.push('/account/wishlist');
+                }
+              }}
+              className="flex flex-col items-center justify-center gap-1 hover:text-accent transition-colors cursor-pointer"
+            >
+              <Heart size={20} className="lg:w-6 lg:h-6" />
+              <span className="text-[10px] lg:text-xs">Wishlist</span>
+            </button>
+            <button 
+              onClick={(e) => {
+                if (!user) {
+                  e.preventDefault();
+                  toast.error('Please login to access this page');
+                  openLoginModal();
+                } else {
+                  router.push('/account/cart');
+                }
+              }}
+              className="flex flex-col items-center justify-center gap-1 hover:text-accent transition-colors cursor-pointer relative"
+            >
+              <ShoppingCart size={20} className="lg:w-6 lg:h-6" />
+              {cartItemCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-accent text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {cartItemCount > 9 ? "9+" : cartItemCount}
+                </span>
+              )}
+              <span className="text-[10px] lg:text-xs">Cart</span>
+            </button>
           </div>
 
           {/* Mobile Menu Button */}
@@ -441,38 +470,59 @@ export default function Navbar() {
                 Quick Links
               </h3>
               <div className="space-y-3">
-                <Link
-                  href="/account/orders"
-                  onClick={() => setMobileMenuOpen(false)}
+                <button
+                  onClick={() => {
+                    if (!user) {
+                      toast.error('Please login to access this page');
+                      setMobileMenuOpen(false);
+                      openLoginModal();
+                    } else {
+                      router.push('/account/orders');
+                      setMobileMenuOpen(false);
+                    }
+                  }}
+                  className="flex items-center gap-3 py-2 hover:text-accent transition-colors w-full"
                 >
-                  <div className="flex items-center gap-3 py-2 hover:text-accent transition-colors">
-                    <MdOutlineShoppingBag size={20} />
-                    <span className="text-sm font-medium">My Orders</span>
-                  </div>
-                </Link>
-                <Link
-                  href="/account/wishlist"
-                  onClick={() => setMobileMenuOpen(false)}
+                  <MdOutlineShoppingBag size={20} />
+                  <span className="text-sm font-medium">My Orders</span>
+                </button>
+                <button
+                  onClick={() => {
+                    if (!user) {
+                      toast.error('Please login to access this page');
+                      setMobileMenuOpen(false);
+                      openLoginModal();
+                    } else {
+                      router.push('/account/wishlist');
+                      setMobileMenuOpen(false);
+                    }
+                  }}
+                  className="flex items-center gap-3 py-2 hover:text-accent transition-colors w-full"
                 >
-                  <div className="flex items-center gap-3 py-2 hover:text-accent transition-colors">
-                    <Heart size={20} />
-                    <span className="text-sm font-medium">Wishlist</span>
-                  </div>
-                </Link>
-                <Link
-                  href="/account/cart"
-                  onClick={() => setMobileMenuOpen(false)}
+                  <Heart size={20} />
+                  <span className="text-sm font-medium">Wishlist</span>
+                </button>
+                <button
+                  onClick={() => {
+                    if (!user) {
+                      toast.error('Please login to access this page');
+                      setMobileMenuOpen(false);
+                      openLoginModal();
+                    } else {
+                      router.push('/account/cart');
+                      setMobileMenuOpen(false);
+                    }
+                  }}
+                  className="flex items-center gap-3 py-2 hover:text-accent transition-colors relative w-full"
                 >
-                  <div className="flex items-center gap-3 py-2 hover:text-accent transition-colors relative">
-                    <ShoppingCart size={20} />
-                    <span className="text-sm font-medium">Cart</span>
-                    {cartItemCount > 0 && (
-                      <span className="ml-auto bg-accent text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
-                        {cartItemCount > 9 ? "9+" : cartItemCount}
-                      </span>
-                    )}
-                  </div>
-                </Link>
+                  <ShoppingCart size={20} />
+                  <span className="text-sm font-medium">Cart</span>
+                  {cartItemCount > 0 && (
+                    <span className="ml-auto bg-accent text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
+                      {cartItemCount > 9 ? "9+" : cartItemCount}
+                    </span>
+                  )}
+                </button>
               </div>
             </div>
 

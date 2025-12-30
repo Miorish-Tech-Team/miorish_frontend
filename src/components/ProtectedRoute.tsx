@@ -19,9 +19,9 @@ export default function ProtectedRoute({
   useEffect(() => {
     if (!isLoading) {
       if (!isAuthenticated) {
-        router.push('/auth/login')
+        router.push('/')
       } else if (requiredRole && user && !requiredRole.includes(user.role)) {
-        router.push('/') // Redirect to home if user doesn't have required role
+        router.push('/')
       }
     }
   }, [isAuthenticated, user, isLoading, requiredRole, router])
