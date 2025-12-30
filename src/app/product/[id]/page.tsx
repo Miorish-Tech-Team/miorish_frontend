@@ -31,7 +31,6 @@ import {
   getUserWishlist,
   removeFromWishlistByProductId,
 } from "@/services/wishlistService";
-import ReviewFormModal from "@/components/modals/ReviewFormModal";
 
 export default function ProductPage() {
   const params = useParams();
@@ -47,7 +46,6 @@ export default function ProductPage() {
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [activeTab, setActiveTab] = useState("description");
-  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
   const { user } = useAuth();
   const [isInWishlist, setIsInWishlist] = useState<boolean>(false);
@@ -105,31 +103,6 @@ export default function ProductPage() {
     }
   }, [productId]);
 
-  const fetchReviews = async () => {
-    try {
-      const reviewsRes = await getProductReviews(productId);
-      setReviews(reviewsRes.reviews || []);
-
-      // Also refresh product data to get updated rating
-      const productRes = await getProductById(productId);
-      setProduct(productRes.product);
-    } catch (error) {
-      console.error("Error fetching reviews:", error);
-    }
-  };
-
-  const handleReviewSubmitted = () => {
-    fetchReviews();
-  };
-
-  const handleWriteReview = () => {
-    if (!user) {
-      toast.error("Please login to write a review");
-      router.push("/auth/login");
-      return;
-    }
-    setIsReviewModalOpen(true);
-  };
   // }, [productId])
 
   const handleAddToCart = async () => {
@@ -465,13 +438,22 @@ export default function ProductPage() {
                   </p>
                 )}
                 {product.productReturnPolicy && (
+                  <>
                   <p>
                     <strong>Return Policy:</strong>{" "}
                     {product.productReturnPolicy}
                   </p>
+                  </>
+                  
                 )}
+                
               </div>
             )}
+            <p className=" px-0 md:px-15 text-primary text-sm mt-2">
+                  For detailed information, please refer to our
+                  {" "}
+                <Link href="/policies/refund_policy" className="text-accent hover:underline ml-1"> Return and Cancellation policies</Link >
+                </p>
           </div>
         </div>
 
@@ -619,17 +601,12 @@ export default function ProductPage() {
 
           {activeTab === "reviews" && (
             <div className="space-y-4 md:space-y-6">
-              {/* Write Review Button */}
-              <div className="flex justify-between items-center pb-4 border-b border-gray-200">
+              {/* Reviews Header */}
+              <div className="pb-4 border-b border-gray-200">
                 <h3 className="text-lg font-semibold text-dark">
                   Customer Reviews
                 </h3>
-                <button
-                  onClick={handleWriteReview}
-                  className="px-4 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:bg-opacity-90 transition-colors"
-                >
-                  Write a Review
-                </button>
+               
               </div>
 
               {/* Reviews List */}
@@ -687,15 +664,12 @@ export default function ProductPage() {
                 ))
               ) : (
                 <div className="text-center py-8">
-                  <p className="text-gray-500 mb-4">
-                    No reviews yet. Be the first to review this product!
+                  <p className="text-gray-500">
+                    No reviews yet for this product.
                   </p>
-                  <button
-                    onClick={handleWriteReview}
-                    className="px-6 py-2.5 bg-accent text-white rounded-lg text-sm font-medium hover:bg-opacity-90 transition-colors"
-                  >
-                    Write the First Review
-                  </button>
+                  <p className="text-sm text-gray-400 mt-2">
+                    Purchase this product to be the first to review it!
+                  </p>
                 </div>
               )}
             </div>
@@ -737,17 +711,6 @@ export default function ProductPage() {
           </section>
         )}
       </div>
-
-      {/* Review Form Modal */}
-      {product && (
-        <ReviewFormModal
-          isOpen={isReviewModalOpen}
-          onClose={() => setIsReviewModalOpen(false)}
-          productId={Number(productId)}
-          productName={product.productName}
-          onReviewSubmitted={handleReviewSubmitted}
-        />
-      )}
     </div>
   );
 }

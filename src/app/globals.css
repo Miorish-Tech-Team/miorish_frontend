@@ -102,3 +102,13 @@ h1, h2, h3, h4, h5, h6 {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;  /* Chrome, Safari and Opera */
 }
+
+::selection {
+  background-color: #B8994B;
+  color: white;
+}
+
+::-moz-selection {
+  background-color: #B8994B;
+  color: white;
+}

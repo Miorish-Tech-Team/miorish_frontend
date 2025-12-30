@@ -5,6 +5,7 @@ import { Eye, EyeOff, Mail, Lock, User, Loader2, X } from 'lucide-react'
 import { authAPI } from '@/services/authService'
 import { useAuthModal } from '@/contexts/AuthModalContext'
 import toast from 'react-hot-toast'
+import Link from 'next/link'
 
 export default function RegisterModal() {
   const { closeModal, openLoginModal } = useAuthModal()
@@ -194,7 +195,7 @@ export default function RegisterModal() {
                 className="w-4 h-4 rounded focus:ring-accent text-dark"
               />
               <label className="ml-2 text-sm text-dark">
-                I agree to the Terms & Conditions
+                I agree to the <Link href="/policies/terms_conditions" onClick={closeModal} className="text-accent underline">Terms & Conditions</Link>
               </label>
             </div>
 

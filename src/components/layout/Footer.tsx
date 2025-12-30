@@ -24,10 +24,10 @@ export default function Footer() {
           <div className="text-center sm:text-left">
             <h3 className="text-accent text-base md:text-lg font-bold mb-4 md:mb-5">Quick Links</h3>
             <ul className="space-y-2.5 text-accent font-light text-xs md:text-sm">
-              <li><a href="#" className=" hover:text-accent transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className=" hover:text-accent transition-colors">Shipping Policy</a></li>
-              <li><a href="#" className=" hover:text-accent transition-colors">Return Policy</a></li>
-              <li><a href="#" className=" hover:text-accent transition-colors">Terms & Conditions</a></li>
+              {/* <li><a href="/policies/terms_conditions" className=" hover:text-accent transition-colors">Privacy Policy</a></li> */}
+              <li><a href="/policies/shipping_delivery" className=" hover:text-accent transition-colors">Shipping Policy</a></li>
+              <li><a href="/policies/refund_policy" className=" hover:text-accent transition-colors">Return Policy</a></li>
+              <li><a href="/policies/terms_conditions" className=" hover:text-accent transition-colors">Terms & Conditions</a></li>
               <li><a href="#" className=" hover:text-accent transition-colors">Contact Us</a></li>
               <li><a href="#" className=" hover:text-accent transition-colors">About Us</a></li>
               <li><a href="#" className=" hover:text-accent transition-colors">FAQs</a></li>

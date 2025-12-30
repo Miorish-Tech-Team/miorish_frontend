@@ -4,10 +4,12 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ChevronRight, Package, MapPin, CreditCard, Calendar } from 'lucide-react'
+import { ChevronRight, Package, MapPin, CreditCard, Calendar, Star } from 'lucide-react'
 import { getOrderDetails, type Order } from '@/services/orderService'
 import { toast } from 'react-hot-toast'
 import CandleLoader from '@/components/CandleLoader'
+import ReviewFormModal from '@/components/modals/ReviewFormModal'
+import { getProductReviews } from '@/services/productService'
 
 export default function OrderDetailsPage() {
   const params = useParams()
@@ -16,6 +18,12 @@ export default function OrderDetailsPage() {
 
   const [order, setOrder] = useState<Order | null>(null)
   const [loading, setLoading] = useState(true)
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false)
+  const [selectedProductForReview, setSelectedProductForReview] = useState<{
+    productId: number
+    productName: string
+  } | null>(null)
+  const [reviewedProducts, setReviewedProducts] = useState<Set<number>>(new Set())
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -23,6 +31,28 @@ export default function OrderDetailsPage() {
         setLoading(true)
         const response = await getOrderDetails(Number(orderId))
         setOrder(response.order)
+        
+        // Check which products have already been reviewed
+        if (response.order.orderItems) {
+          const productIds = response.order.orderItems.map(item => item.productId)
+          const reviewed = new Set<number>()
+          
+          // Check each product for user's review
+          for (const productId of productIds) {
+            try {
+              const reviewsRes = await getProductReviews(String(productId))
+              if (reviewsRes.reviews && reviewsRes.reviews.length > 0) {
+                // Check if current user has reviewed this product
+                // Since we don't have userId in reviews, we'll assume if reviews exist for now
+                // You might want to add userId check here
+              }
+            } catch (error) {
+              console.error('Error checking reviews:', error)
+            }
+          }
+          
+          setReviewedProducts(reviewed)
+        }
       } catch (error: unknown) {
         console.error('Error fetching order:', error)
         toast.error('Failed to load order details')
@@ -43,6 +73,23 @@ export default function OrderDetailsPage() {
       fetchOrder()
     }
   }, [orderId, router])
+
+  const handleWriteReview = (productId: number, productName: string) => {
+    setSelectedProductForReview({ productId, productName })
+    setIsReviewModalOpen(true)
+  }
+
+  const handleReviewSubmitted = () => {
+    if (selectedProductForReview) {
+      setReviewedProducts(prev => new Set(prev).add(selectedProductForReview.productId))
+    }
+    toast.success('Thank you for your review!')
+  }
+
+  const handleCloseReviewModal = () => {
+    setIsReviewModalOpen(false)
+    setSelectedProductForReview(null)
+  }
 
   if (loading) {
     return <CandleLoader />
@@ -117,30 +164,50 @@ export default function OrderDetailsPage() {
               </h3>
               <div className="space-y-4">
                 {order.orderItems?.map((item) => (
-                  <div key={item.id} className="flex gap-4 p-4 border border-gray-200 rounded-lg">
-                    <Link href={`/product/${item.productId}`} className="shrink-0">
-                      <div className="relative w-20 h-20 bg-gray-100 rounded overflow-hidden">
-                        <Image
-                          src={item.productImageUrl}
-                          alt={item.productName}
-                          fill
-                          className="object-cover"
-                          unoptimized
-                        />
-                      </div>
-                    </Link>
-                    <div className="flex-1 min-w-0">
-                      <Link href={`/product/${item.productId}`}>
-                        <h4 className="font-medium text-gray-900 hover:text-accent transition-colors">
-                          {item.productName}
-                        </h4>
+                  <div key={item.id} className="flex flex-col gap-4 p-4 border border-gray-200 rounded-lg">
+                    <div className="flex gap-4">
+                      <Link href={`/product/${item.productId}`} className="shrink-0">
+                        <div className="relative w-20 h-20 bg-gray-100 rounded overflow-hidden">
+                          <Image
+                            src={item.productImageUrl}
+                            alt={item.productName}
+                            fill
+                            className="object-cover"
+                            unoptimized
+                          />
+                        </div>
                       </Link>
-                      <p className="text-sm text-gray-600 mt-1">Quantity: {item.quantity}</p>
-                      <p className="text-sm text-gray-600 mt-1">Price: Rs.{item.price}</p>
+                      <div className="flex-1 min-w-0">
+                        <Link href={`/product/${item.productId}`}>
+                          <h4 className="font-medium text-gray-900 hover:text-accent transition-colors">
+                            {item.productName}
+                          </h4>
+                        </Link>
+                        <p className="text-sm text-gray-600 mt-1">Quantity: {item.quantity}</p>
+                        <p className="text-sm text-gray-600 mt-1">Price: Rs.{item.price}</p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className="font-semibold text-gray-900">Rs.{item.totalPrice.toFixed(2)}</p>
+                      </div>
                     </div>
-                    <div className="text-right shrink-0">
-                      <p className="font-semibold text-gray-900">Rs.{item.totalPrice.toFixed(2)}</p>
-                    </div>
+                    
+                    {/* Review Button - Only show if order is delivered */}
+                    {order.orderStatus === 'Delivered' && (
+                      <div className="flex justify-end pt-2 border-t border-gray-100">
+                        <button
+                          onClick={() => handleWriteReview(item.productId, item.productName)}
+                          disabled={reviewedProducts.has(item.productId)}
+                          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            reviewedProducts.has(item.productId)
+                              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                              : 'bg-accent text-white hover:bg-opacity-90'
+                          }`}
+                        >
+                          <Star size={16} />
+                          {reviewedProducts.has(item.productId) ? 'Reviewed' : 'Write Review'}
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -249,6 +316,17 @@ export default function OrderDetailsPage() {
           </div>
         </div>
       </div>
+
+      {/* Review Form Modal */}
+      {selectedProductForReview && (
+        <ReviewFormModal
+          isOpen={isReviewModalOpen}
+          onClose={handleCloseReviewModal}
+          productId={selectedProductForReview.productId}
+          productName={selectedProductForReview.productName}
+          onReviewSubmitted={handleReviewSubmitted}
+        />
+      )}
     </div>
   )
 }

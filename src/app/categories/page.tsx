@@ -34,9 +34,9 @@ function CategoriesPageContent() {
     []
   );
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
-  const [priceRange, setPriceRange] = useState<[number, number]>([100, 500]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
   const [tempPriceRange, setTempPriceRange] = useState<[number, number]>([
-    100, 500,
+    0, 1000,
   ]);
   const [sortBy, setSortBy] =
     useState<GetAllProductsParams["sortBy"]>("latest");
@@ -207,8 +207,8 @@ function CategoriesPageContent() {
     setSelectedCategories([]);
     setSelectedSubCategories([]);
     setSelectedBrands([]);
-    setPriceRange([100, 500]);
-    setTempPriceRange([100, 500]);
+    setPriceRange([0, 1000]);
+    setTempPriceRange([0, 1000]);
     setSortBy("latest");
   };
 
@@ -386,13 +386,13 @@ function CategoriesPageContent() {
               <div className="p-3 md:p-5 flex gap-2 md:gap-3">
                 <button
                   onClick={applyFilters}
-                  className="flex-1 px-3 md:px-4 py-2 md:py-2.5 text-accent border-2 border-accent rounded-lg hover:border-accent/10 hover:bg-accent/50 hover:text-white transition-all font-semibold text-xs md:text-sm"
+                  className="flex-1 px-3 md:px-4 py-2 cursor-pointer md:py-2.5 text-accent border-2 border-accent rounded-lg hover:border-accent/10 hover:bg-accent/50 hover:text-white transition-all font-semibold text-xs md:text-sm"
                 >
                   Apply
                 </button>
                 <button
                   onClick={clearFilters}
-                  className="flex-1 px-3 md:px-4 py-2 md:py-2.5 bg-accent text-white rounded-lg hover:bg-opacity-90 transition-colors font-semibold text-xs md:text-sm"
+                  className="flex-1 px-3 md:px-4 cursor-pointer py-2 md:py-2.5 bg-accent text-white rounded-lg hover:bg-opacity-90 transition-colors font-semibold text-xs md:text-sm"
                 >
                   Clear
                 </button>

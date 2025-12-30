@@ -503,6 +503,7 @@ function CheckoutForm() {
                   'Place Order'
                 )}
               </button>
+              <Link href="/policies/shipping_delivery" className="text-accent text-center text-sm block mt-2 hover:font-bold transition-all">Read our Shipping and Delivery Policy.</Link>
 
               {!selectedAddressId && (
                 <p className="text-xs text-red-600 text-center mt-2">

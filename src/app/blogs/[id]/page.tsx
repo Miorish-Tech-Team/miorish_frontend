@@ -158,12 +158,7 @@ export default function BlogDetailPage() {
                   <FaClock className="text-accent" />
                   <span>Published: {formatDateTime(blog.createdAt)}</span>
                 </div>
-                {blog.updatedAt !== blog.createdAt && (
-                  <div className="flex items-center gap-2">
-                    <FaClock className="text-accent" />
-                    <span>Updated: {formatDateTime(blog.updatedAt)}</span>
-                  </div>
-                )}
+                
               </div>
             </div>
 
