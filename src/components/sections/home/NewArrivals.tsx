@@ -56,7 +56,7 @@ export default function NewArrivals({ products }: NewArrivalsProps) {
             New Arrivals
           </h2>
           <a
-            href="/products"
+            href="/categories"
             className="text-accent hover:underline text-sm md:text-base"
           >
             View More →
