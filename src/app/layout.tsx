@@ -1,5 +1,4 @@
-'use client'
-
+import type { Metadata } from "next";
 import { Cinzel, Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
@@ -14,15 +13,23 @@ import AuthToastHandler from "@/components/AuthToastHandler";
 const cinzel = Cinzel({
   variable: "--font-cinzel",
   subsets: ["latin"],
-  weight: ['400', '500', '600', '700', '800', '900'],
-  display: 'swap',
+  weight: ["400", "500", "600", "700", "800", "900"],
+  display: "swap",
 });
 
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
-  display: 'swap',
+  display: "swap",
 });
+
+export const metadata: Metadata = {
+  title: "Miorish",
+  description: "Premium candle Admin Panel",
+  icons: {
+    icon: "/icon.png",
+  },
+};
 
 export default function RootLayout({
   children,
@@ -31,37 +38,30 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link rel="icon" href="/icon.jpg" type="image/jpeg" />
-        <title>Miorish</title>
-      </head>
-      <body
-        className={`${cinzel.variable} ${inter.variable} antialiased`}
-      >
+      <body className={`${cinzel.variable} ${inter.variable} antialiased`}>
         <AuthProvider>
           <CartProvider>
             <AuthModalProvider>
-              <Toaster 
+              <Toaster
                 position="top-right"
                 toastOptions={{
                   duration: 3000,
                   style: {
-                    background: '#363636',
-                    color: '#fff',
+                    background: "#363636",
+                    color: "#fff",
                   },
                   success: {
                     duration: 3000,
                     iconTheme: {
-                      primary: '#10b981',
-                      secondary: '#fff',
+                      primary: "#10b981",
+                      secondary: "#fff",
                     },
                   },
                   error: {
                     duration: 4000,
                     iconTheme: {
-                      primary: '#ef4444',
-                      secondary: '#fff',
+                      primary: "#ef4444",
+                      secondary: "#fff",
                     },
                   },
                 }}

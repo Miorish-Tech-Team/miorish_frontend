@@ -116,7 +116,7 @@ export default async function Home() {
                 href="/categories"
                 className="hover:text-accent transition-colors font-bold"
               >
-                All Categories
+                All Collections
               </a>
             </li>
             {/* If categories are empty, this won't render anything */}
@@ -143,9 +143,9 @@ export default async function Home() {
       <Hero banners={homepageBanners} />
       <PromotionBanner1 banners={weeklyBanners} />
       <UniqueProducts products={uniqueProducts} />
-      <PromotionBanner2 banners={popularBanners} />
+      {/* <PromotionBanner2 banners={popularBanners} /> */}
       <NewArrivals products={newArrivalProducts} />
-      <BrandPromotion banners={brandBanners} />
+      {/* <BrandPromotion banners={brandBanners} /> */}
       {isAuthenticated && recommendedProducts.length > 0 && (
         <Recommendation products={recommendedProducts} />
       )}
@@ -165,7 +165,7 @@ export default async function Home() {
                 FREE AND FAST DELIVERY
               </h3>
               <p className=" text-[9px] md:text-sm text-gray-600">
-                Free delivery for all orders over Over ₹500
+                Free delivery for all orders over Over ₹1000
               </p>
             </div>
 
@@ -188,10 +188,10 @@ export default async function Home() {
                 <ShieldCheck className="text-white w-5 h-5 md:w-8 md:h-8" />
               </div>
               <h3 className="text-[10px] sm:text-xs md:text-lg font-bold text-dark mb-1 leading-tight">
-                MONEY BACK GUARANTEE
+                Safe Packaging
               </h3>
               <p className=" text-[9px] md:text-sm text-gray-600">
-                We return money within 30 days
+                Safe packaging for all orders
               </p>
             </div>
           </div>

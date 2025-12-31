@@ -303,7 +303,7 @@ function CategoriesPageContent() {
               </div>
 
               {/* Brands */}
-              {availableBrands.length > 0 && (
+              {/* {availableBrands.length > 0 && (
                 <div className="border-b border-accent">
                   <h3 className="text-xl font-semibold text-gray-900 px-4 py-3">
                     Brands
@@ -323,7 +323,7 @@ function CategoriesPageContent() {
                     ))}
                   </div>
                 </div>
-              )}
+              )} */}
 
               {/* Price Range */}
               <div className="border-b border-accent">
