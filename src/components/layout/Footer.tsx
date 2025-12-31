@@ -1,17 +1,20 @@
 'use client'
 
 import Image from 'next/image'
-import { ArrowUp, Facebook, Instagram, Twitter } from 'lucide-react' // Added social icons
+import { ArrowUp, Contact, Facebook, Instagram, Twitter } from 'lucide-react' // Added social icons
 import { useAuth } from '@/contexts/AuthContext'
 import { useAuthModal } from '@/contexts/AuthModalContext'
 import toast from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { X } from 'lucide-react' 
+import CustomerSupportModal from '../modals/CustomerSupportModal'
 
 export default function Footer() {
   const { user } = useAuth()
   const { openLoginModal } = useAuthModal()
   const router = useRouter()
-
+const [isSupportOpen, setIsSupportOpen] = useState(false)
   const handleProtectedLink = (e: React.MouseEvent<HTMLAnchorElement>, path: string) => {
     if (!user) {
       e.preventDefault()
@@ -61,7 +64,6 @@ export default function Footer() {
               {/* Updated to "Safe Delivery" as per previous discussion if desired */}
               <li><a href="/policies/refund_policy" className=" hover:text-accent transition-colors">Return Policy</a></li>
               <li><a href="/policies/terms_conditions" className=" hover:text-accent transition-colors">Terms & Conditions</a></li>
-              <li><a href="/contact" className=" hover:text-accent transition-colors">Contact Us</a></li>
               <li><a href="/faqs" className=" hover:text-accent transition-colors">FAQs</a></li>
             </ul>
           </div>
@@ -107,7 +109,7 @@ export default function Footer() {
                   Wishlist
                 </a>
               </li>
-              <li><a href="/categories" className=" hover:text-accent transition-colors">Shop</a></li>
+              
             </ul>
           </div>
 
@@ -115,10 +117,15 @@ export default function Footer() {
           <div className="text-center sm:text-left">
             <h3 className="text-accent text-base md:text-lg font-bold mb-4 md:mb-5">Support</h3>
             <ul className="space-y-2.5 text-accent font-light text-xs md:text-sm">
-              <li><span className="cursor-default">Helpline: +91-XXXXXXXXXX</span></li>
+              <li><span className="cursor-default">Helpline: +91-8388942410</span></li>
               <li><span className="cursor-default">Email: support@miorish.com</span></li>
-              <li><a href="/contact" className=" hover:text-accent transition-colors">Customer Support</a></li>
-              <li><a href="#" className=" hover:text-accent transition-colors">Chat with Us</a></li>
+              <li><button 
+                onClick={() => setIsSupportOpen(true)} 
+                className="hover:text-white transition-colors cursor-pointer"
+              >
+                Customer Support
+              </button></li>
+              {/* <li><a href="#" className=" hover:text-accent transition-colors">Chat with Us</a></li> */}
             </ul>
           </div>
         </div>
@@ -138,7 +145,11 @@ export default function Footer() {
         >
           <ArrowUp size={20} className="text-white md:w-6 md:h-6 lg:w-7 lg:h-7"/>
         </button>
+         {isSupportOpen && (
+        <CustomerSupportModal isOpen={isSupportOpen} onClose={() => setIsSupportOpen(false)} />
+      )}
       </div>
+     
     </footer>
   )
 }
