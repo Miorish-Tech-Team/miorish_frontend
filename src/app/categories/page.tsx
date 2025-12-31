@@ -438,11 +438,11 @@ function CategoriesPageContent() {
                           "
                 >
                   <option value="latest">Latest</option>
-                  <option value="popular">Most Popular</option>
-                  <option value="rating">Highest Rated</option>
+                {/* <option value="popular">Most Popular</option>
+                 <option value="rating">Highest Rated</option> */}
                   <option value="priceLowToHigh">Price: Low → High</option>
                   <option value="priceHighToLow">Price: High → Low</option>
-                  <option value="discountHighToLow">Discount: High → Low</option>
+                  {/* <option value="discountHighToLow">Discount: High → Low</option> */}
                 </select>
 
                 {/* Custom Arrow */}
