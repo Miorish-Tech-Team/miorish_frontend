@@ -1,17 +1,20 @@
 'use client'
 
 import Image from 'next/image'
-import { ArrowUp} from 'lucide-react'
+import { ArrowUp, Contact, Facebook, Instagram, Twitter } from 'lucide-react' // Added social icons
 import { useAuth } from '@/contexts/AuthContext'
 import { useAuthModal } from '@/contexts/AuthModalContext'
 import toast from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { X } from 'lucide-react' 
+import CustomerSupportModal from '../modals/CustomerSupportModal'
 
 export default function Footer() {
   const { user } = useAuth()
   const { openLoginModal } = useAuthModal()
   const router = useRouter()
-
+const [isSupportOpen, setIsSupportOpen] = useState(false)
   const handleProtectedLink = (e: React.MouseEvent<HTMLAnchorElement>, path: string) => {
     if (!user) {
       e.preventDefault()
@@ -22,32 +25,45 @@ export default function Footer() {
       router.push(path)
     }
   }
+
   return (
     <footer className="bg-primary text-white">
       <div className="container mx-auto px-4 sm:px-6 md:px-20 lg:px-20 xl:px-30 py-8 md:py-12 lg:py-16">
         {/* Main Footer Content */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10 lg:gap-12">
-          {/* Logo and Description */}
+          
+          {/* Logo and Social Media */}
           <div className="flex flex-col items-center sm:items-start">
             <Image 
               src="/images/MiorishLogo.png" 
               alt="Miorish Logo" 
-              width={140} 
-              height={140}
-              className="object-contain w-28 h-28 md:w-32 md:h-32 lg:w-36 lg:h-36 mb-4"
+              width={250} 
+              height={250}
+              className="object-contain w-28 h-28 md:w-32 md:h-32 lg:w-48 lg:h-48 mb-4"
             />
+            
+            {/* Social Icons Container */}
+            <div className="flex space-x-5 mt-2 ms-5">
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-white p-2 rounded-full bg-accent  transition-colors">
+                <Facebook size={20} />
+              </a>
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-white p-2 rounded-full bg-accent  transition-colors">
+                <Instagram size={20} />
+              </a>
+              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-white p-2 rounded-full bg-accent  transition-colors">
+                <Twitter size={20} />
+              </a>
+            </div>
           </div>
 
           {/* Quick Links */}
           <div className="text-center sm:text-left">
             <h3 className="text-accent text-base md:text-lg font-bold mb-4 md:mb-5">Quick Links</h3>
             <ul className="space-y-2.5 text-accent font-light text-xs md:text-sm">
-              {/* <li><a href="/policies/terms_conditions" className=" hover:text-accent transition-colors">Privacy Policy</a></li> */}
               <li><a href="/policies/shipping_delivery" className=" hover:text-accent transition-colors">Shipping Policy</a></li>
+              {/* Updated to "Safe Delivery" as per previous discussion if desired */}
               <li><a href="/policies/refund_policy" className=" hover:text-accent transition-colors">Return Policy</a></li>
               <li><a href="/policies/terms_conditions" className=" hover:text-accent transition-colors">Terms & Conditions</a></li>
-              <li><a href="/contact" className=" hover:text-accent transition-colors">Contact Us</a></li>
-              {/* <li><a href="#" className=" hover:text-accent transition-colors">About Us</a></li> */}
               <li><a href="/faqs" className=" hover:text-accent transition-colors">FAQs</a></li>
             </ul>
           </div>
@@ -93,7 +109,7 @@ export default function Footer() {
                   Wishlist
                 </a>
               </li>
-              <li><a href="/categories" className=" hover:text-accent transition-colors">Shop</a></li>
+              
             </ul>
           </div>
 
@@ -101,10 +117,15 @@ export default function Footer() {
           <div className="text-center sm:text-left">
             <h3 className="text-accent text-base md:text-lg font-bold mb-4 md:mb-5">Support</h3>
             <ul className="space-y-2.5 text-accent font-light text-xs md:text-sm">
-              <li><a href="#" className=" hover:text-accent transition-colors">Helpline: +91-XXXXXXXXXX</a></li>
-              <li><a href="#" className=" hover:text-accent transition-colors">Email: support@miorish.com</a></li>
-              <li><a href="#" className=" hover:text-accent transition-colors">Customer Support</a></li>
-              <li><a href="#" className=" hover:text-accent transition-colors">Chat with Us</a></li>
+              <li><span className="cursor-default">Helpline: +91-8388942410</span></li>
+              <li><span className="cursor-default">Email: support@miorish.com</span></li>
+              <li><button 
+                onClick={() => setIsSupportOpen(true)} 
+                className="hover:text-white transition-colors cursor-pointer"
+              >
+                Customer Support
+              </button></li>
+              {/* <li><a href="#" className=" hover:text-accent transition-colors">Chat with Us</a></li> */}
             </ul>
           </div>
         </div>
@@ -124,7 +145,11 @@ export default function Footer() {
         >
           <ArrowUp size={20} className="text-white md:w-6 md:h-6 lg:w-7 lg:h-7"/>
         </button>
+         {isSupportOpen && (
+        <CustomerSupportModal isOpen={isSupportOpen} onClose={() => setIsSupportOpen(false)} />
+      )}
       </div>
+     
     </footer>
   )
 }

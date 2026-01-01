@@ -6,11 +6,11 @@ import { Autoplay } from 'swiper/modules';
 import 'swiper/css';
 
 const messages = [
-  "Get 10% OFF on your first purchase",
-  "Discover our latest luxury collections",
-  "Free shipping on orders over ₹500",
+  "Get free Gift on your first purchase",
+  // "Discover our latest luxury collections",
+  "Free shipping on orders over ₹1000",
   "Experience premium hand-poured scents",
-  "New arrivals: Shop the summer collection"
+  "New arrivals: Shop the Winter collection"
 ];
 
 export default function AnnouncementBar() {

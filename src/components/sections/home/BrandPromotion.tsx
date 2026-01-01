@@ -7,7 +7,6 @@ interface BrandPromotionProps {
 }
 
 export default function BrandPromotion({ banners }: BrandPromotionProps) {
-  // Use banners or fallback to default
   const displayBanners =
     banners.length > 0
       ? banners
@@ -20,17 +19,21 @@ export default function BrandPromotion({ banners }: BrandPromotionProps) {
         ];
 
   return (
-    <section className="p-8 md:p-12 lg:p-12 bg-white">
-      <div className="border-2 border-accent p-5 rounded-xl">
-        <div className=" mx-auto">
-          <h2 className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-serif  text-dark mb-8 md:mb-12">
+    <section className="p-4 md:p-12 bg-white">
+      <div className="border-2 border-accent p-4 md:p-5 rounded-xl">
+        <div className="mx-auto">
+          <h2 className="text-xl md:text-3xl lg:text-5xl font-serif text-dark mb-6 md:mb-12">
             Brand Promotions
           </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 md:gap-6">
-            {displayBanners.slice(0, 4).map((banner) => (
+
+          {/* Mobile: flex-row with horizontal scroll
+            Desktop: grid layout
+          */}
+          <div className="flex flex-nowrap overflow-x-auto gap-4 pb-4 md:pb-0 md:grid md:grid-cols-4 md:gap-6 scrollbar-hide">
+            {displayBanners.slice(0, 5).map((banner) => (
               <div
                 key={banner.id}
-                className="relative aspect-square rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
+                className="relative flex-shrink-0 w-32 h-32 sm:w-40 sm:h-40 md:w-auto md:h-auto md:aspect-square rounded-lg overflow-hidden hover:shadow-lg transition-shadow border border-gray-100"
               >
                 <Image
                   src={banner.image}

@@ -178,7 +178,7 @@ export default function Navbar() {
       <div className="container mx-auto px-4 py-2 md:py-1">
         <div className="flex items-center justify-between lg:justify-center gap-2 md:gap-4 lg:gap-16">
           {/* Logo */}
-          <div className="flex items-center">
+          <div className="flex items-center ">
             <Link href="/">
               <Image
                 src="/images/MiorishLogo.png"
@@ -186,7 +186,7 @@ export default function Navbar() {
                 width={100}
                 height={100}
                 loading="eager"
-                className="object-contain w-20 h-20 md:w-28 md:h-28 lg:w-32 lg:h-32"
+                className="object-contain w-20 h-20 md:w-28 md:h-28 lg:w-32 lg:h-32 "
                 unoptimized
               />
             </Link>
