@@ -1,4 +1,5 @@
-import React from "react";
+"use client";
+import CustomerSupportModal from "@/components/modals/CustomerSupportModal";
 import { 
   Sparkles, 
   Leaf, 
@@ -17,8 +18,11 @@ import {
   Wind,
   Calendar
 } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
 
 export default function AboutPage() {
+  const [isOpenCustomerModal, setIsOpenCustomerModal] = useState<boolean>(false);
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
@@ -497,22 +501,26 @@ export default function AboutPage() {
               Discover our collections and find the perfect candle for your space or business.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a
+              <Link
                 href="/categories"
                 className="inline-block px-8 py-3 md:px-10 md:py-4 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all duration-300 font-medium text-sm md:text-base shadow-md hover:shadow-lg"
               >
                 Shop Collections
-              </a>
-              <a
-                href="/contact"
+              </Link>
+              <Link
+                href=""
+                onClick={() => setIsOpenCustomerModal(true)}
                 className="inline-block px-8 py-3 md:px-10 md:py-4 bg-white border-2 border-accent text-accent rounded-lg hover:bg-accent hover:text-white transition-all duration-300 font-medium text-sm md:text-base shadow-md hover:shadow-lg"
               >
                 Contact Us
-              </a>
+              </Link>
             </div>
           </div>
         </div>
       </section>
+      {isOpenCustomerModal && (
+        <CustomerSupportModal  isOpen={isOpenCustomerModal} onClose={():void => setIsOpenCustomerModal(false)}></CustomerSupportModal>
+      )}
     </div>
   );
 }
