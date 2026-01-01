@@ -57,9 +57,24 @@ export const getBlogById = async (id: number, serverApi?: AxiosInstance): Promis
 
 // Get latest blogs (for homepage)
 export const getLatestBlogs = async (limit: number = 3, serverApi?: AxiosInstance): Promise<BlogsResponse> => {
-  const apiInstance = serverApi || api;
-  const response = await apiInstance.get('/general/all', {
-    params: { page: 1, limit },
-  })
-  return response.data
+  try {
+    const apiInstance = serverApi || api;
+    const response = await apiInstance.get('/general/all', {
+      params: { page: 1, limit },
+    })
+    return response.data
+  } catch (error) {
+    console.error('Error in getLatestBlogs:', error);
+    // Return safe default response on error
+    return {
+      success: false,
+      data: [],
+      pagination: {
+        total: 0,
+        page: 1,
+        limit: limit,
+        totalPages: 0
+      }
+    };
+  }
 }

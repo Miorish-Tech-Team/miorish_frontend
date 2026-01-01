@@ -101,7 +101,7 @@ export default async function Home() {
     }
 
     // Only use recommendation API if user is authenticated
-    if (isAuthenticated && recommendationRes?.success && recommendationRes.recommended) {
+    if (isAuthenticated && recommendationRes?.success && Array.isArray(recommendationRes.recommended)) {
       // Filter out products with 0 stock
       recommendedProducts = recommendationRes.recommended
         .filter((p: Product) => p.availableStockQuantity > 0)
@@ -112,6 +112,16 @@ export default async function Home() {
     errorMessage = error instanceof Error ? error.message : "Unknown error";
     console.error("[SSR] Critical error fetching data:", error);
   }
+  
+  // Ensure all arrays are defined (safety check)
+  categories = categories || [];
+  newArrivalProducts = newArrivalProducts || [];
+  uniqueProducts = uniqueProducts || [];
+  recommendedProducts = recommendedProducts || [];
+  homepageBanners = homepageBanners || [];
+  weeklyBanners = weeklyBanners || [];
+  popularBanners = popularBanners || [];
+  brandBanners = brandBanners || [];
   
   // Add debug info visible in production
   console.log("[SSR] Render complete:", { 

@@ -20,9 +20,12 @@ export default async function BlogSection() {
     const serverApi = createServerApi(cookieHeaderString);
     
     const response = await getLatestBlogs(3, serverApi);
-    blogs = response.data;
+    if (response?.success && Array.isArray(response.data)) {
+      blogs = response.data;
+    }
   } catch (error) {
     console.error("Error fetching blogs:", error);
+    blogs = []; // Ensure blogs is always an array
   }
 
   if (blogs.length === 0) {
