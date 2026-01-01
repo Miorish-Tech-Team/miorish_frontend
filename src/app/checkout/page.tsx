@@ -38,6 +38,11 @@ declare global {
   }
 }
 
+// Generate a unique idempotency key
+const generateIdempotencyKey = () => {
+  return `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+};
+
 function CheckoutForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -62,6 +67,9 @@ function CheckoutForm() {
   // Delivery estimation state
   const [deliveryEstimate, setDeliveryEstimate] = useState<DeliveryEstimate | null>(null);
   const [loadingEstimate, setLoadingEstimate] = useState(false);
+
+  // Idempotency key for preventing duplicate orders
+  const [idempotencyKey, setIdempotencyKey] = useState<string>("");
 
   // Buy Now data from session storage
   const [buyNowData, setBuyNowData] = useState<{
@@ -228,6 +236,10 @@ function CheckoutForm() {
     try {
       setPlacing(true);
 
+      // Generate idempotency key for this order attempt
+      const orderIdempotencyKey = generateIdempotencyKey();
+      setIdempotencyKey(orderIdempotencyKey);
+
       // If COD, place order directly
       if (paymentMethod === "CashOnDelivery") {
         if (checkoutType === "buynow" && buyNowData) {
@@ -237,6 +249,7 @@ function CheckoutForm() {
             addressId: selectedAddressId,
             paymentMethod: "CashOnDelivery",
             shippingCost: deliveryEstimate?.shippingCost || 0,
+            idempotencyKey: orderIdempotencyKey,
           });
 
           toast.success(
@@ -249,6 +262,7 @@ function CheckoutForm() {
             addressId: selectedAddressId,
             paymentMethod: "CashOnDelivery",
             shippingCost: deliveryEstimate?.shippingCost || 0,
+            idempotencyKey: orderIdempotencyKey,
           });
 
           toast.success(
@@ -276,6 +290,10 @@ function CheckoutForm() {
 
   const handleRazorpayPayment = async () => {
     try {
+      // Generate idempotency key for this order attempt
+      const orderIdempotencyKey = generateIdempotencyKey();
+      setIdempotencyKey(orderIdempotencyKey);
+
       let razorpayOrderData;
 
       // Create Razorpay order
@@ -330,6 +348,7 @@ function CheckoutForm() {
                 quantity: buyNowData.quantity,
                 addressId: selectedAddressId!,
                 shippingCost: deliveryEstimate?.shippingCost || 0,
+                idempotencyKey: orderIdempotencyKey,
               });
               sessionStorage.removeItem("buyNowData");
             } else {
@@ -339,6 +358,7 @@ function CheckoutForm() {
                 razorpay_signature: response.razorpay_signature,
                 addressId: selectedAddressId!,
                 shippingCost: deliveryEstimate?.shippingCost || 0,
+                idempotencyKey: orderIdempotencyKey,
               });
               await refreshCart();
             }
