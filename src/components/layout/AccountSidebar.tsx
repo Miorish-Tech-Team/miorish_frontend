@@ -18,7 +18,6 @@ export default function AccountSidebar({ activePage }: AccountSidebarProps) {
   const handleLogout = async() => {
     try {
       const response = await authAPI.logout();
-      console.log('Logout response:', response);
       window.location.href = '/';
     } catch (err) {
       const error = err as { response?: { data?: { message?: string } } }

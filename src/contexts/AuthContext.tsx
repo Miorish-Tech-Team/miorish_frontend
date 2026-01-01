@@ -22,23 +22,19 @@ let hasFetchedOnce = false
 
 const fetchUserOnce = async (): Promise<User | null> => {
   if (hasFetchedOnce) {
-    console.log('[AuthContext] Using cached user data')
     return globalUserState
   }
 
   if (fetchPromise) {
-    console.log('[AuthContext] Waiting for existing fetch...')
     return fetchPromise
   }
 
-  console.log('[AuthContext] Fetching user for the first time...')
   fetchPromise = (async () => {
     try {
       const currentUser = await authAPI.getCurrentUser()
       globalUserState = currentUser
       hasFetchedOnce = true
       globalIsLoading = false
-      console.log('[AuthContext] User fetched successfully:', currentUser?.email || 'Not logged in')
       return currentUser
     } catch (error) {
       console.error('[AuthContext] Failed to load user:', error)
@@ -69,7 +65,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                        window.location.pathname === '/auth/register')
 
     if (isAuthPage) {
-      console.log('[AuthContext] Skipping user fetch on auth page')
       setIsLoading(false)
       return
     }

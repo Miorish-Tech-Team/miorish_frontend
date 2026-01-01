@@ -46,8 +46,6 @@ export const getUserWishlist = async (): Promise<WishlistResponse> => {
 
 // Add product to wishlist
 export const addToWishlist = async (productId: number): Promise<AddToWishlistResponse> => {
-  console.log('Adding to wishlist, productId:', productId, 'type:', typeof productId)
-  
   if (!productId || isNaN(Number(productId))) {
     throw new Error('Invalid product ID')
   }

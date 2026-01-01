@@ -60,9 +60,7 @@ export const authAPI = {
   // Signup
   signup: async (data: SignupData): Promise<AuthResponse> => {
     try {
-      console.log('Calling signup API with:', { ...data, password: '***' })
       const response = await api.post('/auth/signup', data)
-      console.log('Signup response:', response.data)
       return response.data
     } catch (error) {
       console.error('Signup API error:', error)
@@ -73,9 +71,7 @@ export const authAPI = {
   // Signin
   signin: async (data: SigninData): Promise<AuthResponse> => {
     try {
-      console.log('Calling signin API with:', { ...data, password: '***' })
       const response = await api.post('/auth/signin', data)
-      console.log('Signin response data:', response.data)
       // Token is now handled by httpOnly cookies on the backend
       return response.data
     } catch (error) {
@@ -87,9 +83,7 @@ export const authAPI = {
   // Verify 2FA Login
   verify2FA: async (data: VerifyEmailData): Promise<AuthResponse> => {
     try {
-      console.log('Calling verify2FA API')
       const response = await api.patch('/auth/verify-two-factor', data)
-      console.log('Verify 2FA response:', response.data)
       // Token is now handled by httpOnly cookies on the backend
       return response.data
     } catch (error) {
@@ -101,9 +95,7 @@ export const authAPI = {
   // Verify Email
   verifyEmail: async (data: VerifyEmailData): Promise<AuthResponse> => {
     try {
-      console.log('Calling verifyEmail API')
       const response = await api.post('/auth/verify-email', data)
-      console.log('Verify email response:', response.data)
       return response.data
     } catch (error) {
       console.error('Verify email error:', error)
@@ -114,9 +106,7 @@ export const authAPI = {
   // Resend OTP
   resendOtp: async (email: string): Promise<AuthResponse> => {
     try {
-      console.log('Calling resendOtp API for:', email)
       const response = await api.post('/auth/resend-otp', { email })
-      console.log('Resend OTP response:', response.data)
       return response.data
     } catch (error) {
       console.error('Resend OTP error:', error)
@@ -127,9 +117,7 @@ export const authAPI = {
   // Request Reset Password OTP
   resetPasswordOtp: async (data: ResetPasswordOtpData): Promise<AuthResponse> => {
     try {
-      console.log('Calling resetPasswordOtp API')
       const response = await api.post('/auth/reset-password-otp', data)
-      console.log('Reset password OTP response:', response.data)
       return response.data
     } catch (error) {
       console.error('Reset password OTP error:', error)
@@ -140,9 +128,7 @@ export const authAPI = {
   // Verify Reset Password OTP
   verifyResetOtp: async (data: VerifyOtpData): Promise<AuthResponse> => {
     try {
-      console.log('Calling verifyResetOtp API')
       const response = await api.post('/auth/verify-otp', data)
-      console.log('Verify reset OTP response:', response.data)
       return response.data
     } catch (error) {
       console.error('Verify reset OTP error:', error)
@@ -153,9 +139,7 @@ export const authAPI = {
   // Find My Account (Send Reset Link)
   findMyAccount: async (data: FindMyAccountData): Promise<AuthResponse> => {
     try {
-      console.log('Calling findMyAccount API')
       const response = await api.post('/auth/find-my-account', data)
-      console.log('Find my account response:', response.data)
       return response.data
     } catch (error) {
       console.error('Find my account error:', error)
@@ -169,11 +153,9 @@ export const authAPI = {
     newPassword: string
   ): Promise<AuthResponse> => {
     try {
-      console.log('Calling resetPasswordFromUrl API')
       const response = await api.post(`/auth/find-my-account/${resetToken}`, {
         newPassword,
       })
-      console.log('Reset password from URL response:', response.data)
       return response.data
     } catch (error) {
       console.error('Reset password from URL error:', error)
@@ -184,9 +166,7 @@ export const authAPI = {
   // Reset Password from OTP
   resetPasswordFromOtp: async (data: ResetPasswordData): Promise<AuthResponse> => {
     try {
-      console.log('Calling resetPasswordFromOtp API')
       const response = await api.post('/auth/reset-password', data)
-      console.log('Reset password from OTP response:', response.data)
       return response.data
     } catch (error) {
       console.error('Reset password from OTP error:', error)
@@ -197,10 +177,8 @@ export const authAPI = {
   // Logout
   logout: async (): Promise<AuthResponse> => {
     try {
-      console.log('Calling logout API')
       const response = await api.post('/auth/logout')
       // Cookie is cleared by the backend
-      console.log('Logout response:', response.data)
       return response.data
     } catch (error) {
       console.error('Logout error:', error)

@@ -39,7 +39,6 @@ export const profileAPI = {
   getProfile: async (): Promise<ProfileResponse> => {
     try {
       const response = await api.get('/user')
-      console.log('Profile response:', response.data)
       return response.data
     } catch (error) {
       console.error('Get profile error:', error)
@@ -66,8 +65,6 @@ export const profileAPI = {
         },
       })
       
-      console.log('Update profile response:', response.data)
-      
       // User data will be fetched from API, no need to store in localStorage
       
       return response.data
@@ -81,7 +78,6 @@ export const profileAPI = {
   changePassword: async (data: ChangePasswordData): Promise<ProfileResponse> => {
     try {
       const response = await api.put('/user/edit/change-password', data)
-      console.log('Change password response:', response.data)
       return response.data
     } catch (error) {
       console.error('Change password error:', error)
@@ -93,7 +89,6 @@ export const profileAPI = {
   toggleTwoFactorAuth: async (data: TwoFactorAuthData): Promise<ProfileResponse> => {
     try {
       const response = await api.patch('/user/two-factor-auth', data)
-      console.log('Toggle 2FA response:', response.data)
       return response.data
     } catch (error) {
       console.error('Toggle 2FA error:', error)
@@ -105,7 +100,6 @@ export const profileAPI = {
   getTwoFactorStatus: async (): Promise<TwoFactorStatusResponse> => {
     try {
       const response = await api.get('/user/two-factor-status')
-      console.log('2FA status response:', response.data)
       return response.data
     } catch (error) {
       console.error('Get 2FA status error:', error)

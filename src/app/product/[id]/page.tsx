@@ -87,7 +87,6 @@ export default function ProductPage() {
           })),
         ]);
 
-        console.log("Fetched product data:", productRes);
         setProduct(productRes.product);
         setSimilarProducts(similarRes.products || []);
         setReviews(reviewsRes.reviews || []);

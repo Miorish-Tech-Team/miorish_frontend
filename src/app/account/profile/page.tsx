@@ -13,7 +13,6 @@ import toast from 'react-hot-toast'
 export default function ProfilePage() {
   // const router = useRouter()
   const { user, updateUser } = useAuth()
-  console.log('Current user in ProfilePage:', user)
   const [isLoading, setIsLoading] = useState(false)
   
   // Profile form

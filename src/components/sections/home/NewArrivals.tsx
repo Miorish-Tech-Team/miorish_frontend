@@ -20,8 +20,6 @@ export default function NewArrivals({ products }: NewArrivalsProps) {
       return
     }
 
-    console.log('Toggling wishlist for product:', productId, 'type:', typeof productId)
-
     try {
       if (wishlistItems.has(productId)) {
         await removeFromWishlistByProductId(productId)
@@ -65,7 +63,7 @@ export default function NewArrivals({ products }: NewArrivalsProps) {
         {/* Mobile: Horizontal Scroll */}
         <div className="md:hidden flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide">
           {products.map((product) => (
-            <div key={product.id} className="flex-shrink-0 w-[45%] snap-start">
+            <div key={product.id} className="shrink-0 w-[45%] snap-start">
               <ProductCard
                 productId={product.id}
                 image={product.coverImageUrl || "/images/CardImage.jpg"}

@@ -176,9 +176,9 @@ export default function Navbar() {
       {/* Top Bar */}
       <AnnouncementBar />
       <div className="container mx-auto px-4 py-2 md:py-1">
-        <div className="flex items-center justify-between lg:justify-center gap-2 md:gap-4 lg:gap-16">
+        <div className="flex items-center justify-between lg:justify-center gap-2 md:gap-16 lg:gap-32">
           {/* Logo */}
-          <div className="flex ">
+          <div className="flex">
             <Link href="/">
               <Image
                 src="/images/MiorishLogo.png"
