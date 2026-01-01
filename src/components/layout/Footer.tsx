@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { ArrowUp, Contact, Facebook, Instagram, Twitter } from 'lucide-react' // Added social icons
+import { ArrowUp, Contact, Facebook, Instagram, Linkedin, Twitter } from 'lucide-react' // Added social icons
 import { useAuth } from '@/contexts/AuthContext'
 import { useAuthModal } from '@/contexts/AuthModalContext'
 import toast from 'react-hot-toast'
@@ -44,14 +44,14 @@ const [isSupportOpen, setIsSupportOpen] = useState(false)
             
             {/* Social Icons Container */}
             <div className="flex space-x-5 mt-2 ms-5">
-              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-white p-2 rounded-full bg-accent  transition-colors">
+              <a href="https://www.facebook.com/share/1BydT99fr9/" target="_blank" rel="noopener noreferrer" className="text-white p-2 rounded-full bg-accent  transition-colors">
                 <Facebook size={20} />
               </a>
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-white p-2 rounded-full bg-accent  transition-colors">
+              <a href="https://www.instagram.com/miorish.official?igsh=eWp0ZDVrMXQ5cDNh" target="_blank" rel="noopener noreferrer" className="text-white p-2 rounded-full bg-accent  transition-colors">
                 <Instagram size={20} />
               </a>
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-white p-2 rounded-full bg-accent  transition-colors">
-                <Twitter size={20} />
+              <a href="https://www.linkedin.com/company/miorish/" target="_blank" rel="noopener noreferrer" className="text-white p-2 rounded-full bg-accent  transition-colors">
+                <Linkedin size={20} />
               </a>
             </div>
           </div>
