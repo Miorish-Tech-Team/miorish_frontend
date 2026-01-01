@@ -174,10 +174,10 @@ export default async function Home() {
       </div>
       {/* Hero Section - Candles */}
       <Hero banners={homepageBanners} />
-      <PromotionBanner1 banners={weeklyBanners} />
-      <OurStory></OurStory>
+      {/* <PromotionBanner1 banners={weeklyBanners} /> */}
+      <OurStory />
       <UniqueProducts products={uniqueProducts} />
-      {/* <PromotionBanner2 banners={popularBanners} /> */}
+      <PromotionBanner2 banners={popularBanners} />
       <NewArrivals products={newArrivalProducts} />
       {/* <BrandPromotion banners={brandBanners} /> */}
       {isAuthenticated && recommendedProducts.length > 0 && (
