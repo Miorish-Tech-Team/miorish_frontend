@@ -178,7 +178,7 @@ export default function Navbar() {
       <div className="container mx-auto px-4 py-2 md:py-1">
         <div className="flex items-center justify-between lg:justify-center gap-2 md:gap-4 lg:gap-16">
           {/* Logo */}
-          <div className="flex items-center ">
+          <div className="flex ">
             <Link href="/">
               <Image
                 src="/images/MiorishLogo.png"
