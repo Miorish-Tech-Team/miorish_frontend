@@ -2,6 +2,8 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { getLatestBlogs, type Blog } from "@/services/blogService";
+import { createServerApi, getCookieHeader } from "@/lib/serverAxios";
+import { cookies } from "next/headers";
 
 const truncateText = (text: string, maxLength: number) => {
   if (text.length <= maxLength) return text;
@@ -12,7 +14,12 @@ export default async function BlogSection() {
   let blogs: Blog[] = [];
 
   try {
-    const response = await getLatestBlogs(3);
+    // Create server-side axios instance with proper headers for Cloudflare
+    const cookieStore = await cookies();
+    const cookieHeaderString = getCookieHeader(cookieStore);
+    const serverApi = createServerApi(cookieHeaderString);
+    
+    const response = await getLatestBlogs(3, serverApi);
     blogs = response.data;
   } catch (error) {
     console.error("Error fetching blogs:", error);
