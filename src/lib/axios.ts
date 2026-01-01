@@ -23,11 +23,7 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      console.log('[Axios Interceptor] 401 Error:', {
-        url: error.config?.url || '',
-        pathname: typeof window !== 'undefined' ? window.location.pathname : 'server',
-        message: 'Authentication required - handled by components/middleware'
-      })
+      // Authentication required - handled by components/middleware
     }
     return Promise.reject(error)
   }

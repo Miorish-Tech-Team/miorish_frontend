@@ -14,6 +14,7 @@ import BrandPromotion from "@/components/sections/home/BrandPromotion";
 import Recommendation from "@/components/sections/home/Recommendation";
 import Blog from "@/components/sections/home/Blog";
 import { cookies } from "next/headers";
+import OurStory from "@/components/sections/home/OurStory";
 
 // Force Next.js to fetch fresh data on every request
 export const dynamic = "force-dynamic";
@@ -93,14 +94,6 @@ export default async function Home() {
       recommendedProducts = recommendationRes.recommended
         .filter((p: Product) => p.availableStockQuantity > 0)
         .slice(0, 5);
-    } else {
-      console.log("[Server] No recommendations to display", {
-        isAuthenticated,
-        hasResponse: !!recommendationRes,
-        responseSuccess: recommendationRes?.success,
-        hasRecommended: !!recommendationRes?.recommended,
-        recommendedLength: recommendationRes?.recommended?.length || 0
-      });
     }
   } catch (error) {
     console.error("[Server] Error fetching data:", error);
@@ -142,6 +135,7 @@ export default async function Home() {
       {/* Hero Section - Candles */}
       <Hero banners={homepageBanners} />
       <PromotionBanner1 banners={weeklyBanners} />
+      <OurStory></OurStory>
       <UniqueProducts products={uniqueProducts} />
       {/* <PromotionBanner2 banners={popularBanners} /> */}
       <NewArrivals products={newArrivalProducts} />

@@ -23,7 +23,6 @@ export const getHomepageBanners = async (): Promise<BannersResponse> => {
 // Get weekly promotion banners (PromotionBanner1 - limit 4)
 export const getWeeklyPromotionBanners = async (): Promise<BannersResponse> => {
   const response = await api.get('/advertisement/weekly-banners')
-  console.log(response.data)
   return response.data
 }
 

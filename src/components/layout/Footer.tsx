@@ -64,6 +64,7 @@ const [isSupportOpen, setIsSupportOpen] = useState(false)
               {/* Updated to "Safe Delivery" as per previous discussion if desired */}
               <li><a href="/policies/refund_policy" className=" hover:text-accent transition-colors">Return Policy</a></li>
               <li><a href="/policies/terms_conditions" className=" hover:text-accent transition-colors">Terms & Conditions</a></li>
+              <li><a href="/about" className=" hover:text-accent transition-colors">About Us</a></li>
               <li><a href="/faqs" className=" hover:text-accent transition-colors">FAQs</a></li>
             </ul>
           </div>
