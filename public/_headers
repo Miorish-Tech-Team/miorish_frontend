@@ -1,0 +1,16 @@
+# Disable caching for the home page
+/
+  Cache-Control: no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0
+  CDN-Cache-Control: no-store
+
+# Disable caching for API routes
+/api/*
+  Cache-Control: no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0
+
+# Cache static assets
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Cache images
+/_next/image*
+  Cache-Control: public, max-age=31536000, immutable
