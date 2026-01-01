@@ -121,34 +121,7 @@ export default function ProfilePage() {
           {/* Main Content */}
           <main className="lg:col-span-3">
             <div className="bg-white rounded-lg p-4 md:p-6 lg:p-8 shadow-sm">
-              {/* Profile Header */}
-              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 pb-4 md:pb-6 mb-4 md:mb-6 border-b border-gray-200">
-                <div className="relative shrink-0">
-                  {photoPreview ? (
-                    <Image
-                      src={photoPreview}
-                      alt="Profile"
-                      width={80}
-                      height={80}
-                      className="rounded-full object-cover"
-                      unoptimized
-                    />
-                  ) : (
-                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-accent/10 flex items-center justify-center">
-                      <User size={32} className="text-accent" />
-                    </div>
-                  )}
-                </div>
-                <div className="text-center sm:text-left">
-                  <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-dark">{user.fullName}</h1>
-                  <p className="text-gray-600 text-sm break-all">{user.email}</p>
-                  <span className={`inline-block mt-1 px-3 py-1 rounded-full text-xs font-medium ${
-                    user.isVerified ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
-                  }`}>
-                    {user.isVerified ? 'Verified' : 'Not Verified'}
-                  </span>
-                </div>
-              </div>
+            
 
               {/* Profile Form */}
               <form onSubmit={handleProfileSubmit} className="space-y-4 md:space-y-6">

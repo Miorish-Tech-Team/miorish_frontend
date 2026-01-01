@@ -355,7 +355,8 @@ export default function ProductPage() {
                 <p className="text-red-600 font-semibold">OUT OF STOCK</p>
               ) : product.availableStockQuantity > 0 ? (
                 <p className="text-green-600 font-semibold">
-                  In Stock ({product.availableStockQuantity} available)
+                  In Stock
+                   {/* ({product.availableStockQuantity} available) */}
                 </p>
               ) : product.inventoryStatus === "BackOrder" ? (
                 <p className="text-yellow-600 font-semibold">
