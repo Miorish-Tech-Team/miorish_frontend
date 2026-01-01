@@ -15,6 +15,7 @@ import Recommendation from "@/components/sections/home/Recommendation";
 import Blog from "@/components/sections/home/Blog";
 import { cookies, headers } from "next/headers";
 import OurStory from "@/components/sections/home/OurStory";
+import { createServerApi, getCookieHeader } from "@/lib/serverAxios";
 
 // Force Next.js to fetch fresh data on every request
 export const dynamic = "force-dynamic";
@@ -38,9 +39,6 @@ export default async function Home() {
   let errorMessage = "";
 
   try {
-    console.log("[SSR] Starting page render at:", new Date().toISOString());
-    console.log("[SSR] API URL:", process.env.NEXT_PUBLIC_API_URL);
-    
     // Check if user is authenticated by checking for auth token
     const cookieStore = await cookies();
     const token = cookieStore.get("token")?.value;
@@ -49,22 +47,22 @@ export default async function Home() {
     
     // Check any of the possible auth tokens
     isAuthenticated = !!(token || tokenMiddleware || accessToken);
-    console.log("[SSR] Auth status:", isAuthenticated);
   
+    // Create server-side axios instance with cookies for SSR
+    const cookieHeaderString = getCookieHeader(cookieStore);
+    const serverApi = createServerApi(cookieHeaderString);
 
-    // Fetch all data in parallel
-    console.log("[SSR] Fetching data...");
+    // Fetch all data in parallel using server-side axios instance
     const [categoriesRes, productsRes, homepageBannersRes, weeklyBannersRes, popularBannersRes, brandBannersRes, recommendationRes] = await Promise.all([
-      getAllCategories().catch(e => { console.error("[SSR] Categories error:", e.message); return null; }),
-      getAllProducts({ sortBy: "latest" }).catch(e => { console.error("[SSR] Products error:", e.message); return null; }),
-      getHomepageBanners().catch(e => { console.error("[SSR] Homepage banners error:", e.message); return null; }),
-      getWeeklyPromotionBanners().catch(e => { console.error("[SSR] Weekly banners error:", e.message); return null; }),
-      getPopularBanners().catch(e => { console.error("[SSR] Popular banners error:", e.message); return null; }),
-      getBrandPosterBanners().catch(e => { console.error("[SSR] Brand banners error:", e.message); return null; }),
-      isAuthenticated ? getCombinedRecommendations().catch(e => { console.error("[SSR] Recommendations error:", e.message); return null; }) : Promise.resolve(null),
+      getAllCategories(serverApi),
+      getAllProducts({ sortBy: "latest" }, serverApi),
+      getHomepageBanners(serverApi),
+      getWeeklyPromotionBanners(serverApi),
+      getPopularBanners(serverApi),
+      getBrandPosterBanners(serverApi),
+      isAuthenticated ? getCombinedRecommendations(cookieHeaderString) : Promise.resolve(null),
     ]);
-    
-    console.log("[SSR] Data fetched successfully");
+   
 
     if (categoriesRes?.categories && Array.isArray(categoriesRes.categories)) {
       categories = categoriesRes.categories;

@@ -1,4 +1,5 @@
 import api from '@/lib/axios'
+import { AxiosInstance } from 'axios'
 
 export interface Product {
   id: number
@@ -102,7 +103,7 @@ export interface GetAllProductsParams {
 }
 
 // Get all products with filters
-export const getAllProducts = async (params?: GetAllProductsParams): Promise<ProductsResponse> => {
+export const getAllProducts = async (params?: GetAllProductsParams, apiInstance: AxiosInstance = api): Promise<ProductsResponse> => {
   const queryParams = new URLSearchParams()
   
   if (params) {
@@ -116,7 +117,7 @@ export const getAllProducts = async (params?: GetAllProductsParams): Promise<Pro
   const queryString = queryParams.toString()
   const url = `/general/products${queryString ? `?${queryString}` : ''}`
   
-  const response = await api.get(url)
+  const response = await apiInstance.get(url)
   return response.data
 }
 
