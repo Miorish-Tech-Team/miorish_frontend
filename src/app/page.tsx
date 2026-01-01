@@ -13,14 +13,19 @@ import NewArrivals from "@/components/sections/home/NewArrivals";
 import BrandPromotion from "@/components/sections/home/BrandPromotion";
 import Recommendation from "@/components/sections/home/Recommendation";
 import Blog from "@/components/sections/home/Blog";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import OurStory from "@/components/sections/home/OurStory";
 import { createServerApi, getCookieHeader } from "@/lib/serverAxios";
 
 // Force Next.js to fetch fresh data on every request
 export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
+export const revalidate = 0;
 
 export default async function Home() {
+  // Set cache control headers
+  const headersList = await headers();
+  
   let categories: Category[] = [];
   let newArrivalProducts: Product[] = [];
   let uniqueProducts: Product[] = [];
@@ -30,6 +35,8 @@ export default async function Home() {
   let weeklyBanners: Banner[] = [];
   let popularBanners: Banner[] = [];
   let brandBanners: Banner[] = [];
+  let hasError = false;
+  let errorMessage = "";
 
   try {
     // Check if user is authenticated by checking for auth token
@@ -55,6 +62,7 @@ export default async function Home() {
       getBrandPosterBanners(serverApi),
       isAuthenticated ? getCombinedRecommendations(cookieHeaderString) : Promise.resolve(null),
     ]);
+   
 
     if (categoriesRes?.categories && Array.isArray(categoriesRes.categories)) {
       categories = categoriesRes.categories;
@@ -100,10 +108,28 @@ export default async function Home() {
         .slice(0, 5);
     }
   } catch (error) {
-    console.error("[Server] Error fetching data:", error);
+    hasError = true;
+    errorMessage = error instanceof Error ? error.message : "Unknown error";
+    console.error("[SSR] Critical error fetching data:", error);
   }
+  
+  // Add debug info visible in production
+  console.log("[SSR] Render complete:", { 
+    hasError, 
+    categoriesCount: categories.length,
+    productsCount: newArrivalProducts.length,
+    bannersCount: homepageBanners.length,
+    timestamp: new Date().toISOString()
+  });
+  
   return (
     <div className="min-h-screen ">
+      {/* Debug banner - remove after fixing */}
+      {hasError && (
+        <div className="bg-red-500 text-white p-4 text-center">
+          Error loading data: {errorMessage}. Check server logs.
+        </div>
+      )}
       {/* Navigation Links - Desktop */}
       <div className="hidden lg:block bg-white text-dark border-t border-gray-200">
         <div className="container mx-auto px-4">

@@ -35,7 +35,16 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/', request.url))
   }
 
-  return NextResponse.next()
+  // Add no-cache headers for home page to prevent Cloudflare caching SSR content
+  const response = NextResponse.next()
+  if (pathname === '/') {
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0')
+    response.headers.set('CDN-Cache-Control', 'no-store')
+    response.headers.set('Cloudflare-CDN-Cache-Control', 'no-store')
+    response.headers.set('Vercel-CDN-Cache-Control', 'no-store')
+  }
+
+  return response
 }
 
 export const config = {

@@ -16,6 +16,10 @@ const nextConfig: NextConfig = {
       }
     ],
   },
+  // Skip trailing slash issues
+  skipTrailingSlashRedirect: true,
+  // Disable x-powered-by header
+  poweredByHeader: false,
 };
 
 export default nextConfig;
