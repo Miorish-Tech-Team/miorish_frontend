@@ -34,9 +34,9 @@ function CategoriesPageContent() {
     []
   );
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 3000]);
   const [tempPriceRange, setTempPriceRange] = useState<[number, number]>([
-    0, 1000,
+    0, 3000,
   ]);
   const [sortBy, setSortBy] =
     useState<GetAllProductsParams["sortBy"]>("latest");
@@ -207,8 +207,8 @@ function CategoriesPageContent() {
     setSelectedCategories([]);
     setSelectedSubCategories([]);
     setSelectedBrands([]);
-    setPriceRange([0, 1000]);
-    setTempPriceRange([0, 1000]);
+    setPriceRange([0, 3000]);
+    setTempPriceRange([0, 3000]);
     setSortBy("latest");
   };
 
@@ -339,7 +339,7 @@ function CategoriesPageContent() {
                       <div
                         className="absolute h-2 bg-accent rounded-full"
                         style={{
-                          left: `${(tempPriceRange[0] / 10000) * 100}%`,
+                          left: `${(tempPriceRange[0] / 10000)*100 }%`,
                           right: `${100 - (tempPriceRange[1] / 10000) * 100}%`,
                         }}
                       />
