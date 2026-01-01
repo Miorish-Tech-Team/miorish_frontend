@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useMemo, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -11,6 +11,8 @@ import {
   CreditCard,
   Check,
   Plus,
+  Truck,
+  Package,
 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { getUserAddresses, type Address } from "@/services/addressService";
@@ -22,6 +24,7 @@ import {
   verifyRazorpayBuyNowPayment,
   verifyRazorpayCartPayment,
 } from "@/services/orderService";
+import { getDeliveryEstimate, type DeliveryEstimate } from "@/services/deliveryService";
 import { toast } from "react-hot-toast";
 import AddressFormModal from "@/components/modals/AddressFormModal";
 import CandleLoader from "@/components/CandleLoader";
@@ -55,6 +58,10 @@ function CheckoutForm() {
     "success" | "failure" | null
   >(null);
   const [completedOrderId, setCompletedOrderId] = useState<number | null>(null);
+  
+  // Delivery estimation state
+  const [deliveryEstimate, setDeliveryEstimate] = useState<DeliveryEstimate | null>(null);
+  const [loadingEstimate, setLoadingEstimate] = useState(false);
 
   // Buy Now data from session storage
   const [buyNowData, setBuyNowData] = useState<{
@@ -121,6 +128,77 @@ function CheckoutForm() {
 
     fetchData();
   }, [checkoutType, router]);
+
+  // Calculate totals using useMemo
+  const { itemsToShow, subtotal, total } = useMemo(() => {
+    let items: Array<{
+      id: number;
+      name: string;
+      image: string;
+      price: number;
+      quantity: number;
+    }> = [];
+    let sub = 0;
+
+    if (checkoutType === "buynow" && buyNowData) {
+      const product = buyNowData.product;
+      const price = product.productDiscountPrice || product.productPrice;
+      sub = price * buyNowData.quantity;
+      items = [
+        {
+          id: product.id,
+          name: product.productName,
+          image: product.coverImageUrl,
+          price,
+          quantity: buyNowData.quantity,
+        },
+      ];
+    } else {
+      items = (cart?.CartItems || []).map((item) => ({
+        id: item.Product.id,
+        name: item.Product.productName,
+        image: item.Product.coverImageUrl,
+        price: item.Product.productDiscountPrice || item.Product.productPrice,
+        quantity: item.quantity,
+      }));
+      sub = summary.totalPrice;
+    }
+
+    return {
+      itemsToShow: items,
+      subtotal: sub,
+      total: sub,
+    };
+  }, [checkoutType, buyNowData, cart, summary]);
+
+  // Fetch delivery estimate when address changes
+  useEffect(() => {
+    const fetchDeliveryEstimate = async () => {
+      if (!selectedAddressId) {
+        setDeliveryEstimate(null);
+        return;
+      }
+
+      try {
+        setLoadingEstimate(true);
+        const orderTotal = total; // Use the calculated total
+        const response = await getDeliveryEstimate(selectedAddressId, orderTotal);
+        setDeliveryEstimate(response.estimate);
+      } catch (error: any) {
+        console.error("Error fetching delivery estimate:", error);
+        // Don't show error toast for India-only restriction, handle silently
+        if (error?.response?.data?.message?.includes("India")) {
+          setDeliveryEstimate(null);
+        } else {
+          toast.error("Unable to calculate delivery estimate");
+        }
+      } finally {
+        setLoadingEstimate(false);
+      }
+    };
+
+    fetchDeliveryEstimate();
+  }, [selectedAddressId, total]);
 
   // Refresh addresses when modal closes
   const handleAddressAdded = async () => {
@@ -291,42 +369,8 @@ function CheckoutForm() {
     return <CandleLoader />;
   }
 
-  // Calculate totals
-  let itemsToShow: Array<{
-    id: number;
-    name: string;
-    image: string;
-    price: number;
-    quantity: number;
-  }> = [];
-  let subtotal = 0;
-
-  if (checkoutType === "buynow" && buyNowData) {
-    const product = buyNowData.product;
-    const price = product.productDiscountPrice || product.productPrice;
-    subtotal = price * buyNowData.quantity;
-    itemsToShow = [
-      {
-        id: product.id,
-        name: product.productName,
-        image: product.coverImageUrl,
-        price,
-        quantity: buyNowData.quantity,
-      },
-    ];
-  } else {
-    itemsToShow = (cart?.CartItems || []).map((item) => ({
-      id: item.Product.id,
-      name: item.Product.productName,
-      image: item.Product.coverImageUrl,
-      price: item.Product.productDiscountPrice || item.Product.productPrice,
-      quantity: item.quantity,
-    }));
-    subtotal = summary.totalPrice;
-  }
-
-  const shipping = 0; // Free shipping
-  const total = subtotal + shipping;
+  const shipping = deliveryEstimate?.shippingCost || 0;
+  const finalTotal = subtotal + shipping;
 
   return (
     <div className="min-h-screen bg-secondary">
@@ -549,8 +593,40 @@ function CheckoutForm() {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Shipping</span>
-                  <span className="text-green-600 font-medium">FREE</span>
+                  {loadingEstimate ? (
+                    <span className="text-gray-400 text-xs flex items-center gap-1">
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                      Calculating...
+                    </span>
+                  ) : deliveryEstimate ? (
+                    <span className={deliveryEstimate.isFreeShipping ? "text-green-600 font-medium" : "text-gray-900 font-medium"}>
+                      {deliveryEstimate.isFreeShipping ? "FREE" : `Rs.${deliveryEstimate.shippingCost.toFixed(2)}`}
+                    </span>
+                  ) : (
+                    <span className="text-gray-400 text-xs">Select address</span>
+                  )}
                 </div>
+                {deliveryEstimate && (
+                  <div className="flex justify-between text-xs text-gray-500 items-center">
+                    <span className="flex items-center gap-1">
+                      <Truck className="w-3 h-3" />
+                      Estimated Delivery
+                    </span>
+                    <span className="font-medium text-accent">
+                      {deliveryEstimate.deliveryDays} {deliveryEstimate.deliveryDays === 1 ? 'day' : 'days'}
+                    </span>
+                  </div>
+                )}
+                {deliveryEstimate && deliveryEstimate.isFreeShipping && subtotal < 1000 && (
+                  <div className="text-xs text-green-600 mt-1">
+                    🎉 You got free shipping!
+                  </div>
+                )}
+                {!deliveryEstimate?.isFreeShipping && subtotal < 1000 && deliveryEstimate && (
+                  <div className="text-xs text-gray-500 mt-1">
+                    💡 Add Rs.{(1000 - subtotal).toFixed(2)} more for free shipping
+                  </div>
+                )}
               </div>
 
               {/* Total */}
@@ -559,7 +635,7 @@ function CheckoutForm() {
                   Total
                 </span>
                 <span className="text-2xl font-bold text-accent">
-                  Rs.{total.toFixed(2)}
+                  Rs.{finalTotal.toFixed(2)}
                 </span>
               </div>
 
