@@ -33,7 +33,6 @@ export const createServerApi = (cookieHeader?: string): AxiosInstance => {
       ...(cookieHeader && { Cookie: cookieHeader }), // Forward cookies from request
     },
     timeout: 30000, // 30 second timeout
-    validateStatus: (status) => status < 500, // Don't throw on 4xx errors
   });
 };
 
