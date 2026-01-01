@@ -3,6 +3,8 @@ import { AxiosInstance } from 'axios';
 
 export interface DeliveryEstimate {
   distanceKm: number;
+  distanceText?: string; // Human-readable distance from Google Maps (e.g., "45.2 km")
+  durationText?: string; // Human-readable duration from Google Maps (e.g., "1 hour 20 mins")
   deliveryDays: number;
   shippingCost: number;
   estimatedDeliveryDate: string;
