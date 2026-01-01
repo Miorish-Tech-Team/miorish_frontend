@@ -15,6 +15,7 @@ import {
   type CreateAddressData 
 } from '@/services/addressService'
 import { toast } from 'react-hot-toast'
+import DeleteAddressModal from '@/components/modals/DeleteAddressModal'
 
 export default function AddressPage() {
   const [addresses, setAddresses] = useState<Address[]>([])
@@ -23,6 +24,7 @@ export default function AddressPage() {
   const [editingId, setEditingId] = useState<number | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [deletingId, setDeletingId] = useState<number | null>(null)
+  const [addressIdToDelete, setAddressIdToDelete] = useState<number | null>(null)
   
   const [formData, setFormData] = useState<CreateAddressData>({
     recipientName: '',
@@ -117,12 +119,16 @@ export default function AddressPage() {
     setShowAddForm(true)
   }
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this address?')) return
-    
+  const handleDeleteClick = (id: number) => {
+    setAddressIdToDelete(id)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!addressIdToDelete) return
+
     try {
-      setDeletingId(id)
-      await deleteAddress(id)
+      setDeletingId(addressIdToDelete)
+      await deleteAddress(addressIdToDelete)
       toast.success('Address deleted successfully!')
       await fetchAddresses()
     } catch (error) {
@@ -130,6 +136,7 @@ export default function AddressPage() {
       toast.error('Failed to delete address')
     } finally {
       setDeletingId(null)
+      setAddressIdToDelete(null)
     }
   }
 
@@ -265,7 +272,7 @@ export default function AddressPage() {
                                 </button>
                               )}
                               <button
-                                onClick={() => handleDelete(addr.id)}
+                                onClick={() => handleDeleteClick(addr.id)}
                                 disabled={deletingId === addr.id}
                                 className="flex items-center gap-1.5 px-3 py-1.5 bg-dark/5 text-dark rounded text-xs hover:bg-dark/70 hover:text-secondary cursor-pointer transition-colors disabled:opacity-50"
                               >
@@ -453,6 +460,11 @@ export default function AddressPage() {
             </div>
           </main>
         </div>
+        <DeleteAddressModal
+          isOpen={addressIdToDelete !== null}
+          onClose={() => setAddressIdToDelete(null)}
+          onConfirm={handleConfirmDelete}
+        />
       </div>
     </div>
   )
