@@ -613,15 +613,23 @@ function CheckoutForm() {
                   )}
                 </div>
                 {deliveryEstimate && (
-                  <div className="flex justify-between text-xs text-gray-500 items-center">
-                    <span className="flex items-center gap-1">
-                      <Truck className="w-3 h-3" />
-                      Estimated Delivery
-                    </span>
-                    <span className="font-medium text-accent">
-                      {deliveryEstimate.deliveryDays} {deliveryEstimate.deliveryDays === 1 ? 'day' : 'days'}
-                    </span>
-                  </div>
+                  <>
+                    <div className="flex justify-between text-xs text-gray-500 items-center">
+                      <span className="flex items-center gap-1">
+                        <Truck className="w-3 h-3" />
+                        Estimated Delivery
+                      </span>
+                      <span className="font-medium text-accent">
+                        {deliveryEstimate.deliveryDays} {deliveryEstimate.deliveryDays === 1 ? 'day' : 'days'}
+                      </span>
+                    </div>
+                    {/* {deliveryEstimate.distanceText && (
+                      <div className="flex justify-between text-xs text-gray-400">
+                        <span>Distance</span>
+                        <span>{deliveryEstimate.distanceText}</span>
+                      </div>
+                    )} */}
+                  </>
                 )}
                 {deliveryEstimate && deliveryEstimate.isFreeShipping && subtotal < 1000 && (
                   <div className="text-xs text-green-600 mt-1">
