@@ -26,7 +26,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "Miorish",
-  description: "Premium candle Admin Panel",
+  description: "Love, Life, Luxury",
   icons: {
     icon: "/icon.png",
   },
