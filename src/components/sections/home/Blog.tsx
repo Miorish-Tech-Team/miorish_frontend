@@ -126,7 +126,7 @@ export default async function BlogSection() {
                 </button>
               </div>
               <h3 className="text-lg md:text-2xl font-bold text-dark mb-2">
-                {blog.title}
+               {truncateText(blog.title, 80)}
               </h3>
               <p className="text-xs md:text-sm text-gray-600">
                 {truncateText(blog.description, 100)}

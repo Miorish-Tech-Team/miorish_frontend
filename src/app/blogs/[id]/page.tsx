@@ -100,7 +100,7 @@ export default function BlogDetailPage() {
         <div className="w-full mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
           {/* Featured Image */}
           {blog.image && (
-            <div className="relative h-[300px] md:h-[400px] lg:h-[500px] w-full">
+            <div className="relative h-[300px] md:h-[400px] lg:h-[700px] w-full">
               <Image
                 src={blog.image}
                 alt={blog.title}
@@ -121,16 +121,6 @@ export default function BlogDetailPage() {
 
             {/* Meta Information */}
             <div className="flex flex-wrap items-center gap-3 md:gap-6 pb-6 mb-6 border-b border-gray-200 text-sm md:text-base">
-              {/* Author */}
-              {blog.author && (
-                <div className="flex items-center gap-2 text-gray-600">
-                  <FaUser className="text-accent text-sm md:text-base" />
-                  <span className="font-medium">
-                    {blog.author.fullName || blog.author.email}
-                  </span>
-                </div>
-              )}
-
               {/* Date */}
               <div className="flex items-center gap-2 text-gray-600">
                 <FaCalendar className="text-accent text-sm md:text-base" />
