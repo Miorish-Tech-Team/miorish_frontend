@@ -1,4 +1,5 @@
 import api from '@/lib/axios'
+import { AxiosInstance } from 'axios';
 
 export interface Blog {
   id: number
@@ -37,23 +38,27 @@ export interface BlogResponse {
 export const getAllBlogs = async (
   page: number = 1,
   limit: number = 10,
-  search: string = ''
+  search: string = '',
+  serverApi?: AxiosInstance
 ): Promise<BlogsResponse> => {
-  const response = await api.get('/general/all', {
+  const apiInstance = serverApi || api;
+  const response = await apiInstance.get('/general/all', {
     params: { page, limit, search },
   })
   return response.data
 }
 
 // Get blog by ID
-export const getBlogById = async (id: number): Promise<BlogResponse> => {
-  const response = await api.get(`/general/${id}`)
+export const getBlogById = async (id: number, serverApi?: AxiosInstance): Promise<BlogResponse> => {
+  const apiInstance = serverApi || api;
+  const response = await apiInstance.get(`/general/${id}`)
   return response.data
 }
 
 // Get latest blogs (for homepage)
-export const getLatestBlogs = async (limit: number = 3): Promise<BlogsResponse> => {
-  const response = await api.get('/general/all', {
+export const getLatestBlogs = async (limit: number = 3, serverApi?: AxiosInstance): Promise<BlogsResponse> => {
+  const apiInstance = serverApi || api;
+  const response = await apiInstance.get('/general/all', {
     params: { page: 1, limit },
   })
   return response.data

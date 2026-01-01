@@ -1,5 +1,6 @@
-import axios from "axios";
+import axios, { AxiosInstance } from "axios";
 import { Product } from "./productService";
+import { createServerApi } from "@/lib/serverAxios";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -12,13 +13,10 @@ export interface RecommendationResponse {
 // Pass cookieHeader from Server Component for SSR
 export const getCombinedRecommendations = async (cookieHeader?: string): Promise<RecommendationResponse> => {
   try {
-    const response = await axios.get<RecommendationResponse>(
-      `${API_URL}/recommendation`,
-      { 
-        headers: cookieHeader ? {
-          Cookie: cookieHeader
-        } : {}
-      }
+    // Use server-side axios with proper headers for Cloudflare
+    const serverApi = createServerApi(cookieHeader);
+    const response = await serverApi.get<RecommendationResponse>(
+      '/recommendation'
     );
     
     return response.data;
@@ -39,13 +37,9 @@ export const getCombinedRecommendations = async (cookieHeader?: string): Promise
 // Get search-based recommendations
 export const getSearchBasedRecommendations = async (cookieHeader?: string): Promise<RecommendationResponse> => {
   try {
-    const response = await axios.get<RecommendationResponse>(
-      `${API_URL}/recommendation/recommendBasedOnSearch`,
-      { 
-        headers: cookieHeader ? {
-          Cookie: cookieHeader
-        } : {}
-      }
+    const serverApi = createServerApi(cookieHeader);
+    const response = await serverApi.get<RecommendationResponse>(
+      '/recommendation/recommendBasedOnSearch'
     );
     return response.data;
   } catch (error) {
@@ -57,13 +51,9 @@ export const getSearchBasedRecommendations = async (cookieHeader?: string): Prom
 // Get activity-based recommendations
 export const getActivityBasedRecommendations = async (cookieHeader?: string): Promise<RecommendationResponse> => {
   try {
-    const response = await axios.get<RecommendationResponse>(
-      `${API_URL}/recommendation/recommendBasedOnActivity`,
-      { 
-        headers: cookieHeader ? {
-          Cookie: cookieHeader
-        } : {}
-      }
+    const serverApi = createServerApi(cookieHeader);
+    const response = await serverApi.get<RecommendationResponse>(
+      '/recommendation/recommendBasedOnActivity'
     );
     return response.data;
   } catch (error) {
