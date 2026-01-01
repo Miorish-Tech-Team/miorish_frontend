@@ -236,6 +236,7 @@ function CheckoutForm() {
             quantity: buyNowData.quantity,
             addressId: selectedAddressId,
             paymentMethod: "CashOnDelivery",
+            shippingCost: deliveryEstimate?.shippingCost || 0,
           });
 
           toast.success(
@@ -247,6 +248,7 @@ function CheckoutForm() {
           const response = await placeOrderFromCart({
             addressId: selectedAddressId,
             paymentMethod: "CashOnDelivery",
+            shippingCost: deliveryEstimate?.shippingCost || 0,
           });
 
           toast.success(
@@ -282,10 +284,12 @@ function CheckoutForm() {
           productId: buyNowData.productId,
           quantity: buyNowData.quantity,
           addressId: selectedAddressId!,
+          shippingCost: deliveryEstimate?.shippingCost || 0,
         });
       } else {
         razorpayOrderData = await createRazorpayOrderForCart({
           addressId: selectedAddressId!,
+          shippingCost: deliveryEstimate?.shippingCost || 0,
         });
       }
 
@@ -325,6 +329,7 @@ function CheckoutForm() {
                 productId: buyNowData.productId,
                 quantity: buyNowData.quantity,
                 addressId: selectedAddressId!,
+                shippingCost: deliveryEstimate?.shippingCost || 0,
               });
               sessionStorage.removeItem("buyNowData");
             } else {
@@ -333,6 +338,7 @@ function CheckoutForm() {
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
                 addressId: selectedAddressId!,
+                shippingCost: deliveryEstimate?.shippingCost || 0,
               });
               await refreshCart();
             }

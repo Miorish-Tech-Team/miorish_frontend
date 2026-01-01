@@ -257,10 +257,10 @@ export default function CartPage() {
                     <span>Subtotal ({summary.totalItems} items)</span>
                     <span>Rs.{summary.totalPrice.toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between text-gray-600">
+                  {/* <div className="flex justify-between text-gray-600">
                     <span>Shipping</span>
                     <span className="text-green-600">FREE</span>
-                  </div>
+                  </div> */}
                   <div className="border-t pt-3 flex justify-between font-semibold text-lg text-gray-900">
                     <span>Total</span>
                     <span className="text-accent">Rs.{summary.totalPrice.toFixed(2)}</span>
