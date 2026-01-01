@@ -7,12 +7,27 @@ import axios, { AxiosInstance } from 'axios';
  * @returns Axios instance configured for server-side requests
  */
 export const createServerApi = (cookieHeader?: string): AxiosInstance => {
+  const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+  
+  // Extract domain from baseURL for Origin header
+  const apiUrl = new URL(baseURL);
+  const origin = `${apiUrl.protocol}//${apiUrl.host}`;
+  
   return axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api',
+    baseURL: baseURL,
     headers: {
       'Content-Type': 'application/json',
+      'Accept': 'application/json, text/plain, */*',
+      'User-Agent': 'Mozilla/5.0 (compatible; NextJS-SSR/16.0; +https://miorish.com)',
+      'Origin': origin,
+      'Referer': origin + '/',
+      'Accept-Encoding': 'gzip, deflate, br',
+      'Accept-Language': 'en-US,en;q=0.9',
+      'Cache-Control': 'no-cache',
+      'Pragma': 'no-cache',
       ...(cookieHeader && { Cookie: cookieHeader }), // Forward cookies from request
     },
+    timeout: 30000, // 30 second timeout
     // No withCredentials for server-side as we manually handle cookies
   });
 };
