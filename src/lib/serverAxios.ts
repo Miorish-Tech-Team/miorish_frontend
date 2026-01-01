@@ -7,11 +7,11 @@ import axios, { AxiosInstance } from 'axios';
  * @returns Axios instance configured for server-side requests
  */
 export const createServerApi = (cookieHeader?: string): AxiosInstance => {
-  const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+  // Use internal API URL for SSR to bypass Cloudflare
+  // This should point to localhost or internal network address
+  const baseURL = process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
   
-  // Extract domain from baseURL for Origin header
-  const apiUrl = new URL(baseURL);
-  const origin = `${apiUrl.protocol}//${apiUrl.host}`;
+  console.log('[ServerAxios] Using baseURL:', baseURL);
   
   return axios.create({
     baseURL: baseURL,
