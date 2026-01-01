@@ -17,6 +17,8 @@ import { cookies } from "next/headers";
 
 // Force Next.js to fetch fresh data on every request
 export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
+export const revalidate = 0;
 
 export default async function Home() {
   let categories: Category[] = [];
