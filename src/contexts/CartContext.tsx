@@ -80,7 +80,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     if (cart?.CartItems) {
       const updatedCartItems = cart.CartItems.map(item => 
         item.id === itemId 
-          ? { ...item, quantity, totalPrice: (item.Product.productDiscountPrice || item.Product.productPrice) * quantity }
+          ? { 
+              ...item, 
+              quantity, 
+              totalPrice: (item.Product.productDiscountPrice || item.Product.productPrice) * quantity,
+            }
           : item
       )
       
@@ -96,12 +100,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     try {
       // Update on server in background
       await updateCartItemQuantity(itemId, { quantity })
-      // Silently refresh to sync with server (no loading state)
-      const data = await getUserCartWithSummary()
-      if (!('message' in data)) {
-        setCart(data.cart as Cart)
-        setSummary(data.summary)
-      }
       toast.success('Quantity updated!')
     } catch (error: unknown) {
       console.error('Error updating quantity:', error)

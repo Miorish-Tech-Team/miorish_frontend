@@ -65,7 +65,7 @@ const [isSupportOpen, setIsSupportOpen] = useState(false)
               <li><a href="/policies/refund_policy" className=" hover:text-accent transition-colors">Return Policy</a></li>
               <li><a href="/policies/terms_conditions" className=" hover:text-accent transition-colors">Terms & Conditions</a></li>
               <li><a href="/about" className=" hover:text-accent transition-colors">About Us</a></li>
-              <li><a href="/faqs" className=" hover:text-accent transition-colors">FAQs</a></li>
+              {/* <li><a href="/faqs" className=" hover:text-accent transition-colors">FAQs</a></li> */}
             </ul>
           </div>
 
@@ -132,7 +132,7 @@ const [isSupportOpen, setIsSupportOpen] = useState(false)
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-10 md:mt-12 -mb-10 md:pt-8 border-t border-accent/20">
+        <div className="mt-10 md:mt-12 md:-mb-10 -mb-5 md:pt-8 border-t border-accent/20">
           <p className="text-sm md:text-base text-accent/70 text-center">
             Copyright Miorish © {new Date().getFullYear()}. All rights reserved.
           </p>

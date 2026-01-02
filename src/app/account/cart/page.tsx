@@ -91,7 +91,7 @@ export default function CartPage() {
 
   return (
     <div className="min-h-screen bg-secondary">
-   <div className="container mx-auto px-8 md:px-25 py-6">
+   <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-20 py-6">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm mb-6">
           <Link href="/" className="text-accent hover:underline font-medium">Home</Link>
@@ -133,7 +133,8 @@ export default function CartPage() {
 
             {/* Main Content with Cart Items */}
             <div className="lg:col-span-3">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">{/* Cart Items */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Cart Items */}
             <div className="lg:col-span-2 space-y-4">
               <div className="bg-white rounded-lg p-4 md:p-6 shadow-sm">
                 <div className="flex justify-between items-center mb-4">
@@ -157,85 +158,97 @@ export default function CartPage() {
                     return (
                       <div
                         key={item.id}
-                        className={`flex gap-4 p-4 border border-gray-200 rounded-lg transition-opacity ${
+                        className={`flex flex-col sm:flex-row gap-4 p-4 border border-gray-200 rounded-lg transition-opacity ${
                           isRemoving ? 'opacity-50' : ''
                         }`}
                       >
-                        {/* Product Image */}
-                        <Link href={`/product/${product.id}`} className="shrink-0">
-                          <div className="relative w-20 h-20 md:w-24 md:h-24 bg-gray-100 rounded overflow-hidden">
-                            <Image
-                              src={product.coverImageUrl}
-                              alt={product.productName}
-                              fill
-                              className="object-cover"
-                              unoptimized
-                            />
-                          </div>
-                        </Link>
-
-                        {/* Product Info */}
-                        <div className="flex-1 min-w-0">
-                          <Link href={`/product/${product.id}`}>
-                            <h3 className="font-medium text-gray-900 hover:text-accent transition-colors line-clamp-2">
-                              {product.productName}
-                            </h3>
+                        <div className="flex gap-4 flex-1 min-w-0">
+                          {/* Product Image */}
+                          <Link href={`/product/${product.id}`} className="shrink-0">
+                            <div className="relative w-20 h-20 md:w-24 md:h-24 bg-gray-100 rounded overflow-hidden">
+                              <Image
+                                src={product.coverImageUrl}
+                                alt={product.productName}
+                                fill
+                                className="object-cover"
+                                unoptimized
+                              />
+                            </div>
                           </Link>
-                          <p className="text-sm text-gray-600 mt-1">{product.productBrand}</p>
-                          
-                          {/* Price */}
-                          <div className="flex items-center gap-2 mt-2">
-                            <span className="text-lg font-semibold text-accent">
-                              Rs.{product.productDiscountPrice || product.productPrice}
-                            </span>
-                            {product.productDiscountPrice && (
-                              <span className="text-sm text-gray-400 line-through">
-                                Rs.{product.productPrice}
-                              </span>
-                            )}
-                          </div>
 
-                          {/* Quantity Controls */}
-                          <div className="flex items-center gap-4 mt-3">
-                            <div className="flex items-center border text-accent border-accent rounded">
-                              <button
-                                onClick={() => handleQuantityChange(item.id, item.quantity - 1, product.availableStockQuantity)}
-                                disabled={item.quantity <= 1 || isUpdating}
-                                className="p-2 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                              >
-                                <Minus size={16} />
-                              </button>
-                              <span className="px-4 text-sm font-medium min-w-10 text-center">
-                                {isUpdating ? <Loader2 size={16} className="animate-spin mx-auto" /> : item.quantity}
+                          {/* Product Info */}
+                          <div className="flex-1 min-w-0">
+                            <Link href={`/product/${product.id}`}>
+                              <h3 className="font-medium text-gray-900 hover:text-accent transition-colors line-clamp-2">
+                                {product.productName}
+                              </h3>
+                            </Link>
+                            <p className="text-sm text-gray-600 mt-1">{product.productBrand}</p>
+                            
+                            {/* Price */}
+                            <div className="flex items-center gap-2 mt-2">
+                              <span className="text-lg font-semibold text-accent">
+                                Rs.{product.productDiscountPrice || product.productPrice}
                               </span>
+                              {product.productDiscountPrice && (
+                                <span className="text-sm text-gray-400 line-through">
+                                  Rs.{product.productPrice}
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Quantity Controls & Delete */}
+                            <div className="flex items-center justify-between sm:justify-start gap-4 mt-3">
+                              <div className="flex items-center border text-accent border-accent rounded">
+                                <button
+                                  onClick={() => handleQuantityChange(item.id, item.quantity - 1, product.availableStockQuantity)}
+                                  disabled={item.quantity <= 1 || isUpdating}
+                                  className="p-2 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  <Minus size={16} />
+                                </button>
+                                <span className="px-4 text-sm font-medium min-w-10 text-center">
+                                  {isUpdating ? <Loader2 size={16} className="animate-spin mx-auto" /> : item.quantity}
+                                </span>
+                                <button
+                                  onClick={() => handleQuantityChange(item.id, item.quantity + 1, product.availableStockQuantity)}
+                                  disabled={item.quantity >= product.availableStockQuantity || isUpdating}
+                                  className="p-2 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  <Plus size={16} />
+                                </button>
+                              </div>
+
                               <button
-                                onClick={() => handleQuantityChange(item.id, item.quantity + 1, product.availableStockQuantity)}
-                                disabled={item.quantity >= product.availableStockQuantity || isUpdating}
-                                className="p-2 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                type="button"
+                                onClick={() => handleRemoveItem(item.id)}
+                                disabled={isRemoving}
+                                className="flex items-center justify-center h-9 w-9 rounded-full text-dark hover:bg-gray-100 hover:scale-105 transition-transform duration-200 disabled:opacity-50 cursor-pointer"
+                                aria-label="Remove item from cart"
                               >
-                                <Plus size={16} />
+                                {isRemoving ? <Loader2 size={18} className="animate-spin" /> : <Trash2 size={18} />}
                               </button>
                             </div>
 
-                            <button
-                              onClick={() => handleRemoveItem(item.id)}
-                              disabled={isRemoving}
-                              className="text-dark hover:scale-115 transition-transform duration-300 p-2 disabled:opacity-50 cursor-pointer"
-                            >
-                              {isRemoving ? <Loader2 size={18} className="animate-spin" /> : <Trash2 size={18} />}
-                            </button>
-                          </div>
+                            {/* Stock Warning */}
+                            {product.availableStockQuantity < 5 && (
+                              <p className="text-xs text-orange-600 mt-2">
+                                Only {product.availableStockQuantity} left in stock
+                              </p>
+                            )}
 
-                          {/* Stock Warning */}
-                          {product.availableStockQuantity < 5 && (
-                            <p className="text-xs text-orange-600 mt-2">
-                              Only {product.availableStockQuantity} left in stock
-                            </p>
-                          )}
+                            {/* Mobile Item Total */}
+                            <div className="mt-3 sm:hidden flex justify-between items-center">
+                              <span className="text-sm text-gray-600">Item total</span>
+                              <span className="font-semibold text-gray-900">
+                                Rs.{item.totalPrice.toFixed(2)}
+                              </span>
+                            </div>
+                          </div>
                         </div>
 
-                        {/* Item Total */}
-                        <div className="text-right shrink-0">
+                        {/* Desktop Item Total */}
+                        <div className="hidden sm:flex flex-col items-end justify-between text-right shrink-0">
                           <p className="font-semibold text-gray-900">
                             Rs.{item.totalPrice.toFixed(2)}
                           </p>
