@@ -1,7 +1,4 @@
 'use client'
-// This component must be 'use client' because Swiper requires browser APIs
-// However, all data (banners) is fetched server-side and passed as props
-// This is the correct Next.js 14 pattern for interactive components with SSR data
 
 import React from 'react';
 import Image from 'next/image';
@@ -19,17 +16,16 @@ interface HeroProps {
 }
 
 export default function Hero({ banners }: HeroProps) {
-  // Fallback to default images if no banners
   const heroImages = banners.length > 0 
     ? banners 
     : [
-        { id: 1, image: '/images/hero1.jpg', title: 'Latest Collection' },
-        { id: 2, image: '/images/hero2.jpg', title: 'Summer Sale' },
-        { id: 3, image: '/images/hero3.jpg', title: 'New Arrivals' },
+        { id: 1, image: '/images/hero1.jpg', title: '' },
+        { id: 2, image: '/images/hero2.jpg', title: '' },
+        { id: 3, image: '/images/hero3.jpg', title: '' },
       ];
 
   return (
-    <section className="relative w-full h-[60vh] md:h-[80vh] overflow-hidden bg-secondary">
+    <section className="relative w-full overflow-hidden bg-secondary">
       <Swiper
         modules={[Autoplay, Pagination, EffectFade]}
         spaceBetween={0}
@@ -45,7 +41,10 @@ export default function Hero({ banners }: HeroProps) {
           clickable: true,
           bulletActiveClass: 'bg-accent opacity-100',
         }}
-        className="h-full w-full"
+        /* Mobile: aspect-ratio ensures the full image width is visible. 
+           Desktop (md): reverts to 80vh for that 'hero' feel.
+        */
+        className="w-full aspect-[16/9] md:aspect-auto md:h-[80vh]"
       >
         {heroImages.map((item, index) => (
           <SwiperSlide key={item.id}>
@@ -55,16 +54,15 @@ export default function Hero({ banners }: HeroProps) {
                 alt={item.title}
                 fill
                 priority={index === 0}
-                className="object-cover"
+                /* 'object-cover' on desktop to fill the 80vh container.
+                   On mobile, the aspect ratio of the container matches the image, 
+                   so nothing gets cut off.
+                */
+                className="object-cover md:object-cover"
                 unoptimized
               />
               <div className="absolute inset-0 bg-black/10 flex flex-col items-center justify-center text-white text-center p-4">
-                {/* <h1 className="text-4xl md:text-6xl font-bold mb-4 drop-shadow-lg">
-                  {item.title}
-                </h1> */}
-                {/* <p className="text-lg md:text-xl max-w-lg drop-shadow-md">
-                  Discover premium quality products crafted just for you.
-                </p> */}
+                {/* Content can go here */}
               </div>
             </div>
           </SwiperSlide>
@@ -75,14 +73,23 @@ export default function Hero({ banners }: HeroProps) {
         .swiper-pagination-bullet {
           background: white;
           opacity: 0.5;
-          width: 10px;
-          height: 10px;
+          width: 8px;
+          height: 8px;
         }
         .swiper-pagination-bullet-active {
           background: #B49157 !important;
-          width: 25px;
+          width: 20px;
           border-radius: 5px;
           transition: all 0.3s ease;
+        }
+        /* Move pagination slightly up on mobile so it doesn't overlap edges */
+        .swiper-pagination {
+          bottom: 10px !important;
+        }
+        @media (min-width: 768px) {
+          .swiper-pagination-bullet { width: 10px; height: 10px; }
+          .swiper-pagination-bullet-active { width: 25px; }
+          .swiper-pagination { bottom: 20px !important; }
         }
       `}</style>
     </section>
