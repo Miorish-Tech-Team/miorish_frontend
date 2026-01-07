@@ -14,7 +14,7 @@ const authRoutes = [
   '/auth/register',
 ]
 
-export function middleware(request: NextRequest) {
+export default function proxy(request: NextRequest) {
   const token = request.cookies.get('token_middleware')?.value
   const { pathname } = request.nextUrl
 
