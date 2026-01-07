@@ -123,14 +123,14 @@ export default async function Home() {
   popularBanners = popularBanners || [];
   brandBanners = brandBanners || [];
   
-  // Add debug info visible in production
-  console.log("[SSR] Render complete:", { 
-    hasError, 
-    categoriesCount: categories.length,
-    productsCount: newArrivalProducts.length,
-    bannersCount: homepageBanners.length,
-    timestamp: new Date().toISOString()
-  });
+  // // Add debug info visible in production
+  // console.log("[SSR] Render complete:", { 
+  //   hasError, 
+  //   categoriesCount: categories.length,
+  //   productsCount: newArrivalProducts.length,
+  //   bannersCount: homepageBanners.length,
+  //   timestamp: new Date().toISOString()
+  // });
   
   return (
     <div className="min-h-screen ">
@@ -172,7 +172,6 @@ export default async function Home() {
           </ul>
         </div>
       </div>
-      {/* Hero Section - Candles */}
       <Hero banners={homepageBanners} />
       {/* <PromotionBanner1 banners={weeklyBanners} /> */}
       <OurStory />

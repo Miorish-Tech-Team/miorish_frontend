@@ -39,5 +39,20 @@ export default function PromotionBanner2({ banners }: PromotionBanner2Props) {
         </div>
       </div>
     </section>
+    // <section className="py-8 md:py-12 lg:py-16 bg-secondary">
+    //   <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-20">
+    //     <div className="w-full rounded-lg overflow-hidden">
+    //       <Image
+    //         src={banners[0].image}
+    //         alt={banners[0].title}
+    //         width={1200}
+    //         height={400}
+    //         layout="responsive"
+    //         className="w-full h-auto block"
+    //         unoptimized
+    //       />
+    //     </div>
+    //   </div>
+    // </section>
   );
 }

@@ -58,7 +58,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${cinzel.variable} ${inter.variable} antialiased`}>
+      <body className={`${cinzel.variable} ${inter.variable} antialiased`} suppressHydrationWarning={true}>
         <AuthProvider>
           <CartProvider>
             <AuthModalProvider>
