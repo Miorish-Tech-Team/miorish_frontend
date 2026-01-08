@@ -158,26 +158,26 @@ export default function AddressPage() {
         verifiedDistrict: response.district
       })
 
-      // Auto-fill state and district if API returns them (ALWAYS overwrite to ensure consistency)
+      // Auto-fill state and district if API returns them
       if (response.isValid && response.state && response.district) {
         const stateChanged = formData.state && formData.state !== response.state
         const districtChanged = formData.city && formData.city !== response.district
         
-        // ALWAYS overwrite with correct values from pincode
+        // Only auto-fill if fields are empty OR if state/district changed
         setFormData(prev => ({
           ...prev,
-          state: response.state || prev.state,
-          city: response.district || prev.city
+          state: response.state || prev.state, // Always set state from pincode
+          city: !prev.city || districtChanged ? (response.district || prev.city) : prev.city // Auto-fill district only if empty
         }))
         
-        // Show appropriate message based on what changed
-        if (stateChanged || districtChanged) {
-          toast(`State/District corrected based on pincode\n\nUpdated to: ${response.district}, ${response.state}`, {
+        // Show appropriate message
+        if (stateChanged) {
+          toast(`State set to: ${response.state} (from pincode)`, {
             duration: 3000,
-            icon: '🔄'
+            icon: '🔒'
           })
-        } else {
-          toast.success('State and district auto-filled from pincode', {
+        } else if (!formData.city) {
+          toast.success(`Auto-filled: ${response.district}, ${response.state}`, {
             duration: 2000,
             icon: '📍'
           })
@@ -194,30 +194,21 @@ export default function AddressPage() {
   }
 
   const handleStateChange = (newState: string) => {
-    // When state changes, clear district and show warning if pincode exists
-    setFormData(prev => {
-      const updatedData = {
-        ...prev,
-        state: newState,
-        city: '' // Clear district when state changes
-      }
-      
-      // If pincode exists and is validated, warn user about potential mismatch
-      if (prev.postalCode.length === 6 && pincodeValidation.isValid) {
-        toast('State changed. Please verify pincode matches new state.', {
-          icon: '⚠️',
-          duration: 3000
-        })
-        // Reset pincode validation to prompt re-validation
-        setPincodeValidation({
-          isValidating: false,
-          isValid: null,
-          message: ''
-        })
-      }
-      
-      return updatedData
-    })
+    // If pincode is validated and has verified state, don't allow state change
+    if (pincodeValidation.isValid && pincodeValidation.verifiedState) {
+      toast.error('Cannot change state when pincode is verified. Clear pincode to change state.', {
+        duration: 3000,
+        icon: '🔒'
+      })
+      return
+    }
+    
+    // When state changes, clear district
+    setFormData(prev => ({
+      ...prev,
+      state: newState,
+      city: '' // Clear district when state changes
+    }))
   }
 
   const handleDistrictChange = (newDistrict: string) => {
@@ -225,14 +216,7 @@ export default function AddressPage() {
       ...prev,
       city: newDistrict
     }))
-    
-    // If pincode exists and is validated, warn about potential mismatch
-    if (formData.postalCode.length === 6 && pincodeValidation.isValid) {
-      toast('District changed. Please verify pincode is correct.', {
-        icon: '⚠️',
-        duration: 3000
-      })
-    }
+    // Allow free editing of district (no warnings)
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -292,14 +276,13 @@ export default function AddressPage() {
       return
     }
     
-    // Check if pincode verification returned different state/district than what's selected
-    if (pincodeValidation.verifiedState && pincodeValidation.verifiedDistrict) {
+    // Only check if state matches pincode (district can be edited freely)
+    if (pincodeValidation.verifiedState) {
       const stateMatches = pincodeValidation.verifiedState.toLowerCase() === formData.state.toLowerCase()
-      const districtMatches = pincodeValidation.verifiedDistrict.toLowerCase() === formData.city.toLowerCase()
       
-      if (!stateMatches || !districtMatches) {
+      if (!stateMatches) {
         toast.error(
-          `Pincode ${formData.postalCode} belongs to ${pincodeValidation.verifiedDistrict}, ${pincodeValidation.verifiedState}. Please correct the address.`,
+          `Pincode ${formData.postalCode} belongs to ${pincodeValidation.verifiedState}. State cannot be changed.`,
           { duration: 5000 }
         )
         return

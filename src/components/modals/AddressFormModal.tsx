@@ -119,24 +119,24 @@ export default function AddressFormModal({ isOpen, onClose, onAddressAdded }: Ad
         verifiedDistrict: response.district
       })
 
-      // Auto-fill state and district if API returns them (ALWAYS overwrite)
+      // Auto-fill state and district if API returns them
       if (response.isValid && response.state && response.district) {
         const stateChanged = formData.state && formData.state !== response.state
         const districtChanged = formData.city && formData.city !== response.district
         
         setFormData(prev => ({
           ...prev,
-          state: response.state || prev.state,
-          city: response.district || prev.city
+          state: response.state || prev.state, // Always set state from pincode
+          city: !prev.city || districtChanged ? (response.district || prev.city) : prev.city // Auto-fill district only if empty
         }))
         
-        if (stateChanged || districtChanged) {
-          toast(`State/District corrected based on pincode\n\nUpdated to: ${response.district}, ${response.state}`, {
+        if (stateChanged) {
+          toast(`State set to: ${response.state} (from pincode)`, {
             duration: 3000,
-            icon: '🔄'
+            icon: '🔒'
           })
-        } else {
-          toast.success('State and district auto-filled from pincode', {
+        } else if (!formData.city) {
+          toast.success(`Auto-filled: ${response.district}, ${response.state}`, {
             duration: 2000,
             icon: '📍'
           })
@@ -155,29 +155,20 @@ export default function AddressFormModal({ isOpen, onClose, onAddressAdded }: Ad
   }
 
   const handleStateChange = (newState: string) => {
-    setFormData(prev => {
-      const updatedData = {
-        ...prev,
-        state: newState,
-        city: ''
-      }
-      
-      if (prev.postalCode.length === 6 && pincodeValidation.isValid) {
-        toast('State changed. Please verify pincode matches new state.', {
-          icon: '⚠️',
-          duration: 3000
-        })
-        setPincodeValidation({
-          isValidating: false,
-          isValid: null,
-          message: '',
-          verifiedState: undefined,
-          verifiedDistrict: undefined
-        })
-      }
-      
-      return updatedData
-    })
+    // If pincode is validated and has verified state, don't allow state change
+    if (pincodeValidation.isValid && pincodeValidation.verifiedState) {
+      toast.error('Cannot change state when pincode is verified. Clear pincode to change state.', {
+        duration: 3000,
+        icon: '🔒'
+      })
+      return
+    }
+    
+    setFormData(prev => ({
+      ...prev,
+      state: newState,
+      city: ''
+    }))
   }
 
   const handleDistrictChange = (newDistrict: string) => {
@@ -185,13 +176,7 @@ export default function AddressFormModal({ isOpen, onClose, onAddressAdded }: Ad
       ...prev,
       city: newDistrict
     }))
-    
-    if (formData.postalCode.length === 6 && pincodeValidation.isValid) {
-      toast('District changed. Please verify pincode is correct.', {
-        icon: '⚠️',
-        duration: 3000
-      })
-    }
+    // Allow free editing of district (no warnings)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -203,14 +188,13 @@ export default function AddressFormModal({ isOpen, onClose, onAddressAdded }: Ad
       return
     }
     
-    // Check if pincode matches state/district
-    if (pincodeValidation.verifiedState && pincodeValidation.verifiedDistrict) {
+    // Only check if state matches pincode (district can be edited freely)
+    if (pincodeValidation.verifiedState) {
       const stateMatches = pincodeValidation.verifiedState.toLowerCase() === formData.state.toLowerCase()
-      const districtMatches = pincodeValidation.verifiedDistrict.toLowerCase() === formData.city.toLowerCase()
       
-      if (!stateMatches || !districtMatches) {
+      if (!stateMatches) {
         toast.error(
-          `Pincode ${formData.postalCode} belongs to ${pincodeValidation.verifiedDistrict}, ${pincodeValidation.verifiedState}. Please correct the address.`,
+          `Pincode ${formData.postalCode} belongs to ${pincodeValidation.verifiedState}. State cannot be changed.`,
           { duration: 5000 }
         )
         return
