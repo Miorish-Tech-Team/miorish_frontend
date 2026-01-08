@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Plus, Loader2, Pencil, Trash2, Check } from 'lucide-react'
+import { Plus, Loader2, Pencil, Trash2, Check, CheckCircle2, XCircle } from 'lucide-react'
 import AccountSidebar from '@/components/layout/AccountSidebar'
 import { AddressCardSkeleton } from '@/components/skeleton'
 import { 
@@ -11,6 +11,9 @@ import {
   updateAddress, 
   deleteAddress, 
   setDefaultAddress,
+  getStates,
+  getDistricts,
+  validatePincode,
   type Address,
   type CreateAddressData 
 } from '@/services/addressService'
@@ -26,10 +29,28 @@ export default function AddressPage() {
   const [deletingId, setDeletingId] = useState<number | null>(null)
   const [addressIdToDelete, setAddressIdToDelete] = useState<number | null>(null)
   
+  // Indian address validation states
+  const [states, setStates] = useState<string[]>([])
+  const [districts, setDistricts] = useState<string[]>([])
+  const [loadingDistricts, setLoadingDistricts] = useState(false)
+  const [pincodeValidation, setPincodeValidation] = useState<{
+    isValidating: boolean
+    isValid: boolean | null
+    message: string
+    verifiedState?: string
+    verifiedDistrict?: string
+  }>({
+    isValidating: false,
+    isValid: null,
+    message: '',
+    verifiedState: undefined,
+    verifiedDistrict: undefined
+  })
+  
   const [formData, setFormData] = useState<CreateAddressData>({
     recipientName: '',
     street: '',
-    city: '',
+    city: '', // This will be district
     state: '',
     postalCode: '',
     country: 'India',
@@ -40,7 +61,34 @@ export default function AddressPage() {
 
   useEffect(() => {
     fetchAddresses()
+    fetchStates()
   }, [])
+
+  // Fetch districts when state changes
+  useEffect(() => {
+    if (formData.state) {
+      fetchDistricts(formData.state)
+    } else {
+      setDistricts([])
+      // Clear district when state is cleared
+      if (formData.city) {
+        setFormData(prev => ({ ...prev, city: '' }))
+      }
+    }
+  }, [formData.state])
+
+  // Validate pincode when it's 6 digits
+  useEffect(() => {
+    if (formData.postalCode.length === 6) {
+      handlePincodeValidation(formData.postalCode)
+    } else {
+      setPincodeValidation({
+        isValidating: false,
+        isValid: null,
+        message: ''
+      })
+    }
+  }, [formData.postalCode])
 
   const fetchAddresses = async () => {
     try {
@@ -55,8 +103,158 @@ export default function AddressPage() {
     }
   }
 
+  const fetchStates = async () => {
+    try {
+      const response = await getStates()
+      setStates(response.states)
+    } catch (error) {
+      console.error('Error fetching states:', error)
+      toast.error('Failed to load states')
+    }
+  }
+
+  const fetchDistricts = async (state: string) => {
+    try {
+      setLoadingDistricts(true)
+      const response = await getDistricts(state)
+      setDistricts(response.districts)
+    } catch (error) {
+      console.error('Error fetching districts:', error)
+      setDistricts([])
+    } finally {
+      setLoadingDistricts(false)
+    }
+  }
+
+  const handlePincodeValidation = async (pincode: string) => {
+    try {
+      setPincodeValidation({
+        isValidating: true,
+        isValid: null,
+        message: ''
+      })
+      
+      const response = await validatePincode(pincode)
+      
+      // Customize message based on verification type
+      let message = ''
+      if (response.isValid) {
+        if (response.verifiedBy === 'regex') {
+          message = 'Valid pincode format ✓'
+        } else if (response.state && response.district) {
+          message = `Verified: ${response.district}, ${response.state}`
+        } else {
+          message = 'Valid pincode ✓'
+        }
+      } else {
+        message = response.message || 'Invalid pincode'
+      }
+      
+      setPincodeValidation({
+        isValidating: false,
+        isValid: response.isValid,
+        message: message,
+        verifiedState: response.state,
+        verifiedDistrict: response.district
+      })
+
+      // Auto-fill state and district if API returns them (ALWAYS overwrite to ensure consistency)
+      if (response.isValid && response.state && response.district) {
+        const stateChanged = formData.state && formData.state !== response.state
+        const districtChanged = formData.city && formData.city !== response.district
+        
+        // ALWAYS overwrite with correct values from pincode
+        setFormData(prev => ({
+          ...prev,
+          state: response.state || prev.state,
+          city: response.district || prev.city
+        }))
+        
+        // Show appropriate message based on what changed
+        if (stateChanged || districtChanged) {
+          toast(`State/District corrected based on pincode\n\nUpdated to: ${response.district}, ${response.state}`, {
+            duration: 3000,
+            icon: '🔄'
+          })
+        } else {
+          toast.success('State and district auto-filled from pincode', {
+            duration: 2000,
+            icon: '📍'
+          })
+        }
+      }
+    } catch (error) {
+      console.error('Error validating pincode:', error)
+      setPincodeValidation({
+        isValidating: false,
+        isValid: null,
+        message: ''
+      })
+    }
+  }
+
+  const handleStateChange = (newState: string) => {
+    // When state changes, clear district and show warning if pincode exists
+    setFormData(prev => {
+      const updatedData = {
+        ...prev,
+        state: newState,
+        city: '' // Clear district when state changes
+      }
+      
+      // If pincode exists and is validated, warn user about potential mismatch
+      if (prev.postalCode.length === 6 && pincodeValidation.isValid) {
+        toast('State changed. Please verify pincode matches new state.', {
+          icon: '⚠️',
+          duration: 3000
+        })
+        // Reset pincode validation to prompt re-validation
+        setPincodeValidation({
+          isValidating: false,
+          isValid: null,
+          message: ''
+        })
+      }
+      
+      return updatedData
+    })
+  }
+
+  const handleDistrictChange = (newDistrict: string) => {
+    setFormData(prev => ({
+      ...prev,
+      city: newDistrict
+    }))
+    
+    // If pincode exists and is validated, warn about potential mismatch
+    if (formData.postalCode.length === 6 && pincodeValidation.isValid) {
+      toast('District changed. Please verify pincode is correct.', {
+        icon: '⚠️',
+        duration: 3000
+      })
+    }
+  }
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target
+    
+    // For pincode, only allow digits and max 6 characters
+    if (name === 'postalCode') {
+      if (!/^\d{0,6}$/.test(value)) return
+    }
+    
+    // Handle state change separately for validation
+    if (name === 'state') {
+      handleStateChange(value)
+      return
+    }
+    
+    // Handle district change separately for validation
+    if (name === 'city') {
+      handleDistrictChange(value)
+      return
+    }
+    
     setFormData({
       ...formData,
       [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
@@ -77,10 +275,36 @@ export default function AddressPage() {
     })
     setEditingId(null)
     setShowAddForm(false)
+    setDistricts([])
+    setPincodeValidation({
+      isValidating: false,
+      isValid: null,
+      message: ''
+    })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Additional frontend validation
+    if (pincodeValidation.isValid === false) {
+      toast.error('Please enter a valid pincode')
+      return
+    }
+    
+    // Check if pincode verification returned different state/district than what's selected
+    if (pincodeValidation.verifiedState && pincodeValidation.verifiedDistrict) {
+      const stateMatches = pincodeValidation.verifiedState.toLowerCase() === formData.state.toLowerCase()
+      const districtMatches = pincodeValidation.verifiedDistrict.toLowerCase() === formData.city.toLowerCase()
+      
+      if (!stateMatches || !districtMatches) {
+        toast.error(
+          `Pincode ${formData.postalCode} belongs to ${pincodeValidation.verifiedDistrict}, ${pincodeValidation.verifiedState}. Please correct the address.`,
+          { duration: 5000 }
+        )
+        return
+      }
+    }
     
     try {
       setSubmitting(true)
@@ -95,9 +319,20 @@ export default function AddressPage() {
       
       await fetchAddresses()
       resetForm()
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving address:', error)
-      toast.error(editingId ? 'Failed to update address' : 'Failed to add address')
+      
+      // Display backend validation errors if available
+      if (error.response?.data?.error) {
+        toast.error(error.response.data.error, { duration: 5000 })
+      } else if (error.response?.data?.errors) {
+        const errors = error.response.data.errors
+        errors.forEach((err: string) => toast.error(err))
+      } else if (error.response?.data?.message) {
+        toast.error(error.response.data.message)
+      } else {
+        toast.error(editingId ? 'Failed to update address' : 'Failed to add address')
+      }
     } finally {
       setSubmitting(false)
     }
@@ -346,47 +581,90 @@ export default function AddressPage() {
 
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                              City <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                              type="text"
-                              name="city"
-                              required
-                              value={formData.city}
-                              onChange={handleInputChange}
-                              className="w-full px-4 py-2 text-dark border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
-                              placeholder="Mumbai"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
                               State <span className="text-red-500">*</span>
                             </label>
-                            <input
-                              type="text"
+                            <select
                               name="state"
                               required
                               value={formData.state}
                               onChange={handleInputChange}
-                              className="w-full px-4 py-2 text-dark border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
-                              placeholder="Maharashtra"
-                            />
+                              className="w-full px-4 py-2 text-dark border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 appearance-none cursor-pointer"
+                            >
+                              <option value="">Select State</option>
+                              {states.map(state => (
+                                <option key={state} value={state}>{state}</option>
+                              ))}
+                            </select>
                           </div>
 
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Postal Code <span className="text-red-500">*</span>
+                              District <span className="text-red-500">*</span>
                             </label>
-                            <input
-                              type="text"
-                              name="postalCode"
+                            <select
+                              name="city"
                               required
-                              value={formData.postalCode}
+                              value={formData.city}
                               onChange={handleInputChange}
-                              className="w-full px-4 py-2 text-dark border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
-                              placeholder="400001"
-                            />
+                              disabled={!formData.state || loadingDistricts}
+                              className="w-full px-4 py-2 text-dark border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 appearance-none cursor-pointer disabled:bg-gray-100 disabled:cursor-not-allowed"
+                            >
+                              <option value="">
+                                {loadingDistricts ? 'Loading districts...' : 'Select District'}
+                              </option>
+                              {districts.map(district => (
+                                <option key={district} value={district}>{district}</option>
+                              ))}
+                            </select>
+                            {!formData.state && (
+                              <p className="text-xs text-gray-500 mt-1">Please select a state first</p>
+                            )}
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Pincode <span className="text-red-500">*</span>
+                            </label>
+                            <div className="relative">
+                              <input
+                                type="text"
+                                name="postalCode"
+                                required
+                                value={formData.postalCode}
+                                onChange={handleInputChange}
+                                maxLength={6}
+                                className={`w-full px-4 py-2 text-dark border rounded text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 ${
+                                  pincodeValidation.isValid === true 
+                                    ? 'border-green-500' 
+                                    : pincodeValidation.isValid === false 
+                                    ? 'border-red-500' 
+                                    : 'border-gray-300'
+                                }`}
+                                placeholder="400001"
+                              />
+                              {pincodeValidation.isValidating && (
+                                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                  <Loader2 size={16} className="animate-spin text-gray-400" />
+                                </div>
+                              )}
+                              {!pincodeValidation.isValidating && pincodeValidation.isValid === true && (
+                                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                  <CheckCircle2 size={16} className="text-green-500" />
+                                </div>
+                              )}
+                              {!pincodeValidation.isValidating && pincodeValidation.isValid === false && (
+                                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                  <XCircle size={16} className="text-red-500" />
+                                </div>
+                              )}
+                            </div>
+                            {pincodeValidation.message && (
+                              <p className={`text-xs mt-1 ${
+                                pincodeValidation.isValid ? 'text-green-600' : 'text-red-600'
+                              }`}>
+                                {pincodeValidation.message}
+                              </p>
+                            )}
                           </div>
 
                           <div>
@@ -397,11 +675,11 @@ export default function AddressPage() {
                               type="text"
                               name="country"
                               required
-                              value={formData.country}
-                              onChange={handleInputChange}
-                              className="w-full px-4 py-2 text-dark border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-accent/50"
-                              placeholder="India"
+                              value="India"
+                              disabled
+                              className="w-full px-4 py-2 text-dark border border-gray-300 rounded text-sm bg-gray-100 cursor-not-allowed"
                             />
+                            <p className="text-xs text-gray-500 mt-1">Only Indian addresses are supported</p>
                           </div>
 
                           <div>
