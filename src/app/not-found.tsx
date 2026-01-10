@@ -48,16 +48,6 @@ export default function NotFound() {
               Browse Products
             </Link>
           </div>
-
-          {/* Decorative Element */}
-          <div className="mt-16 pt-8 border-t border-gray-200">
-            <p className="text-sm md:text-base text-gray-500">
-              Need help finding something?{" "}
-              <Link href="/contact" className="text-accent hover:underline font-medium">
-                Contact us
-              </Link>
-            </p>
-          </div>
         </div>
       </div>
     </div>
