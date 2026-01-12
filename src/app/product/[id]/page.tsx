@@ -51,6 +51,31 @@ export default function ProductPage() {
   const [isInWishlist, setIsInWishlist] = useState<boolean>(false);
   const [wishlistItemId, setWishlistItemId] = useState<number | null>(null);
 
+  const fallbackShare = () => {
+    navigator.clipboard.writeText(window.location.href)
+      .then(() => {
+        toast.success('Product link copied to clipboard!');
+      }
+      )
+      .catch(() => {
+        toast.error('Failed to copy link to clipboard.');
+      });
+  };
+
+  const handleShare = () => {
+    const shareData = {
+      title: product?.productName,
+      text: 'Check out this product!',
+      url: window.location.href,
+    };
+    if (navigator.share) {
+      navigator.share(shareData).catch((error) => console.error('Error sharing:', error));
+    } else {
+      fallbackShare();
+      toast.error('Sharing is not supported in this browser.');
+    }
+  }
+
   useEffect(() => {
     if (user) {
       const checkWishlist = async () => {
@@ -260,7 +285,7 @@ export default function ProductPage() {
                   }`}
                 />
               </button>
-              <button className="absolute top-10 right-2 md:top-14 md:right-4 bg-white rounded-full p-1.5 md:p-2 shadow-md hover:bg-gray-100 transition-colors">
+              <button onClick={handleShare} className="absolute cursor-pointer top-10 right-2 md:top-14 md:right-4 bg-white rounded-full p-1.5 md:p-2 shadow-md hover:bg-gray-100 transition-colors">
                 <Share2 size={18} className="text-gray-600 md:w-5 md:h-5" />
               </button>
             </div>
