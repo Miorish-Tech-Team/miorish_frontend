@@ -51,6 +51,31 @@ export default function ProductPage() {
   // Check if product is in wishlist using context
   const isInWishlist = checkIsInWishlist(Number(productId));
 
+   const fallbackShare = () => {
+    navigator.clipboard.writeText(window.location.href)
+      .then(() => {
+        toast.success('Product link copied to clipboard!');
+      }
+      )
+      .catch(() => {
+        toast.error('Failed to copy link to clipboard.');
+      });
+  };
+
+  const handleShare = () => {
+    const shareData = {
+      title: product?.productName,
+      text: 'Check out this product!',
+      url: window.location.href,
+    };
+    if (navigator.share) {
+      navigator.share(shareData).catch((error) => console.error('Error sharing:', error));
+    } else {
+      fallbackShare();
+      toast.error('Sharing is not supported in this browser.');
+    }
+  }
+
   // Check if product is in cart (check both database and localStorage)
   useEffect(() => {
     // For logged-in users, check database cart
