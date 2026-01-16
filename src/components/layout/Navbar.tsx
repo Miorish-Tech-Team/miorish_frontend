@@ -15,6 +15,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
+import { useWishlist } from "@/contexts/WishlistContext";
 import { useAuthModal } from "@/contexts/AuthModalContext";
 import { getAllCategories, Category } from "@/services/categoryService";
 import { getSearchSuggestions } from "@/services/productService";
@@ -38,6 +39,7 @@ export default function Navbar() {
 
   const { user } = useAuth();
   const { cartItemCount } = useCart();
+  const { wishlistCount } = useWishlist();
   const { openLoginModal, openRegisterModal } = useAuthModal();
   const router = useRouter();
 
@@ -326,29 +328,22 @@ export default function Navbar() {
               </button>
             )}
             <button 
-              onClick={(e) => {
-                if (!user) {
-                  e.preventDefault();
-                  toast.error('Please login to access this page');
-                  openLoginModal();
-                } else {
-                  router.push('/account/wishlist');
-                }
+              onClick={() => {
+                router.push('/wishlist');
               }}
-              className="flex flex-col items-center justify-center gap-1 hover:text-accent transition-colors cursor-pointer"
+              className="flex flex-col items-center justify-center gap-1 hover:text-accent transition-colors cursor-pointer relative"
             >
               <Heart size={20} className="lg:w-6 lg:h-6" />
+              {wishlistCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-accent text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {wishlistCount > 9 ? "9+" : wishlistCount}
+                </span>
+              )}
               <span className="text-[10px] lg:text-xs">Wishlist</span>
             </button>
             <button 
-              onClick={(e) => {
-                if (!user) {
-                  e.preventDefault();
-                  toast.error('Please login to access this page');
-                  openLoginModal();
-                } else {
-                  router.push('/account/cart');
-                }
+              onClick={() => {
+                router.push('/cart');
               }}
               className="flex flex-col items-center justify-center gap-1 hover:text-accent transition-colors cursor-pointer relative"
             >
@@ -488,30 +483,23 @@ export default function Navbar() {
                 </button>
                 <button
                   onClick={() => {
-                    if (!user) {
-                      toast.error('Please login to access this page');
-                      setMobileMenuOpen(false);
-                      openLoginModal();
-                    } else {
-                      router.push('/account/wishlist');
-                      setMobileMenuOpen(false);
-                    }
+                    router.push('/wishlist');
+                    setMobileMenuOpen(false);
                   }}
-                  className="flex items-center gap-3 py-2 hover:text-accent transition-colors w-full"
+                  className="flex items-center gap-3 px-4 py-3 hover:bg-secondary transition-colors relative"
                 >
                   <Heart size={20} />
+                  {wishlistCount > 0 && (
+                    <span className="absolute left-9 top-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                      {wishlistCount > 9 ? "9+" : wishlistCount}
+                    </span>
+                  )}
                   <span className="text-sm font-medium">Wishlist</span>
                 </button>
                 <button
                   onClick={() => {
-                    if (!user) {
-                      toast.error('Please login to access this page');
-                      setMobileMenuOpen(false);
-                      openLoginModal();
-                    } else {
-                      router.push('/account/cart');
-                      setMobileMenuOpen(false);
-                    }
+                    router.push('/cart');
+                    setMobileMenuOpen(false);
                   }}
                   className="flex items-center gap-3 py-2 hover:text-accent transition-colors relative w-full"
                 >

@@ -15,6 +15,7 @@ import {
   Package,
 } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { getUserAddresses, type Address } from "@/services/addressService";
 import {
   buyNow,
@@ -48,6 +49,7 @@ function CheckoutForm() {
   const searchParams = useSearchParams();
   const checkoutType = searchParams.get("type"); // 'cart' or 'buynow'
   const { cart, summary, refreshCart } = useCart();
+  const { user, isAuthenticated } = useAuth();
 
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<number | null>(
@@ -88,6 +90,15 @@ function CheckoutForm() {
 
   useEffect(() => {
     const fetchData = async () => {
+      // Check authentication first
+      if (!isAuthenticated) {
+        toast.error('Please login to continue with checkout');
+        // Store the current path to redirect back after login
+        sessionStorage.setItem('redirectAfterLogin', window.location.pathname + window.location.search);
+        router.push('/auth/login');
+        return;
+      }
+
       try {
         setLoading(true);
 
@@ -135,7 +146,7 @@ function CheckoutForm() {
     };
 
     fetchData();
-  }, [checkoutType, router]);
+  }, [checkoutType, router, isAuthenticated]);
 
   // Calculate totals using useMemo
   const { itemsToShow, subtotal, total } = useMemo(() => {
@@ -410,7 +421,7 @@ function CheckoutForm() {
           {checkoutType === "cart" && (
             <>
               <Link
-                href="/account/cart"
+                href="/cart"
                 className="text-accent hover:underline font-medium"
               >
                 Cart

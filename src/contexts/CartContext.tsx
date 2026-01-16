@@ -1,9 +1,18 @@
 'use client'
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react'
 import { getUserCartWithSummary, addToCart as addToCartAPI, updateCartItemQuantity, removeCartItem, removeAllCartItems, type Cart, type CartSummary } from '@/services/cartService'
 import { toast } from 'react-hot-toast'
 import { useAuth } from '@/contexts/AuthContext'
+import { 
+  readCartFromLocalStorage,
+  addItemToLocalCart,
+  updateLocalCartItemQuantity,
+  removeItemFromLocalCart,
+  clearLocalCart,
+  getLocalCartItemCount,
+  LocalCartItem
+} from '@/utils/localStorage'
 
 interface CartContextType {
   cart: Cart | null
@@ -11,10 +20,12 @@ interface CartContextType {
   loading: boolean
   refreshCart: () => Promise<void>
   addToCart: (productId: number, quantity: number, selectedSize?: string, selectedColor?: string) => Promise<void>
-  updateQuantity: (itemId: number, quantity: number) => Promise<void>
-  removeItem: (itemId: number) => Promise<void>
+  updateQuantity: (itemId: number, quantity: number, productId?: number, selectedSize?: string, selectedColor?: string) => Promise<void>
+  removeItem: (itemId: number, productId?: number, selectedSize?: string, selectedColor?: string) => Promise<void>
   clearCart: () => Promise<void>
   cartItemCount: number
+  setSyncedCartData: (data: Cart | null, summary: CartSummary) => void
+  localCart: LocalCartItem[]
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
@@ -24,16 +35,31 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cart, setCart] = useState<Cart | null>(null)
   const [summary, setSummary] = useState<CartSummary>({ totalItems: 0, totalPrice: 0 })
   const [loading, setLoading] = useState(false)
+  const [localCart, setLocalCart] = useState<LocalCartItem[]>([])
+  const [isClient, setIsClient] = useState(false)
+
+  // Hydrate localStorage on client side
+  useEffect(() => {
+    setIsClient(true)
+    const storedCart = readCartFromLocalStorage()
+    setLocalCart(storedCart)
+  }, [])
 
   const refreshCart = async () => {
-    // Don't fetch cart if user is not logged in
+    // If user is not logged in, use localStorage
     if (!user) {
+      if (isClient) {
+        const storedCart = readCartFromLocalStorage()
+        setLocalCart(storedCart)
+        const totalItems = storedCart.reduce((sum, item) => sum + item.quantity, 0)
+        setSummary({ totalItems, totalPrice: 0 }) // Price will be 0 for local cart
+      }
       setCart(null)
-      setSummary({ totalItems: 0, totalPrice: 0 })
       setLoading(false)
       return
     }
 
+    // User is logged in - fetch from database
     try {
       setLoading(true)
       const data = await getUserCartWithSummary()
@@ -61,6 +87,19 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const addToCart = async (productId: number, quantity: number, selectedSize?: string, selectedColor?: string) => {
+    // If user is not logged in, save to localStorage
+    if (!user) {
+      if (isClient) {
+        const updatedCart = addItemToLocalCart({ productId, quantity, selectedSize, selectedColor })
+        setLocalCart(updatedCart)
+        const totalItems = updatedCart.reduce((sum, item) => sum + item.quantity, 0)
+        setSummary({ totalItems, totalPrice: 0 })
+        toast.success('Product added to cart!')
+      }
+      return
+    }
+
+    // User is logged in - save to database ONLY (not localStorage)
     try {
       await addToCartAPI({ productId, quantity, selectedSize, selectedColor })
       await refreshCart()
@@ -75,7 +114,18 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
-  const updateQuantity = async (itemId: number, quantity: number) => {
+  const updateQuantity = async (itemId: number, quantity: number, productId?: number, selectedSize?: string, selectedColor?: string) => {
+    // If user is not logged in, update localStorage
+    if (!user && isClient && productId !== undefined) {
+      const updatedCart = updateLocalCartItemQuantity(productId, quantity, selectedSize, selectedColor)
+      setLocalCart(updatedCart)
+      const totalItems = updatedCart.reduce((sum, item) => sum + item.quantity, 0)
+      setSummary({ totalItems, totalPrice: 0 })
+      toast.success('Quantity updated!')
+      return
+    }
+
+    // User is logged in - update database
     // Optimistic update - update local state immediately
     if (cart?.CartItems) {
       const updatedCartItems = cart.CartItems.map(item => 
@@ -113,7 +163,18 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
-  const removeItem = async (itemId: number) => {
+  const removeItem = async (itemId: number, productId?: number, selectedSize?: string, selectedColor?: string) => {
+    // If user is not logged in, remove from localStorage
+    if (!user && isClient && productId !== undefined) {
+      const updatedCart = removeItemFromLocalCart(productId, selectedSize, selectedColor)
+      setLocalCart(updatedCart)
+      const totalItems = updatedCart.reduce((sum, item) => sum + item.quantity, 0)
+      setSummary({ totalItems, totalPrice: 0 })
+      toast.success('Item removed from cart')
+      return
+    }
+
+    // User is logged in - remove from database
     // Optimistic update - remove from local state immediately
     if (cart?.CartItems) {
       const updatedCartItems = cart.CartItems.filter(item => item.id !== itemId)
@@ -158,6 +219,16 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const clearCart = async () => {
+    // If user is not logged in, clear localStorage
+    if (!user && isClient) {
+      clearLocalCart()
+      setLocalCart([])
+      setSummary({ totalItems: 0, totalPrice: 0 })
+      toast.success('Cart cleared')
+      return
+    }
+
+    // User is logged in - clear database ONLY (not localStorage)
     try {
       await removeAllCartItems()
       await refreshCart()
@@ -174,26 +245,49 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     // Only refresh cart when user changes (login/logout)
-    refreshCart()
+    if (isClient) {
+      refreshCart()
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user])
+  }, [user, isClient])
 
-  const cartItemCount = summary.totalItems
+  // Method to directly set synced cart data (used after login sync)
+  const setSyncedCartData = (data: Cart | null, summaryData: CartSummary) => {
+    console.log('[CartContext] Setting synced cart data:', data, summaryData)
+    setCart(data)
+    setSummary(summaryData)
+    // Clear localStorage after successful sync - database is now the source of truth
+    if (isClient) {
+      clearLocalCart()
+      setLocalCart([])
+      console.log('[CartContext] Local cart cleared after sync')
+    }
+  }
+
+  // Compute cartItemCount reactively from state (not localStorage directly)
+  const cartItemCount = useMemo(() => 
+    user 
+      ? summary.totalItems 
+      : localCart.reduce((total, item) => total + item.quantity, 0),
+    [user, summary.totalItems, localCart]
+  )
+
+  const contextValue = useMemo(() => ({
+    cart,
+    summary,
+    loading,
+    refreshCart,
+    addToCart,
+    updateQuantity,
+    removeItem,
+    clearCart,
+    cartItemCount,
+    setSyncedCartData,
+    localCart,
+  }), [cart, summary, loading, cartItemCount, localCart])
 
   return (
-    <CartContext.Provider
-      value={{
-        cart,
-        summary,
-        loading,
-        refreshCart,
-        addToCart,
-        updateQuantity,
-        removeItem,
-        clearCart,
-        cartItemCount,
-      }}
-    >
+    <CartContext.Provider value={contextValue}>
       {children}
     </CartContext.Provider>
   )

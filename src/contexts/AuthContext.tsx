@@ -2,12 +2,15 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useRef, useMemo } from 'react'
 import { authAPI, User } from '@/services/authService'
+import { syncAllToDatabase } from '@/utils/syncStorage'
+import { clearAllAppStorage } from '@/utils/localStorage'
+import type { Cart, CartSummary } from '@/services/cartService'
 
 interface AuthContextType {
   user: User | null
   isAuthenticated: boolean
   isLoading: boolean
-  login: (user: User) => void
+  login: (user: User, onSyncComplete?: (cartData: any, wishlistData: any) => void) => Promise<void>
   logout: () => Promise<void>
   updateUser: (user: User) => void
 }
@@ -78,9 +81,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loadUser()
   }, [])
 
-  const login = useMemo(() => (userData: User) => {
+  const login = useMemo(() => async (userData: User, onSyncComplete?: (cartData: any, wishlistData: any) => void) => {
+    console.log('[AuthContext] User logging in:', userData)
     globalUserState = userData
     setUser(userData)
+    
+    // Sync localStorage data to database immediately after login
+    // This updates the contexts in real-time without page refresh
+    if (typeof window !== 'undefined') {
+      try {
+        console.log('[AuthContext] Starting sync process...')
+        const syncResult = await syncAllToDatabase(true)
+        
+        console.log('[AuthContext] Sync completed:', syncResult)
+        
+        // Call the callback with synced data so LoginModal can update contexts
+        if (onSyncComplete) {
+          const cartData = syncResult.cartResult.cartData
+          const wishlistData = syncResult.wishlistResult.wishlistData
+          
+          console.log('[AuthContext] Calling onSyncComplete callback with data')
+          onSyncComplete(cartData, wishlistData)
+        }
+      } catch (error) {
+        console.error('[AuthContext] Failed to sync localStorage to database:', error)
+      }
+    }
   }, [])
 
   const logout = useMemo(() => async () => {
@@ -89,6 +115,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Logout error:', error)
     } finally {
+      // Clear all app-specific localStorage (cart and wishlist)
+      // User will start fresh as guest after logout
+      if (typeof window !== 'undefined') {
+        clearAllAppStorage()
+        console.log('[AuthContext] Cleared localStorage on logout')
+      }
       globalUserState = null
       hasFetchedOnce = false
       setUser(null)

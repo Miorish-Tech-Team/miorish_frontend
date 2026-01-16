@@ -6,6 +6,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
+import { WishlistProvider } from "@/contexts/WishlistContext";
 import { AuthModalProvider } from "@/contexts/AuthModalContext";
 import AuthModals from "@/components/modals/AuthModals";
 import { Toaster } from "react-hot-toast";
@@ -61,37 +62,39 @@ export default function RootLayout({
       <body className={`${cinzel.variable} ${inter.variable} antialiased`} suppressHydrationWarning={true}>
         <AuthProvider>
           <CartProvider>
-            <AuthModalProvider>
-              <Toaster
-                position="top-right"
-                toastOptions={{
-                  duration: 3000,
-                  style: {
-                    background: "#363636",
-                    color: "#fff",
-                  },
-                  success: {
+            <WishlistProvider>
+              <AuthModalProvider>
+                <Toaster
+                  position="top-right"
+                  toastOptions={{
                     duration: 3000,
-                    iconTheme: {
-                      primary: "#10b981",
-                      secondary: "#fff",
+                    style: {
+                      background: "#363636",
+                      color: "#fff",
                     },
-                  },
-                  error: {
-                    duration: 4000,
-                    iconTheme: {
-                      primary: "#ef4444",
-                      secondary: "#fff",
+                    success: {
+                      duration: 3000,
+                      iconTheme: {
+                        primary: "#10b981",
+                        secondary: "#fff",
+                      },
                     },
-                  },
-                }}
-              />
-              <AuthToastHandler />
-              <AuthModals />
-              <Navbar />
-              {children}
-              <Footer />
-            </AuthModalProvider>
+                    error: {
+                      duration: 4000,
+                      iconTheme: {
+                        primary: "#ef4444",
+                        secondary: "#fff",
+                      },
+                    },
+                  }}
+                />
+                <AuthToastHandler />
+                <AuthModals />
+                <Navbar />
+                {children}
+                <Footer />
+              </AuthModalProvider>
+            </WishlistProvider>
           </CartProvider>
         </AuthProvider>
       </body>

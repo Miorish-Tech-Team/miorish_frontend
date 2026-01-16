@@ -28,8 +28,8 @@ export default function AccountSidebar({ activePage }: AccountSidebarProps) {
   const menuItems = [
     { href: '/account/profile', icon: User, label: 'My Profile', page: 'profile' },
     { href: '/account/orders', icon: Package, label: 'My Orders', page: 'orders' },
-    { href: '/account/cart', icon: ShoppingCart, label: 'My cart', page: 'cart' },
-    { href: '/account/wishlist', icon: Heart, label: 'My Wishlist', page: 'wishlist' },
+    { href: '/cart', icon: ShoppingCart, label: 'My cart', page: 'cart' },
+    { href: '/wishlist', icon: Heart, label: 'My Wishlist', page: 'wishlist' },
     { href: '/account/address', icon: MapPin, label: 'Manage Address', page: 'address' },
     { href: '/account/change-password', icon: Key, label: 'Change Password', page: 'password' },
     { href: '/account/settings', icon: Settings, label: 'Settings', page: 'settings' },
