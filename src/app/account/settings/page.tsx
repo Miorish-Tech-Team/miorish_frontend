@@ -83,7 +83,7 @@ export default function SettingsPage() {
               )}
 
               {/* Security Section */}
-              <section className="mb-8">
+              {/* <section className="mb-8">
                 <h2 className="text-xl font-semibold text-dark mb-4">Security</h2>
                 
                 <div className="border border-gray-200 rounded p-6">
@@ -125,7 +125,7 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 </div>
-              </section>
+              </section> */}
 
               {/* Delete Account Section */}
               <section>

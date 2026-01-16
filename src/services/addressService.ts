@@ -74,3 +74,46 @@ export const setDefaultAddress = async (addressId: number | string): Promise<Add
   const response = await api.patch(`/user/address/${addressId}/default`)
   return response.data
 }
+
+// Indian Address Validation API
+
+export interface StatesResponse {
+  success: boolean
+  country: string
+  states: string[]
+}
+
+export interface DistrictsResponse {
+  success: boolean
+  state: string
+  districts: string[]
+}
+
+export interface PincodeValidationResponse {
+  success: boolean
+  isValid: boolean
+  state?: string
+  district?: string
+  city?: string
+  postOfficeName?: string
+  message?: string
+  verifiedBy?: string
+}
+
+// Get all Indian states
+export const getStates = async (): Promise<StatesResponse> => {
+  const response = await api.get('/user/address/states')
+  return response.data
+}
+
+// Get districts by state
+export const getDistricts = async (state: string): Promise<DistrictsResponse> => {
+  const response = await api.get(`/user/address/districts?state=${encodeURIComponent(state)}`)
+  return response.data
+}
+
+// Validate pincode
+export const validatePincode = async (pincode: string): Promise<PincodeValidationResponse> => {
+  const response = await api.get(`/user/address/validate-pincode?pincode=${pincode}`)
+  return response.data
+}
