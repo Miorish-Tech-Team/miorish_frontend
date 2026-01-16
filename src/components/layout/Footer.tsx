@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import Link from 'next/link'
 import { ArrowUp, Contact, Facebook, Instagram, Linkedin, Twitter } from 'lucide-react' // Added social icons
 import { useAuth } from '@/contexts/AuthContext'
 import { useAuthModal } from '@/contexts/AuthModalContext'
@@ -93,22 +94,20 @@ const [isSupportOpen, setIsSupportOpen] = useState(false)
                 </li>
               )}
               <li>
-                <a 
-                  href="/account/cart" 
-                  onClick={(e) => handleProtectedLink(e, '/account/cart')}
+                <Link 
+                  href="/cart" 
                   className=" hover:text-accent transition-colors cursor-pointer"
                 >
                   Cart
-                </a>
+                </Link>
               </li>
               <li>
-                <a 
-                  href="/account/wishlist" 
-                  onClick={(e) => handleProtectedLink(e, '/account/wishlist')}
+                <Link 
+                  href="/wishlist" 
                   className=" hover:text-accent transition-colors cursor-pointer"
                 >
                   Wishlist
-                </a>
+                </Link>
               </li>
               
             </ul>

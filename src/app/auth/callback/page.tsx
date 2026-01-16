@@ -20,9 +20,17 @@ export default function AuthCallbackPage() {
         const response = await profileAPI.getProfile()
         
         if (response.success && response.user) {
-          login(response.user)
+          await login(response.user)
           toast.success('Successfully signed in!')
-          router.push('/')
+          
+          // Check for redirect path
+          const redirectPath = sessionStorage.getItem('redirectAfterLogin')
+          if (redirectPath) {
+            sessionStorage.removeItem('redirectAfterLogin')
+            router.push(redirectPath)
+          } else {
+            router.push('/')
+          }
         } else {
           setError('Failed to fetch user profile')
           toast.error('Authentication failed')

@@ -23,20 +23,17 @@ import {
   Review,
 } from "@/services/productService";
 import { useCart } from "@/contexts/CartContext";
+import { useWishlist } from "@/contexts/WishlistContext";
 import { toast } from "react-hot-toast";
 import CandleLoader from "@/components/CandleLoader";
 import { useAuth } from "@/contexts/AuthContext";
-import {
-  addToWishlist,
-  getUserWishlist,
-  removeFromWishlistByProductId,
-} from "@/services/wishlistService";
 
 export default function ProductPage() {
   const params = useParams();
   const router = useRouter();
   const productId = params.id as string;
-  const { addToCart: addToCartContext } = useCart();
+  const { addToCart: addToCartContext, cart, updateQuantity: updateCartQuantity, removeItem, localCart } = useCart();
+  const { addToWishlist, removeFromWishlist, isInWishlist: checkIsInWishlist } = useWishlist();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [similarProducts, setSimilarProducts] = useState<Product[]>([]);
@@ -46,30 +43,45 @@ export default function ProductPage() {
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [activeTab, setActiveTab] = useState("description");
+  const [isInCart, setIsInCart] = useState(false);
+  const [cartQuantity, setCartQuantity] = useState(0);
 
   const { user } = useAuth();
-  const [isInWishlist, setIsInWishlist] = useState<boolean>(false);
-  const [wishlistItemId, setWishlistItemId] = useState<number | null>(null);
+  
+  // Check if product is in wishlist using context
+  const isInWishlist = checkIsInWishlist(Number(productId));
 
+  // Check if product is in cart (check both database and localStorage)
   useEffect(() => {
-    if (user) {
-      const checkWishlist = async () => {
-        try {
-          const response = await getUserWishlist();
-          const wishlistItem = response.wishlist.find(
-            (item) => item.productId === Number(productId)
-          );
-          if (wishlistItem) {
-            setIsInWishlist(true);
-            setWishlistItemId(wishlistItem.id);
-          }
-        } catch (error) {
-          // Silently fail
-        }
-      };
-      checkWishlist();
+    // For logged-in users, check database cart
+    if (user && cart?.CartItems) {
+      const cartItem = cart.CartItems.find(
+        (item) => item.productId === Number(productId)
+      );
+      if (cartItem) {
+        setIsInCart(true);
+        setCartQuantity(cartItem.quantity);
+      } else {
+        setIsInCart(false);
+        setCartQuantity(0);
+      }
+    } else if (!user) {
+      // For non-logged-in users, use localCart from context (reactive)
+      const cartItem = localCart.find(
+        (item) => item.productId === Number(productId)
+      );
+      if (cartItem) {
+        setIsInCart(true);
+        setCartQuantity(cartItem.quantity);
+      } else {
+        setIsInCart(false);
+        setCartQuantity(0);
+      }
+    } else {
+      setIsInCart(false);
+      setCartQuantity(0);
     }
-  }, [user, productId]);
+  }, [cart, productId, user, localCart]);
 
   useEffect(() => {
     const fetchProductData = async () => {
@@ -118,6 +130,81 @@ export default function ProductPage() {
     }
   };
 
+  const handleDecreaseQuantity = async () => {
+    if (!product) return;
+
+    // If product is in cart, update cart quantity using context (works for both logged-in and non-logged-in)
+    if (isInCart) {
+      try {
+        setAddingToCart(true);
+        if (cartQuantity === 1) {
+          // For logged-in users, find cart item and remove
+          if (user && cart?.CartItems) {
+            const cartItem = cart.CartItems.find(
+              (item) => item.productId === Number(productId)
+            );
+            if (cartItem) {
+              await removeItem(cartItem.id);
+            }
+          } else {
+            // For non-logged-in users, use productId directly
+            await removeItem(Number(productId), Number(productId));
+          }
+        } else {
+          // Decrease quantity by 1
+          if (user && cart?.CartItems) {
+            const cartItem = cart.CartItems.find(
+              (item) => item.productId === Number(productId)
+            );
+            if (cartItem) {
+              await updateCartQuantity(cartItem.id, cartItem.quantity - 1);
+            }
+          } else {
+            // For non-logged-in users, use productId
+            await updateCartQuantity(Number(productId), cartQuantity - 1, Number(productId));
+          }
+        }
+      } catch (error) {
+        console.error("Error updating cart:", error);
+      } finally {
+        setAddingToCart(false);
+      }
+    } else {
+      // Just decrease local quantity if not in cart
+      setQuantity(Math.max(1, quantity - 1));
+    }
+  };
+
+  const handleIncreaseQuantity = async () => {
+    if (!product) return;
+
+    // If product is in cart, update cart quantity using context (works for both logged-in and non-logged-in)
+    if (isInCart && cartQuantity < product.availableStockQuantity) {
+      try {
+        setAddingToCart(true);
+        // Increase quantity by 1
+        if (user && cart?.CartItems) {
+          const cartItem = cart.CartItems.find(
+            (item) => item.productId === Number(productId)
+          );
+          if (cartItem) {
+            await updateCartQuantity(cartItem.id, cartItem.quantity + 1);
+          }
+        } else {
+          // For non-logged-in users, use productId
+          await updateCartQuantity(Number(productId), cartQuantity + 1, Number(productId));
+        }
+      } catch (error) {
+        console.error("Error updating cart:", error);
+      } finally {
+        setAddingToCart(false);
+      }
+    } else {
+      // Just increase local quantity if not in cart
+      setQuantity(Math.min(product.availableStockQuantity, quantity + 1));
+    }
+  };
+
   const handleBuyNow = () => {
     if (!product) return;
 
@@ -144,35 +231,18 @@ export default function ProductPage() {
     e.preventDefault();
     e.stopPropagation();
 
-    if (!user) {
-      toast.error("Please login to add items to wishlist");
-      return;
-    }
-
     // Toggle wishlist: remove if already in wishlist, add if not
     try {
       if (isInWishlist) {
         // Remove from wishlist using product ID
-        await removeFromWishlistByProductId(Number(productId));
-        setIsInWishlist(false);
-        setWishlistItemId(null);
-        toast.success("Removed from wishlist!");
+        await removeFromWishlist(Number(productId));
       } else {
         // Add to wishlist
-        const response = await addToWishlist(Number(productId));
-        setIsInWishlist(true);
-        setWishlistItemId(response.wishlistItem.id);
-        toast.success("Added to wishlist!");
+        await addToWishlist(Number(productId));
       }
     } catch (error) {
-      const err = error as { response?: { data?: { message?: string } } };
-      const message = err.response?.data?.message;
-      if (message?.includes("already in wishlist")) {
-        setIsInWishlist(true);
-        toast("Already in wishlist", { icon: "ℹ️" });
-      } else {
-        toast.error(message || "Failed to update wishlist");
-      }
+      // Error toasts are handled in context
+      console.error('Wishlist error:', error);
     }
   };
 
@@ -368,30 +438,26 @@ export default function ProductPage() {
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 md:gap-4 mb-4 md:mb-6 px-0 md:px-15">
               <div className={`flex items-center justify-center border rounded ${product.availableStockQuantity === 0 ? 'border-gray-300 opacity-50' : 'border-accent'}`}>
                 <button
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  onClick={handleDecreaseQuantity}
                   className="p-2 md:p-3 text-accent hover:bg-accent/10 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled={quantity <= 1 || product.availableStockQuantity === 0}
+                  disabled={(isInCart ? cartQuantity <= 1 : quantity <= 1) || product.availableStockQuantity === 0 || addingToCart}
                 >
                   <Minus size={14} className="md:w-4 md:h-4" />
                 </button>
                 <span className="px-2 md:px-4 text-accent text-base md:text-lg font-medium">
-                  {quantity}
+                  {isInCart ? cartQuantity : quantity}
                 </span>
                 <button
-                  onClick={() =>
-                    setQuantity(
-                      Math.min(product.availableStockQuantity, quantity + 1)
-                    )
-                  }
+                  onClick={handleIncreaseQuantity}
                   className="p-2 md:p-3 text-accent hover:bg-accent/10 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled={quantity >= product.availableStockQuantity || product.availableStockQuantity === 0}
+                  disabled={(isInCart ? cartQuantity >= product.availableStockQuantity : quantity >= product.availableStockQuantity) || product.availableStockQuantity === 0 || addingToCart}
                 >
                   <Plus size={14} className="md:w-4 md:h-4" />
                 </button>
               </div>
 
               <button
-                onClick={handleAddToCart}
+                onClick={isInCart ? () => router.push('/cart') : handleAddToCart}
                 disabled={product.availableStockQuantity === 0 || addingToCart}
                 className="flex-1 bg-accent text-white py-2.5 md:py-3 px-4 md:px-6 cursor-pointer rounded text-sm md:text-base font-medium hover:bg-opacity-90 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
@@ -399,6 +465,11 @@ export default function ProductPage() {
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
                     Adding...
+                  </>
+                ) : isInCart ? (
+                  <>
+                    <ShoppingCart size={18} />
+                    View Cart ({cartQuantity})
                   </>
                 ) : (
                   <>

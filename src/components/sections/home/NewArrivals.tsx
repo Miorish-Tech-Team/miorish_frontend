@@ -1,44 +1,26 @@
 'use client'
-import React, { useState } from "react";
+import React from "react";
 import ProductCard from "@/components/card/ProductCard";
 import { type Product } from "@/services/productService"
-import { addToWishlist, removeFromWishlistByProductId } from "@/services/wishlistService"
-import { useAuth } from "@/contexts/AuthContext"
-import toast from "react-hot-toast"
+import { useWishlist } from "@/contexts/WishlistContext"
 
 interface NewArrivalsProps {
   products: Product[]
 }
 
 export default function NewArrivals({ products }: NewArrivalsProps) {
-  const [wishlistItems, setWishlistItems] = useState<Set<number>>(new Set())
-  const { user } = useAuth()
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist()
 
   const handleWishlistToggle = async (productId: number) => {
-    if (!user) {
-      toast.error('Please login to add items to wishlist')
-      return
-    }
-
     try {
-      if (wishlistItems.has(productId)) {
-        await removeFromWishlistByProductId(productId)
-        setWishlistItems(prev => {
-          const newSet = new Set(prev)
-          newSet.delete(productId)
-          return newSet
-        })
-        toast.success('Removed from wishlist')
+      if (isInWishlist(productId)) {
+        await removeFromWishlist(productId)
       } else {
         await addToWishlist(productId)
-        setWishlistItems(prev => new Set(prev).add(productId))
-        toast.success('Added to wishlist')
       }
     } catch (error) {
+      // Error toasts are handled in context
       console.error('Wishlist error:', error)
-      const err = error as { response?: { data?: { message?: string } } }
-      const message = err.response?.data?.message || 'Failed to update wishlist'
-      toast.error(message)
     }
   }
 
@@ -74,7 +56,7 @@ export default function NewArrivals({ products }: NewArrivalsProps) {
                 discount={product.productDiscountPercentage}
                 availableStock={product.availableStockQuantity}
                 onWishlistToggle={() => handleWishlistToggle(product.id)}
-                isInWishlist={wishlistItems.has(product.id)}
+              isInWishlist={isInWishlist(product.id)}
               />
             </div>
           ))}
@@ -93,7 +75,7 @@ export default function NewArrivals({ products }: NewArrivalsProps) {
               discount={product.productDiscountPercentage}
               availableStock={product.availableStockQuantity}
               onWishlistToggle={() => handleWishlistToggle(product.id)}
-              isInWishlist={wishlistItems.has(product.id)}
+              isInWishlist={isInWishlist(product.id)}
             />
           ))}
         </div>

@@ -1,14 +1,21 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Eye, EyeOff, Mail, Lock, Loader2, X } from 'lucide-react'
 import { authAPI } from '@/services/authService'
 import { useAuth } from '@/contexts/AuthContext'
+import { useCart } from '@/contexts/CartContext'
+import { useWishlist } from '@/contexts/WishlistContext'
 import { useAuthModal } from '@/contexts/AuthModalContext'
 import toast from 'react-hot-toast'
+import type { Cart, CartSummary } from '@/services/cartService'
 
 export default function LoginModal() {
+  const router = useRouter()
   const { login } = useAuth()
+  const { setSyncedCartData } = useCart()
+  const { setSyncedWishlistData } = useWishlist()
   const { closeModal, openRegisterModal, openForgotPasswordModal } = useAuthModal()
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -35,9 +42,37 @@ export default function LoginModal() {
         setShow2FA(true)
         toast.success('Please enter the 2FA code sent to your email')
       } else if (response.success && response.user) {
-        login(response.user)
+        // Login with callback to update contexts immediately
+        await login(response.user, (cartData, wishlistData) => {
+          console.log('[LoginModal] Received synced data from login callback')
+          
+          // Update cart context immediately
+          if (cartData) {
+            if ('message' in cartData && cartData.message === 'Cart is empty') {
+              setSyncedCartData(null, { totalItems: 0, totalPrice: 0 })
+            } else {
+              setSyncedCartData(cartData.cart as Cart, cartData.summary)
+            }
+          }
+          
+          // Update wishlist context immediately
+          if (wishlistData) {
+            setSyncedWishlistData(wishlistData.wishlist || [], wishlistData.wishlistCount || 0)
+          }
+        })
+        
         toast.success('Login successful!')
-        closeModal()
+        
+        // Check for redirect path and use router.push for seamless navigation
+        const redirectPath = sessionStorage.getItem('redirectAfterLogin')
+        if (redirectPath) {
+          sessionStorage.removeItem('redirectAfterLogin')
+          console.log('[LoginModal] Redirecting to:', redirectPath)
+          closeModal()
+          router.push(redirectPath)
+        } else {
+          closeModal()
+        }
       }
     } catch (err) {
       const error = err as { response?: { data?: { message?: string } } }
@@ -57,9 +92,37 @@ export default function LoginModal() {
       })
 
       if (response.success && response.user) {
-        login(response.user)
+        // Login with callback to update contexts immediately
+        await login(response.user, (cartData, wishlistData) => {
+          console.log('[LoginModal] Received synced data from 2FA login callback')
+          
+          // Update cart context immediately
+          if (cartData) {
+            if ('message' in cartData && cartData.message === 'Cart is empty') {
+              setSyncedCartData(null, { totalItems: 0, totalPrice: 0 })
+            } else {
+              setSyncedCartData(cartData.cart as Cart, cartData.summary)
+            }
+          }
+          
+          // Update wishlist context immediately
+          if (wishlistData) {
+            setSyncedWishlistData(wishlistData.wishlist || [], wishlistData.wishlistCount || 0)
+          }
+        })
+        
         toast.success('2FA verification successful!')
-        closeModal()
+        
+        // Check for redirect path and use router.push for seamless navigation
+        const redirectPath = sessionStorage.getItem('redirectAfterLogin')
+        if (redirectPath) {
+          sessionStorage.removeItem('redirectAfterLogin')
+          console.log('[LoginModal] Redirecting to:', redirectPath)
+          closeModal()
+          router.push(redirectPath)
+        } else {
+          closeModal()
+        }
       }
     } catch (err) {
       const error = err as { response?: { data?: { message?: string } } }
