@@ -330,7 +330,7 @@ export default function ProductPage() {
                   }`}
                 />
               </button>
-              <button className="absolute top-10 right-2 md:top-14 md:right-4 bg-white rounded-full p-1.5 md:p-2 shadow-md hover:bg-gray-100 transition-colors">
+              <button onClick={handleShare} className="absolute cursor-pointer top-10 right-2 md:top-14 md:right-4 bg-white rounded-full p-1.5 md:p-2 shadow-md hover:bg-gray-100 transition-colors">
                 <Share2 size={18} className="text-gray-600 md:w-5 md:h-5" />
               </button>
             </div>
