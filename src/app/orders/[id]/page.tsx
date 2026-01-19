@@ -4,12 +4,13 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ChevronRight, Package, MapPin, CreditCard, Calendar, Star } from 'lucide-react'
+import { ChevronRight, Package, MapPin, CreditCard, Calendar, Star, Trash2 } from 'lucide-react'
 import { getOrderDetails, type Order } from '@/services/orderService'
 import { toast } from 'react-hot-toast'
 import CandleLoader from '@/components/CandleLoader'
 import ReviewFormModal from '@/components/modals/ReviewFormModal'
-import { getProductReviews } from '@/services/productService'
+import ConfirmDeleteModal from '@/components/modals/ConfirmDeleteModal'
+import { reviewAPI } from '@/services/reviewService'
 
 export default function OrderDetailsPage() {
   const params = useParams()
@@ -24,6 +25,10 @@ export default function OrderDetailsPage() {
     productName: string
   } | null>(null)
   const [reviewedProducts, setReviewedProducts] = useState<Set<number>>(new Set())
+  const [userReviews, setUserReviews] = useState<Map<number, { id: number; rating: number; reviewText: string; reviewPhoto?: string }>>(new Map())
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [productToDelete, setProductToDelete] = useState<number | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -32,26 +37,28 @@ export default function OrderDetailsPage() {
         const response = await getOrderDetails(Number(orderId))
         setOrder(response.order)
         
-        // Check which products have already been reviewed
-        if (response.order.orderItems) {
-          const productIds = response.order.orderItems.map(item => item.productId)
-          const reviewed = new Set<number>()
-          
-          // Check each product for user's review
-          for (const productId of productIds) {
-            try {
-              const reviewsRes = await getProductReviews(String(productId))
-              if (reviewsRes.reviews && reviewsRes.reviews.length > 0) {
-                // Check if current user has reviewed this product
-                // Since we don't have userId in reviews, we'll assume if reviews exist for now
-                // You might want to add userId check here
-              }
-            } catch (error) {
-              console.error('Error checking reviews:', error)
-            }
+        // Fetch user's reviews to check which products have already been reviewed
+        try {
+          const userReviewsRes = await reviewAPI.getUserReviews()
+          if (userReviewsRes.reviews && userReviewsRes.reviews.length > 0) {
+            const reviewMap = new Map<number, { id: number; rating: number; reviewText: string; reviewPhoto?: string }>()
+            const reviewedSet = new Set<number>()
+            
+            userReviewsRes.reviews.forEach(review => {
+              reviewMap.set(review.productId, {
+                id: review.id,
+                rating: review.rating,
+                reviewText: review.reviewText,
+                reviewPhoto: review.reviewPhoto
+              })
+              reviewedSet.add(review.productId)
+            })
+            
+            setUserReviews(reviewMap)
+            setReviewedProducts(reviewedSet)
           }
-          
-          setReviewedProducts(reviewed)
+        } catch (error) {
+          console.error('Error fetching user reviews:', error)
         }
       } catch (error: unknown) {
         console.error('Error fetching order:', error)
@@ -79,11 +86,74 @@ export default function OrderDetailsPage() {
     setIsReviewModalOpen(true)
   }
 
-  const handleReviewSubmitted = () => {
-    if (selectedProductForReview) {
-      setReviewedProducts(prev => new Set(prev).add(selectedProductForReview.productId))
+  const handleReviewSubmitted = async () => {
+    // Refresh user's reviews to update the UI
+    try {
+      const userReviewsRes = await reviewAPI.getUserReviews()
+      if (userReviewsRes.reviews && userReviewsRes.reviews.length > 0) {
+        const reviewMap = new Map<number, { id: number; rating: number; reviewText: string; reviewPhoto?: string }>()
+        const reviewedSet = new Set<number>()
+        
+        userReviewsRes.reviews.forEach(review => {
+          reviewMap.set(review.productId, {
+            id: review.id,
+            rating: review.rating,
+            reviewText: review.reviewText,
+            reviewPhoto: review.reviewPhoto
+          })
+          reviewedSet.add(review.productId)
+        })
+        
+        setUserReviews(reviewMap)
+        setReviewedProducts(reviewedSet)
+      }
+    } catch (error) {
+      console.error('Error refreshing reviews:', error)
     }
-    toast.success('Thank you for your review!')
+  }
+
+  const handleDeleteReview = async (productId: number) => {
+    setProductToDelete(productId)
+    setIsDeleteModalOpen(true)
+  }
+
+  const confirmDeleteReview = async () => {
+    if (!productToDelete) return
+
+    const reviewData = userReviews.get(productToDelete)
+    if (!reviewData) return
+
+    setIsDeleting(true)
+
+    try {
+      await reviewAPI.deleteReview(reviewData.id)
+      toast.success('Review deleted successfully')
+      
+      // Remove from state
+      const newReviewMap = new Map(userReviews)
+      newReviewMap.delete(productToDelete)
+      setUserReviews(newReviewMap)
+      
+      const newReviewedSet = new Set(reviewedProducts)
+      newReviewedSet.delete(productToDelete)
+      setReviewedProducts(newReviewedSet)
+      
+      // Close modal
+      setIsDeleteModalOpen(false)
+      setProductToDelete(null)
+    } catch (error) {
+      console.error('Error deleting review:', error)
+      toast.error('Failed to delete review')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  const handleCloseDeleteModal = () => {
+    if (!isDeleting) {
+      setIsDeleteModalOpen(false)
+      setProductToDelete(null)
+    }
   }
 
   const handleCloseReviewModal = () => {
@@ -193,19 +263,23 @@ export default function OrderDetailsPage() {
                     
                     {/* Review Button - Only show if order is delivered */}
                     {order.orderStatus === 'Delivered' && (
-                      <div className="flex justify-end pt-2 border-t border-gray-100">
+                      <div className="flex justify-end gap-2 pt-2 border-t border-gray-100">
                         <button
                           onClick={() => handleWriteReview(item.productId, item.productName)}
-                          disabled={reviewedProducts.has(item.productId)}
-                          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                            reviewedProducts.has(item.productId)
-                              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                              : 'bg-accent text-white hover:bg-opacity-90'
-                          }`}
+                          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-accent text-white hover:bg-opacity-90"
                         >
                           <Star size={16} />
-                          {reviewedProducts.has(item.productId) ? 'Reviewed' : 'Write Review'}
+                          {reviewedProducts.has(item.productId) ? 'Edit Review' : 'Write Review'}
                         </button>
+                        {reviewedProducts.has(item.productId) && (
+                          <button
+                            onClick={() => handleDeleteReview(item.productId)}
+                            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-red-500 text-white hover:bg-red-600"
+                          >
+                            <Trash2 size={16} />
+                            Delete
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>
@@ -243,11 +317,11 @@ export default function OrderDetailsPage() {
                   <span className="font-medium text-gray-900">Payment Method</span>
                 </div>
                 <p className="text-sm text-gray-600">{order.paymentMethod.replace(/([A-Z])/g, ' $1').trim()}</p>
-                <p className="text-sm text-gray-600 mt-1">
+                {/* <p className="text-sm text-gray-600 mt-1">
                   Status: <span className={`font-medium ${order.paymentStatus === 'Completed' ? 'text-green-600' : order.paymentStatus === 'Pending' ? 'text-yellow-600' : 'text-red-600'}`}>
                     {order.paymentStatus}
                   </span>
-                </p>
+                </p> */}
               </div>
 
               {/* Dates */}
@@ -317,6 +391,14 @@ export default function OrderDetailsPage() {
         </div>
       </div>
 
+      {/* Confirm Delete Modal */}
+      <ConfirmDeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={handleCloseDeleteModal}
+        onConfirm={confirmDeleteReview}
+        isDeleting={isDeleting}
+      />
+
       {/* Review Form Modal */}
       {selectedProductForReview && (
         <ReviewFormModal
@@ -325,6 +407,7 @@ export default function OrderDetailsPage() {
           productId={selectedProductForReview.productId}
           productName={selectedProductForReview.productName}
           onReviewSubmitted={handleReviewSubmitted}
+          existingReview={userReviews.get(selectedProductForReview.productId) || null}
         />
       )}
     </div>

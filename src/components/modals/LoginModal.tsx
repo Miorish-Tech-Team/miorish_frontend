@@ -21,6 +21,8 @@ export default function LoginModal() {
   const [isLoading, setIsLoading] = useState(false)
   const [show2FA, setShow2FA] = useState(false)
   const [twoFactorCode, setTwoFactorCode] = useState('')
+  const [userId, setUserId] = useState<number | undefined>()
+  const [twoFactorMethod, setTwoFactorMethod] = useState<'email' | 'authenticator'>('email')
   
   const [formData, setFormData] = useState({
     email: '',
@@ -40,7 +42,12 @@ export default function LoginModal() {
 
       if (response.isTwoFactorAuthEnable) {
         setShow2FA(true)
-        toast.success('Please enter the 2FA code sent to your email')
+        setUserId(response.userId)
+        setTwoFactorMethod(response.twoFactorMethod || 'email')
+        const methodText = response.twoFactorMethod === 'authenticator' 
+          ? 'your authenticator app' 
+          : 'your email'
+        toast.success(`Please enter the 2FA code from ${methodText}`)
       } else if (response.success && response.user) {
         // Login with callback to update contexts immediately
         await login(response.user, (cartData, wishlistData) => {
@@ -88,7 +95,8 @@ export default function LoginModal() {
 
     try {
       const response = await authAPI.verify2FA({
-        verificationCode: twoFactorCode
+        verificationCode: twoFactorCode,
+        userId: userId
       })
 
       if (response.success && response.user) {
@@ -162,7 +170,12 @@ export default function LoginModal() {
               {show2FA ? 'Verify 2FA Code' : 'Welcome Back'}
             </h1>
             <p className="text-sm md:text-base text-gray-600">
-              {show2FA ? 'Enter the code sent to your email' : 'Sign in to your account'}
+              {show2FA 
+                ? twoFactorMethod === 'authenticator'
+                  ? 'Enter the code from your authenticator app'
+                  : 'Enter the code sent to your email'
+                : 'Sign in to your account'
+              }
             </p>
           </div>
 

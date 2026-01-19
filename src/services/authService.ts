@@ -14,6 +14,7 @@ export interface SigninData {
 
 export interface VerifyEmailData {
   verificationCode: string
+  userId?: number
 }
 
 export interface ResetPasswordOtpData {
@@ -53,6 +54,8 @@ export interface AuthResponse {
   token?: string
   user?: User
   isTwoFactorAuthEnable?: boolean
+  twoFactorMethod?: 'email' | 'authenticator'
+  userId?: number
 }
 
 // Auth API Service
@@ -92,50 +95,6 @@ export const authAPI = {
     }
   },
 
-  // Verify Email
-  verifyEmail: async (data: VerifyEmailData): Promise<AuthResponse> => {
-    try {
-      const response = await api.post('/auth/verify-email', data)
-      return response.data
-    } catch (error) {
-      console.error('Verify email error:', error)
-      throw error
-    }
-  },
-
-  // Resend OTP
-  resendOtp: async (email: string): Promise<AuthResponse> => {
-    try {
-      const response = await api.post('/auth/resend-otp', { email })
-      return response.data
-    } catch (error) {
-      console.error('Resend OTP error:', error)
-      throw error
-    }
-  },
-
-  // Request Reset Password OTP
-  resetPasswordOtp: async (data: ResetPasswordOtpData): Promise<AuthResponse> => {
-    try {
-      const response = await api.post('/auth/reset-password-otp', data)
-      return response.data
-    } catch (error) {
-      console.error('Reset password OTP error:', error)
-      throw error
-    }
-  },
-
-  // Verify Reset Password OTP
-  verifyResetOtp: async (data: VerifyOtpData): Promise<AuthResponse> => {
-    try {
-      const response = await api.post('/auth/verify-otp', data)
-      return response.data
-    } catch (error) {
-      console.error('Verify reset OTP error:', error)
-      throw error
-    }
-  },
-
   // Find My Account (Send Reset Link)
   findMyAccount: async (data: FindMyAccountData): Promise<AuthResponse> => {
     try {
@@ -159,17 +118,6 @@ export const authAPI = {
       return response.data
     } catch (error) {
       console.error('Reset password from URL error:', error)
-      throw error
-    }
-  },
-
-  // Reset Password from OTP
-  resetPasswordFromOtp: async (data: ResetPasswordData): Promise<AuthResponse> => {
-    try {
-      const response = await api.post('/auth/reset-password', data)
-      return response.data
-    } catch (error) {
-      console.error('Reset password from OTP error:', error)
       throw error
     }
   },

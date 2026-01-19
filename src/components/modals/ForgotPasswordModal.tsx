@@ -9,37 +9,20 @@ import toast from 'react-hot-toast'
 export default function ForgotPasswordModal() {
   const { closeModal, openLoginModal } = useAuthModal()
   const [email, setEmail] = useState('')
-  const [otp, setOtp] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [step, setStep] = useState<'email' | 'otp' | 'success'>('email')
+  const [step, setStep] = useState<'email' | 'success'>('email')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
 
     try {
-      await authAPI.resetPasswordOtp({ email })
-      toast.success('Reset code sent to your email!')
-      setStep('otp')
-    } catch (err) {
-      const error = err as { response?: { data?: { message?: string } } }
-      toast.error(error.response?.data?.message || 'Failed to send reset code')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleOtpVerify = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-
-    try {
-      const response = await authAPI.verifyResetOtp({ verificationCode: otp })
+      const response = await authAPI.findMyAccount({ email })
+      toast.success(response.message || 'Reset link sent to your email!')
       setStep('success')
-      toast.success(response.message || 'Code verified! Check your email for reset link.')
     } catch (err) {
       const error = err as { response?: { data?: { message?: string } } }
-      toast.error(error.response?.data?.message || 'Invalid or expired code')
+      toast.error(error.response?.data?.message || 'Failed to send reset link')
     } finally {
       setIsLoading(false)
     }
@@ -72,7 +55,7 @@ export default function ForgotPasswordModal() {
               <div className="text-center mb-6 md:mb-8">
                 <h1 className="text-2xl md:text-3xl font-bold text-dark mb-2">Forgot Password?</h1>
                 <p className="text-sm md:text-base text-gray-600">
-                  No worries, we'll send you reset instructions
+                  No worries, we'll send you a reset link
                 </p>
               </div>
 
@@ -106,53 +89,7 @@ export default function ForgotPasswordModal() {
                   className="w-full bg-accent text-white py-2.5 md:py-3 rounded-lg font-medium text-sm md:text-base hover:bg-opacity-90 transition-colors shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {isLoading && <Loader2 size={20} className="animate-spin" />}
-                  Send Reset Code
-                </button>
-              </form>
-            </>
-          ) : step === 'otp' ? (
-            <>
-              {/* Header */}
-              <div className="text-center mb-6 md:mb-8">
-                <h1 className="text-2xl md:text-3xl font-bold text-dark mb-2">Enter Verification Code</h1>
-                <p className="text-sm md:text-base text-gray-600">
-                  We've sent a 6-digit code to {email}
-                </p>
-              </div>
-
-              {/* OTP Form */}
-              <form onSubmit={handleOtpVerify} className="space-y-4 md:space-y-5">
-                <div>
-                  <label htmlFor="otp" className="block text-sm font-medium text-dark mb-2">
-                    Verification Code
-                  </label>
-                  <input
-                    type="text"
-                    id="otp"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent text-dark text-center text-lg tracking-widest"
-                    placeholder="000000"
-                    maxLength={6}
-                    required
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full bg-accent text-white py-2.5 md:py-3 rounded-lg font-medium text-sm md:text-base hover:bg-opacity-90 transition-colors shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                >
-                  {isLoading && <Loader2 size={20} className="animate-spin" />}
-                  Verify Code
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setStep('email')}
-                  className="w-full text-accent text-sm hover:underline"
-                >
-                  Use different email
+                  Send Reset Link
                 </button>
               </form>
             </>
@@ -165,12 +102,12 @@ export default function ForgotPasswordModal() {
                     <CheckCircle size={32} className="text-green-600" />
                   </div>
                 </div>
-                <h1 className="text-2xl md:text-3xl font-bold text-dark mb-2">Code Verified!</h1>
+                <h1 className="text-2xl md:text-3xl font-bold text-dark mb-2">Check Your Email!</h1>
                 <p className="text-sm md:text-base text-gray-600 mb-4">
-                  A password reset link has been sent to your email.
+                  We've sent a password reset link to <strong>{email}</strong>
                 </p>
                 <p className="text-xs md:text-sm text-gray-500 text-center mb-6">
-                  Please check your inbox and click the link to reset your password.
+                  Please check your inbox and click the link to reset your password. The link will expire in 1 hour.
                 </p>
                 <button
                   onClick={openLoginModal}
