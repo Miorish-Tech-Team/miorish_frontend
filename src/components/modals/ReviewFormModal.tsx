@@ -12,6 +12,12 @@ interface ReviewFormModalProps {
   productId: number
   productName: string
   onReviewSubmitted: () => void
+  existingReview?: {
+    id: number
+    rating: number
+    reviewText: string
+    reviewPhoto?: string
+  } | null
 }
 
 export default function ReviewFormModal({
@@ -19,13 +25,15 @@ export default function ReviewFormModal({
   onClose,
   productId,
   productName,
-  onReviewSubmitted
+  onReviewSubmitted,
+  existingReview
 }: ReviewFormModalProps) {
-  const [rating, setRating] = useState(0)
+  const isEditMode = !!existingReview
+  const [rating, setRating] = useState(existingReview?.rating || 0)
   const [hoverRating, setHoverRating] = useState(0)
-  const [reviewText, setReviewText] = useState('')
+  const [reviewText, setReviewText] = useState(existingReview?.reviewText || '')
   const [reviewPhoto, setReviewPhoto] = useState<File | null>(null)
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
+  const [photoPreview, setPhotoPreview] = useState<string | null>(existingReview?.reviewPhoto || null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -65,19 +73,37 @@ export default function ReviewFormModal({
     setIsSubmitting(true)
 
     try {
-      await reviewAPI.addReview({
-        productId,
-        rating,
-        reviewText: reviewText.trim(),
-        reviewPhoto: reviewPhoto || undefined
-      })
+      if (isEditMode && existingReview) {
+        // Update existing review
+        await reviewAPI.updateReview(existingReview.id, {
+          rating,
+          reviewText: reviewText.trim(),
+          reviewPhoto: reviewPhoto || undefined
+        })
+        toast.success('Review updated successfully!')
+      } else {
+        // Add new review
+        await reviewAPI.addReview({
+          productId,
+          rating,
+          reviewText: reviewText.trim(),
+          reviewPhoto: reviewPhoto || undefined
+        })
+        toast.success('Review submitted successfully!')
+      }
 
-      toast.success('Review submitted successfully!')
       onReviewSubmitted()
       handleClose()
     } catch (err) {
-      const error = err as { response?: { data?: { message?: string } } }
-      toast.error(error.response?.data?.message || 'Failed to submit review')
+      const error = err as { response?: { data?: { message?: string; existingReview?: any } } }
+      const errorMessage = error.response?.data?.message
+      
+      // If user already has a review, show specific message
+      if (errorMessage?.includes('already reviewed')) {
+        toast.error('You have already reviewed this product. Please edit your existing review from your orders page.')
+      } else {
+        toast.error(errorMessage || (isEditMode ? 'Failed to update review' : 'Failed to submit review'))
+      }
     } finally {
       setIsSubmitting(false)
     }
@@ -100,7 +126,7 @@ export default function ReviewFormModal({
         {/* Header */}
         <div className="flex items-center justify-between p-4 md:p-6 border-b border-gray-200">
           <div>
-            <h2 className="text-xl md:text-2xl font-bold text-dark">Write a Review</h2>
+            <h2 className="text-xl md:text-2xl font-bold text-dark">{isEditMode ? 'Edit Review' : 'Write a Review'}</h2>
             <p className="text-sm text-gray-600 mt-1">{productName}</p>
           </div>
           <button
@@ -230,7 +256,7 @@ export default function ReviewFormModal({
               className="flex-1 px-6 py-3 bg-accent text-white rounded-lg font-medium hover:bg-opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isSubmitting && <Loader2 size={20} className="animate-spin" />}
-              {isSubmitting ? 'Submitting...' : 'Submit Review'}
+              {isSubmitting ? (isEditMode ? 'Updating...' : 'Submitting...') : (isEditMode ? 'Update Review' : 'Submit Review')}
             </button>
           </div>
         </form>

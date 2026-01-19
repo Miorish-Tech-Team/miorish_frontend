@@ -18,12 +18,15 @@ export interface ReviewResponse {
   message?: string
   review?: {
     id: number
-    productId: number
-    userId: number
     rating: number
     reviewText: string
     reviewPhoto?: string
-    reviewDate: string
+  }
+  existingReview?: {
+    id: number
+    rating: number
+    reviewText: string
+    reviewPhoto?: string
   }
 }
 

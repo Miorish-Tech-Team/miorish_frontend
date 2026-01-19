@@ -72,8 +72,12 @@ export default function ProfilePage() {
 
       const response = await profileAPI.updateProfile(user.id, updateData)
       
-      if (response.success && response.user) {
-        updateUser(response.user)
+      if (response.success) {
+        // Fetch the updated user data from the API
+        const updatedUser = await profileAPI.getProfile()
+        if (updatedUser.user) {
+          updateUser(updatedUser.user)
+        }
         toast.success('Profile updated successfully!', {
           duration: 4000,
           position: 'top-right',

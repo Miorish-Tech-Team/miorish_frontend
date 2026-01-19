@@ -18,6 +18,7 @@ export interface WishlistItem {
     availableStockQuantity: number
     productCategoryId: number
     productSubCategoryId: number
+    inventoryStatus: string
   }
 }
 
@@ -29,7 +30,6 @@ export interface WishlistResponse {
 
 export interface AddToWishlistResponse {
   success: boolean
-  wishlistItem: WishlistItem
   message?: string
 }
 

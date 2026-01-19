@@ -20,17 +20,24 @@ export interface ChangePasswordData {
 
 export interface TwoFactorAuthData {
   enable: boolean
+  password: string
+  method?: 'email' | 'authenticator'
 }
 
 export interface ProfileResponse {
   success: boolean
   message: string
   user?: User
+  isTwoFactorAuthEnable?: boolean
+  twoFactorMethod?: 'email' | 'authenticator'
+  qrCode?: string
+  secret?: string
 }
 
 export interface TwoFactorStatusResponse {
   success: boolean
   isTwoFactorAuthEnable: boolean
+  twoFactorMethod?: 'email' | 'authenticator'
 }
 
 // Profile API Service

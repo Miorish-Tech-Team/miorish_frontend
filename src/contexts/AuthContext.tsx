@@ -61,11 +61,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (mountedRef.current) return
     mountedRef.current = true
 
-    // Don't fetch user if we're on auth pages to prevent redirect loops
+    // Don't fetch user if we're on auth pages to prevent redirect loops and 401 errors
     const isAuthPage = typeof window !== 'undefined' && 
-                      (window.location.pathname.startsWith('/auth/') ||
-                       window.location.pathname === '/auth/login' ||
-                       window.location.pathname === '/auth/register')
+                      window.location.pathname === '/auth/callback';
 
     if (isAuthPage) {
       setIsLoading(false)
