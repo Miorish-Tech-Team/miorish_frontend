@@ -54,6 +54,11 @@ export interface UpdateCartItemParams {
   quantity: number
 }
 
+export interface CartApiResponse {
+  success: boolean
+  message: string
+}
+
 // API Functions
 
 /**
@@ -64,13 +69,7 @@ export const addToCart = async (params: AddToCartParams) => {
   return response.data
 }
 
-/**
- * Get user's cart
- */
-export const getUserCart = async (): Promise<{ cart: Cart | [], message?: string }> => {
-  const response = await axios.get('/user/cart')
-  return response.data
-}
+
 
 /**
  * Get user's cart with summary
@@ -83,8 +82,8 @@ export const getUserCartWithSummary = async (): Promise<CartWithSummary | { cart
 /**
  * Update cart item quantity
  */
-export const updateCartItemQuantity = async (itemId: number, params: UpdateCartItemParams) => {
-  const response = await axios.put(`/user/cart/update/${itemId}`, params)
+export const updateCartItemQuantity = async (itemId: number, params: UpdateCartItemParams): Promise<CartApiResponse> => {
+  const response = await axios.put<CartApiResponse>(`/user/cart/update/${itemId}`, params)
   return response.data
 }
 
@@ -104,10 +103,4 @@ export const removeAllCartItems = async () => {
   return response.data
 }
 
-/**
- * Get cart summary
- */
-export const getCartSummary = async (): Promise<{ items: CartItem[], totalItems: number, totalPrice: number }> => {
-  const response = await axios.get('/user/cart/summary')
-  return response.data
-}
+

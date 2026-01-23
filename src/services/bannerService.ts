@@ -38,9 +38,3 @@ export const getBrandPosterBanners = async (apiInstance: AxiosInstance = api): P
   const response = await apiInstance.get('/advertisement/brands-banners')
   return response.data
 }
-
-// Get product poster ads banners (limit 4)
-export const getProductPosterAdsBanners = async (apiInstance: AxiosInstance = api): Promise<BannersResponse> => {
-  const response = await apiInstance.get('/advertisement/products-banners')
-  return response.data
-}

@@ -99,7 +99,7 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-secondary">
-      <div className="container mx-auto px-8 md:px-25 py-6">
+      <div className="container mx-auto px-4 md:px-8 lg:px-16 xl:px-25 py-4 md:py-6">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-xs md:text-sm mb-6">
           <Link href="/" className="text-accent hover:underline">Home</Link>

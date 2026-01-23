@@ -688,7 +688,7 @@ function CheckoutForm() {
               <button
                 onClick={handlePlaceOrder}
                 disabled={!selectedAddressId || placing}
-                className={`w-full py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 ${
+                className={`w-full py-3 cursor-pointer rounded-lg font-medium transition-colors flex items-center justify-center gap-2 ${
                   selectedAddressId && !placing
                     ? "bg-accent text-white hover:bg-opacity-90"
                     : "bg-gray-300 text-gray-500 cursor-not-allowed"
