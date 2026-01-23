@@ -316,7 +316,7 @@ export default function OrderDetailsPage() {
                   <CreditCard size={18} className="text-accent" />
                   <span className="font-medium text-gray-900">Payment Method</span>
                 </div>
-                <p className="text-sm text-gray-600">{order.paymentMethod.replace(/([A-Z])/g, ' $1').trim()}</p>
+                <p className="text-sm text-gray-600">{order.paymentMethod?.replace(/([A-Z])/g, ' $1').trim() || 'N/A'}</p>
                 {/* <p className="text-sm text-gray-600 mt-1">
                   Status: <span className={`font-medium ${order.paymentStatus === 'Completed' ? 'text-green-600' : order.paymentStatus === 'Pending' ? 'text-yellow-600' : 'text-red-600'}`}>
                     {order.paymentStatus}

@@ -1,7 +1,7 @@
 'use client'
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react'
-import { getUserCartWithSummary, addToCart as addToCartAPI, updateCartItemQuantity, removeCartItem, removeAllCartItems, type Cart, type CartSummary } from '@/services/cartService'
+import { getUserCartWithSummary, addToCart as addToCartAPI, updateCartItemQuantity, removeCartItem, removeAllCartItems, type Cart, type CartSummary, type CartApiResponse } from '@/services/cartService'
 import { toast } from 'react-hot-toast'
 import { useAuth } from '@/contexts/AuthContext'
 import { 
@@ -149,8 +149,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       // Update on server in background
-      await updateCartItemQuantity(itemId, { quantity })
-      toast.success('Quantity updated!')
+      const response = await updateCartItemQuantity(itemId, { quantity })
+      if (response.success) {
+        toast.success(response.message || 'Quantity updated!')
+      }
     } catch (error: unknown) {
       console.error('Error updating quantity:', error)
       const message = error && typeof error === 'object' && 'response' in error

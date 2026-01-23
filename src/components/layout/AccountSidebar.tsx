@@ -8,7 +8,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import Image from 'next/image'
 
 interface AccountSidebarProps {
-  activePage: 'profile' | 'password' | 'orders' | 'wishlist' | 'address' | 'settings' | 'cart'
+  activePage: 'profile' | 'password' | 'orders' | 'wishlist' | 'address' | 'support' | 'settings' | 'cart' 
 }
 
 export default function AccountSidebar({ activePage }: AccountSidebarProps) {
@@ -32,6 +32,7 @@ export default function AccountSidebar({ activePage }: AccountSidebarProps) {
     { href: '/wishlist', icon: Heart, label: 'My Wishlist', page: 'wishlist' },
     { href: '/account/address', icon: MapPin, label: 'Manage Address', page: 'address' },
     { href: '/account/change-password', icon: Key, label: 'Change Password', page: 'password' },
+    { href: '/account/support-tickets', icon: HelpCircle, label: 'Support Tickets', page: 'support' },
     { href: '/account/settings', icon: Settings, label: 'Settings', page: 'settings' },
   ];
 

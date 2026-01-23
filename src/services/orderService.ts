@@ -3,27 +3,15 @@ import axios from '@/lib/axios'
 // Types
 export interface OrderItem {
   id: number
-  orderId: number
   productId: number
   quantity: number
   price: number
   totalPrice: number
   productName: string
   productImageUrl: string
-  createdAt: string
-  updatedAt: string
-  product?: {
-    id: number
-    productName: string
-    productDescription?: string
-    productPrice: number
-    coverImageUrl: string
-  }
 }
 
 export interface ShippingAddress {
-  id: number
-  userId: number
   recipientName: string
   phoneNumber: string
   streetAddress: string
@@ -31,20 +19,15 @@ export interface ShippingAddress {
   state: string
   postalCode: string
   country: string
-  addressType?: string
-  isDefault: boolean
 }
 
 export interface Order {
   id: number
   uniqueOrderId: string
-  userId: number
-  cartId?: number
   orderStatus: 'Pending' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled'
   totalAmount: number
-  addressId: number
   paymentStatus: 'Pending' | 'Completed' | 'Failed'
-  paymentMethod: 'CashOnDelivery' | 'Razorpay'
+  paymentMethod?: 'CashOnDelivery' | 'Razorpay'
   orderDate: string
   shippingDate?: string
   deliveryDate?: string
