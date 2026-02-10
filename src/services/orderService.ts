@@ -44,6 +44,7 @@ export interface BuyNowParams {
   paymentMethod: 'CashOnDelivery' | 'Razorpay'
   shippingCost?: number
   idempotencyKey?: string
+  selectedColor?: string
 }
 
 export interface PlaceOrderFromCartParams {
@@ -120,6 +121,7 @@ export const createRazorpayOrderForBuyNow = async (params: {
   quantity: number
   addressId: number
   shippingCost?: number
+  selectedColor?: string
 }) => {
   const response = await axios.post('/user/buy-now/create-order', params)
   return response.data
@@ -137,6 +139,7 @@ export const verifyRazorpayBuyNowPayment = async (params: {
   addressId: number
   shippingCost?: number
   idempotencyKey?: string
+  selectedColor?: string
 }) => {
   const response = await axios.post('/user/buy-now/verify', params)
   return response.data

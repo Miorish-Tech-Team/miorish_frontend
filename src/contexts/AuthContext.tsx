@@ -4,7 +4,6 @@ import React, { createContext, useContext, useState, useEffect, ReactNode, useRe
 import { authAPI, User } from '@/services/authService'
 import { syncAllToDatabase } from '@/utils/syncStorage'
 import { clearAllAppStorage } from '@/utils/localStorage'
-import type { Cart, CartSummary } from '@/services/cartService'
 
 interface AuthContextType {
   user: User | null
@@ -80,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const login = useMemo(() => async (userData: User, onSyncComplete?: (cartData: any, wishlistData: any) => void) => {
-    console.log('[AuthContext] User logging in:', userData)
+    // console.log('[AuthContext] User logging in:', userData)
     globalUserState = userData
     setUser(userData)
     
@@ -88,17 +87,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // This updates the contexts in real-time without page refresh
     if (typeof window !== 'undefined') {
       try {
-        console.log('[AuthContext] Starting sync process...')
+        // console.log('[AuthContext] Starting sync process...')
         const syncResult = await syncAllToDatabase(true)
         
-        console.log('[AuthContext] Sync completed:', syncResult)
+        // console.log('[AuthContext] Sync completed:', syncResult)
         
         // Call the callback with synced data so LoginModal can update contexts
         if (onSyncComplete) {
           const cartData = syncResult.cartResult.cartData
           const wishlistData = syncResult.wishlistResult.wishlistData
           
-          console.log('[AuthContext] Calling onSyncComplete callback with data')
+          // console.log('[AuthContext] Calling onSyncComplete callback with data')
           onSyncComplete(cartData, wishlistData)
         }
       } catch (error) {
@@ -117,7 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // User will start fresh as guest after logout
       if (typeof window !== 'undefined') {
         clearAllAppStorage()
-        console.log('[AuthContext] Cleared localStorage on logout')
+        // console.log('[AuthContext] Cleared localStorage on logout')
       }
       globalUserState = null
       hasFetchedOnce = false

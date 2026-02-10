@@ -77,7 +77,6 @@ function CheckoutForm() {
   const [buyNowData, setBuyNowData] = useState<{
     productId: number;
     quantity: number;
-    selectedSize?: string;
     selectedColor?: string;
     product: {
       id: number;
@@ -156,6 +155,7 @@ function CheckoutForm() {
       image: string;
       price: number;
       quantity: number;
+      selectedColor?: string;
     }> = [];
     let sub = 0;
 
@@ -170,6 +170,7 @@ function CheckoutForm() {
           image: product.coverImageUrl,
           price,
           quantity: buyNowData.quantity,
+          selectedColor: buyNowData.selectedColor,
         },
       ];
     } else {
@@ -179,6 +180,7 @@ function CheckoutForm() {
         image: item.Product.coverImageUrl,
         price: item.Product.productDiscountPrice || item.Product.productPrice,
         quantity: item.quantity,
+        selectedColor: item.selectedColor,
       }));
       sub = summary.totalPrice;
     }
@@ -261,13 +263,18 @@ function CheckoutForm() {
             paymentMethod: "CashOnDelivery",
             shippingCost: deliveryEstimate?.shippingCost || 0,
             idempotencyKey: orderIdempotencyKey,
+            selectedColor: buyNowData.selectedColor,
           });
 
           toast.success(
-            `Order placed successfully! Order ID: ${response.orderId}`
+            `Order placed successfully!`
           );
           sessionStorage.removeItem("buyNowData");
-          router.push(`/orders/${response.order.id}`);
+          if (response.order?.id) {
+            router.push(`/orders/${response.order.id}`);
+          } else {
+            router.push("/account/orders");
+          }
         } else {
           const response = await placeOrderFromCart({
             addressId: selectedAddressId,
@@ -277,10 +284,14 @@ function CheckoutForm() {
           });
 
           toast.success(
-            `Order placed successfully! Order ID: ${response.uniqueOrderId}`
+            `Order placed successfully!`
           );
           await refreshCart();
-          router.push(`/orders/${response.order.id}`);
+          if (response.order?.id) {
+            router.push(`/orders/${response.order.id}`);
+          } else {
+            router.push("/account/orders");
+          }
         }
       } else {
         // Razorpay payment
@@ -314,6 +325,7 @@ function CheckoutForm() {
           quantity: buyNowData.quantity,
           addressId: selectedAddressId!,
           shippingCost: deliveryEstimate?.shippingCost || 0,
+          selectedColor: buyNowData.selectedColor,
         });
       } else {
         razorpayOrderData = await createRazorpayOrderForCart({
@@ -360,6 +372,7 @@ function CheckoutForm() {
                 addressId: selectedAddressId!,
                 shippingCost: deliveryEstimate?.shippingCost || 0,
                 idempotencyKey: orderIdempotencyKey,
+                selectedColor: buyNowData.selectedColor,
               });
               sessionStorage.removeItem("buyNowData");
             } else {
@@ -374,7 +387,7 @@ function CheckoutForm() {
               await refreshCart();
             }
 
-            setCompletedOrderId(verifyResponse.order.id);
+            setCompletedOrderId(verifyResponse.order?.id || null);
             setPaymentStatus("success");
             setShowPaymentModal(true);
             setPlacing(false);
@@ -612,6 +625,11 @@ function CheckoutForm() {
                       <p className="text-xs text-gray-500 mt-1">
                         Qty: {item.quantity}
                       </p>
+                      {item.selectedColor && (
+                        <p className="text-sm text-gray-500 mt-1">
+                          Color: {item.selectedColor}
+                        </p>
+                      )}
                       <p className="text-sm font-semibold text-gray-900 mt-1">
                         Rs.{(item.price * item.quantity).toFixed(2)}
                       </p>
@@ -745,7 +763,11 @@ function CheckoutForm() {
                     <button
                       onClick={() => {
                         setShowPaymentModal(false);
-                        router.push(`/orders/${completedOrderId}`);
+                        if (completedOrderId) {
+                          router.push(`/orders/${completedOrderId}`);
+                        } else {
+                          router.push("/orders");
+                        }
                       }}
                       className="w-full bg-accent text-white px-6 py-3 rounded-lg font-medium hover:bg-opacity-90 transition-colors"
                     >
