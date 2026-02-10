@@ -557,7 +557,7 @@ export default function ProductPage() {
         <div className="rounded-lg p-4 md:p-6 mb-8 md:mb-12">
           {/* Tab Headers */}
           <div className="flex gap-4 md:gap-8 border-b mb-4 md:mb-6 overflow-x-auto">
-            <button
+            {/* <button
               onClick={() => setActiveTab("description")}
               className={`pb-2 md:pb-3 text-sm md:text-base font-medium transition-colors whitespace-nowrap ${
                 activeTab === "description"
@@ -566,7 +566,7 @@ export default function ProductPage() {
               }`}
             >
               Additional Information
-            </button>
+            </button> */}
             <button
               onClick={() => setActiveTab("specifications")}
               className={`pb-2 md:pb-3 text-sm md:text-base font-medium transition-colors whitespace-nowrap ${
@@ -589,7 +589,7 @@ export default function ProductPage() {
             </button>
           </div>
 
-          {/* Tab Content */}
+          {/* Tab Content
           {activeTab === "description" && (
             <div className="text-sm md:text-base text-gray-700">
               <p className="mb-4">{product.productDescription}</p>
@@ -604,7 +604,7 @@ export default function ProductPage() {
                 </p>
               )}
             </div>
-          )}
+          )} */}
 
           {activeTab === "specifications" && (
             <div className="overflow-x-auto">

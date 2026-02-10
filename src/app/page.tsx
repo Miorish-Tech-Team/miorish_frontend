@@ -198,7 +198,7 @@ export default async function Home() {
                 FREE AND FAST DELIVERY
               </h3>
               <p className=" text-[9px] md:text-sm text-gray-600">
-                Free delivery for all orders over Over ₹1000
+                Free delivery for all orders over ₹1000
               </p>
             </div>
 
