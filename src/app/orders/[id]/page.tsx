@@ -254,6 +254,7 @@ export default function OrderDetailsPage() {
                           </h4>
                         </Link>
                         <p className="text-sm text-gray-600 mt-1">Quantity: {item.quantity}</p>
+                        
                         <p className="text-sm text-gray-600 mt-1">Price: Rs.{item.price}</p>
                       </div>
                       <div className="text-right shrink-0">

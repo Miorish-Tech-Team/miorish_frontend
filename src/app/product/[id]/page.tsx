@@ -45,6 +45,7 @@ export default function ProductPage() {
   const [activeTab, setActiveTab] = useState("description");
   const [isInCart, setIsInCart] = useState(false);
   const [cartQuantity, setCartQuantity] = useState(0);
+  const [selectedColor, setSelectedColor] = useState<string>("");
 
   const { user } = useAuth();
   
@@ -127,6 +128,11 @@ export default function ProductPage() {
         setProduct(productRes.product);
         setSimilarProducts(similarRes.products || []);
         setReviews(reviewsRes.reviews || []);
+        
+        // Initialize selected color with first available option
+        if (productRes.product.productColors && productRes.product.productColors.length > 0) {
+          setSelectedColor(productRes.product.productColors[0]);
+        }
       } catch (error) {
         console.error("Error fetching product:", error);
       } finally {
@@ -146,7 +152,7 @@ export default function ProductPage() {
 
     try {
       setAddingToCart(true);
-      await addToCartContext(Number(productId), quantity);
+      await addToCartContext(Number(productId), quantity, undefined, selectedColor);
     } catch (error: unknown) {
       // Error already handled in context with toast
       console.error("Add to cart error:", error);
@@ -239,6 +245,7 @@ export default function ProductPage() {
       JSON.stringify({
         productId: Number(productId),
         quantity,
+        selectedColor,
         product: {
           id: product.id,
           productName: product.productName,
@@ -458,6 +465,31 @@ export default function ProductPage() {
                 </p>
               ) : null}
             </div>
+
+            {/* Color Selection */}
+            {product.productColors && product.productColors.length > 0 && (
+              <div className="mb-4 px-0 md:px-15">
+                <label className="block text-sm font-medium text-dark mb-2">
+                  Color: <span className="text-accent font-semibold">{selectedColor}</span>
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {product.productColors.map((color) => (
+                    <button
+                      key={color}
+                      onClick={() => setSelectedColor(color)}
+                      disabled={product.availableStockQuantity === 0}
+                      className={`px-4 py-2 rounded border-2 transition-all text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed ${
+                        selectedColor === color
+                          ? "border-accent bg-accent text-white"
+                          : "border-gray-300 bg-white text-gray-700 hover:border-accent"
+                      }`}
+                    >
+                      {color}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Quantity and Actions */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 md:gap-4 mb-4 md:mb-6 px-0 md:px-15">
