@@ -255,14 +255,14 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   // Method to directly set synced cart data (used after login sync)
   const setSyncedCartData = (data: Cart | null, summaryData: CartSummary) => {
-    console.log('[CartContext] Setting synced cart data:', data, summaryData)
+   
     setCart(data)
     setSummary(summaryData)
     // Clear localStorage after successful sync - database is now the source of truth
     if (isClient) {
       clearLocalCart()
       setLocalCart([])
-      console.log('[CartContext] Local cart cleared after sync')
+     
     }
   }
 

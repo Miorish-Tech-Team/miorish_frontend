@@ -46,7 +46,6 @@ export async function syncCartToDatabase(): Promise<{
   let syncedCount = 0
   let failedCount = 0
 
-  console.log(`[Sync] Starting cart sync: ${localCart.length} items`)
 
   // Fetch existing cart from database
   let existingCartData: CartWithSummary | { cart: any[], summary: CartSummary, message?: string } | undefined
@@ -73,8 +72,7 @@ export async function syncCartToDatabase(): Promise<{
       const existingItem = existingItemsMap.get(itemKey)
 
       if (existingItem) {
-        // Item exists in DB - keep DB quantity
-        console.log(`[Sync] Cart item ${item.productId} already exists in DB`)
+      
         syncedCount++
       } else {
         // Item doesn't exist in DB - add it
@@ -85,7 +83,7 @@ export async function syncCartToDatabase(): Promise<{
           selectedColor: item.selectedColor
         })
         syncedCount++
-        console.log(`[Sync] Cart item ${item.productId} added to DB`)
+        
       }
     } catch (error: any) {
       failedCount++
@@ -95,12 +93,11 @@ export async function syncCartToDatabase(): Promise<{
     }
   }
 
-  console.log(`[Sync] Cart sync completed: ${syncedCount} synced, ${failedCount} failed`)
 
   // Clear localStorage only if all items synced successfully
   if (failedCount === 0) {
     clearLocalCart()
-    console.log('[Sync] Local cart cleared after successful sync')
+
   }
 
   // Fetch updated cart data from server
@@ -143,20 +140,19 @@ export async function syncWishlistToDatabase(): Promise<{
   let syncedCount = 0
   let failedCount = 0
 
-  console.log(`[Sync] Starting wishlist sync: ${localWishlist.length} items`)
 
   // Sync items one by one to handle partial failures
   for (const item of localWishlist) {
     try {
       await addToWishlist(item.productId)
       syncedCount++
-      console.log(`[Sync] Wishlist item ${item.productId} added to DB`)
+     
     } catch (error: any) {
       // If item already exists in wishlist, consider it a success
       const errorMsg = error?.response?.data?.message || error?.message || ''
       if (errorMsg.toLowerCase().includes('already') || errorMsg.toLowerCase().includes('exists')) {
         syncedCount++
-        console.log(`[Sync] Wishlist item ${item.productId} already exists in DB`)
+      
       } else {
         failedCount++
         errors.push(`Product ${item.productId}: ${errorMsg}`)
@@ -165,12 +161,11 @@ export async function syncWishlistToDatabase(): Promise<{
     }
   }
 
-  console.log(`[Sync] Wishlist sync completed: ${syncedCount} synced, ${failedCount} failed`)
 
   // Clear localStorage only if all items synced successfully
   if (failedCount === 0) {
     clearLocalWishlist()
-    console.log('[Sync] Local wishlist cleared after successful sync')
+   
   }
 
   // Fetch updated wishlist data from server
@@ -212,7 +207,7 @@ export async function syncAllToDatabase(showToasts: boolean = true): Promise<{
     wishlistData?: WishlistResponse
   }
 }> {
-  console.log('[Sync] Starting full sync (cart + wishlist)')
+  
   
   // Sync cart
   const cartResult = await syncCartToDatabase()
@@ -235,7 +230,6 @@ export async function syncAllToDatabase(showToasts: boolean = true): Promise<{
     }
   }
   
-  console.log(`[Sync] Full sync completed: ${cartResult.syncedCount + wishlistResult.syncedCount} synced, ${cartResult.failedCount + wishlistResult.failedCount} failed`)
   
   return {
     cartResult,
