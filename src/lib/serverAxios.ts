@@ -11,7 +11,6 @@ export const createServerApi = (cookieHeader?: string): AxiosInstance => {
   // This should point to localhost or internal network address
   const baseURL = process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
   
-  console.log('[ServerAxios] Using baseURL:', baseURL);
   
   return axios.create({
     baseURL: baseURL,

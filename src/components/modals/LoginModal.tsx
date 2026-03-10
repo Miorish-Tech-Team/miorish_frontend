@@ -51,7 +51,7 @@ export default function LoginModal() {
       } else if (response.success && response.user) {
         // Login with callback to update contexts immediately
         await login(response.user, (cartData, wishlistData) => {
-          console.log('[LoginModal] Received synced data from login callback')
+       
           
           // Update cart context immediately
           if (cartData) {
@@ -74,7 +74,7 @@ export default function LoginModal() {
         const redirectPath = sessionStorage.getItem('redirectAfterLogin')
         if (redirectPath) {
           sessionStorage.removeItem('redirectAfterLogin')
-          console.log('[LoginModal] Redirecting to:', redirectPath)
+         
           closeModal()
           router.push(redirectPath)
         } else {
@@ -102,7 +102,7 @@ export default function LoginModal() {
       if (response.success && response.user) {
         // Login with callback to update contexts immediately
         await login(response.user, (cartData, wishlistData) => {
-          console.log('[LoginModal] Received synced data from 2FA login callback')
+         
           
           // Update cart context immediately
           if (cartData) {
@@ -125,7 +125,7 @@ export default function LoginModal() {
         const redirectPath = sessionStorage.getItem('redirectAfterLogin')
         if (redirectPath) {
           sessionStorage.removeItem('redirectAfterLogin')
-          console.log('[LoginModal] Redirecting to:', redirectPath)
+      
           closeModal()
           router.push(redirectPath)
         } else {

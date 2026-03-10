@@ -177,14 +177,14 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
 
   // Method to directly set synced wishlist data (used after login sync)
   const setSyncedWishlistData = (items: WishlistItem[], count: number) => {
-    console.log('[WishlistContext] Setting synced wishlist data:', items, count)
+  
     setWishlist(items)
     setWishlistCount(count)
     // Clear localStorage after successful sync - database is now the source of truth
     if (isClient) {
       clearLocalWishlist()
       setLocalWishlist([])
-      console.log('[WishlistContext] Local wishlist cleared after sync')
+     
     }
   }
 
